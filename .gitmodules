@@ -1,3 +1,0 @@
-[submodule "deps/date"]
-	path = deps/date
-	url = https://github.com/HowardHinnant/date.git
