@@ -19,7 +19,10 @@ os: linux
 dist: xenial
 sudo: false
 compiler: g++-6
-env: COMPILER=g++-6
+env:
+  COMPILER=g++-6
+  CXXSTD=c++14
+  
 language: cpp
 
 addons:
