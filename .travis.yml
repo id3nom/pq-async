@@ -55,5 +55,5 @@ before_script:
 script:
     - mkdir -p build
     - cd build
-    - cmake ..
+    - cmake -DCMAKE_CXX_STANDARD=14 ..
     - MAKEFLAGS=-j4 make --trace && bin/pq-async++_tests --con-str "dbname='libpq_async_tests' user='postgres'" --pool-size 4
