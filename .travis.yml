@@ -18,8 +18,7 @@
 os: linux
 dist: trusty
 sudo: false
-compiler: g++-6.3.0
-install: export CXX="g++-6"
+compiler: g++-6
 language: cpp
 
 before_install:
@@ -32,6 +31,7 @@ addons:
     sources: &base_sources
       - ubuntu-toolchain-r-test
     packages: &base_packages
+      - g++-6
       - cmake
       - libpq-dev
       - postgresql-server-dev-all
