@@ -19,7 +19,7 @@ os: linux
 dist: trusty
 sudo: false
 compiler: g++-6.3.0
-install: export CXX="g++-6.3.0"
+install: export CXX="g++-6"
 language: cpp
 
 before_install:
