@@ -1,0 +1,11 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node2" href="$classpq__async_1_1connection__task.html" title="pq_async::connection_task" alt="" coords="245,107,426,133"/>
+<area shape="rect" id="node4" href="$classpq__async_1_1data__prepared.html" title="pq_async::data_prepared" alt="" coords="251,157,419,184"/>
+<area shape="rect" id="node5" href="$classpq__async_1_1data__reader.html" title="pq_async::data_reader" alt="" coords="258,208,413,235"/>
+<area shape="rect" id="node6" href="$classpq__async_1_1database.html" title="pq_async::database" alt="" coords="266,259,405,285"/>
+<area shape="rect" id="node7" href="$classpq__async_1_1event__strand.html" title="pq_async::event_strand\&lt; T \&gt;" alt="" coords="239,5,432,32"/>
+<area shape="rect" id="node3" href="$classpq__async_1_1reader__connection__task.html" title="pq_async::reader_connection_task" alt="" coords="480,107,704,133"/>
+<area shape="rect" id="node8" href="$classpq__async_1_1event__queue.html" title="pq_async::event_queue" alt="" coords="18,5,178,32"/>
+<area shape="rect" id="node9" href="$classpq__async_1_1event__task__base.html" title="pq_async::event_task_base" alt="" coords="5,56,191,83"/>
+<area shape="rect" id="node10" href="$classpq__async_1_1event__task.html" title="pq_async::event_task" alt="" coords="260,56,411,83"/>
+</map>

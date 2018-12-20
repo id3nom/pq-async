@@ -1,0 +1,18 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classpq__async_1_1tests_1_1enum__types__test.html" title="pq_async::tests::enum\l_types_test" alt="" coords="5,417,160,459"/>
+<area shape="rect" id="node2" href="$classpq__async_1_1tests_1_1db__test__base.html" title="pq_async::tests::db\l_test_base" alt="" coords="208,417,345,459"/>
+<area shape="rect" id="node3" href="$classpq__async_1_1tests_1_1bin__types__test.html" title="pq_async::tests::bin\l_types_test" alt="" coords="426,5,566,47"/>
+<area shape="rect" id="node4" href="$classpq__async_1_1tests_1_1cash__types__test.html" title="pq_async::tests::cash\l_types_test" alt="" coords="421,71,571,112"/>
+<area shape="rect" id="node5" href="$classpq__async_1_1tests_1_1char__types__test.html" title="pq_async::tests::char\l_types_test" alt="" coords="422,136,570,177"/>
+<area shape="rect" id="node6" href="$classpq__async_1_1tests_1_1data__prepared__test.html" title="pq_async::tests::data\l_prepared_test" alt="" coords="422,201,570,243"/>
+<area shape="rect" id="node7" href="$classpq__async_1_1tests_1_1data__reader__test.html" title="pq_async::tests::data\l_reader_test" alt="" coords="422,267,570,308"/>
+<area shape="rect" id="node8" href="$classpq__async_1_1tests_1_1database__test.html" title="pq_async::tests::database_test" alt="" coords="393,333,599,359"/>
+<area shape="rect" id="node9" href="$classpq__async_1_1tests_1_1date__types__test.html" title="pq_async::tests::date\l_types_test" alt="" coords="422,384,570,425"/>
+<area shape="rect" id="node10" href="$classpq__async_1_1tests_1_1geo__types__test.html" title="pq_async::tests::geo\l_types_test" alt="" coords="424,449,568,491"/>
+<area shape="rect" id="node11" href="$classpq__async_1_1tests_1_1net__types__test.html" title="pq_async::tests::net\l_types_test" alt="" coords="425,515,567,556"/>
+<area shape="rect" id="node12" href="$classpq__async_1_1tests_1_1num__types__test.html" title="pq_async::tests::num\l_types_test" alt="" coords="422,580,570,621"/>
+<area shape="rect" id="node13" href="$classpq__async_1_1tests_1_1queue__test.html" title="pq_async::tests::queue_test" alt="" coords="403,646,589,673"/>
+<area shape="rect" id="node14" href="$classpq__async_1_1tests_1_1range__types__test.html" title="pq_async::tests::range\l_types_test" alt="" coords="419,697,573,739"/>
+<area shape="rect" id="node15" href="$classpq__async_1_1tests_1_1sys__types__test.html" title="pq_async::tests::sys\l_types_test" alt="" coords="424,763,568,804"/>
+<area shape="rect" id="node16" href="$classpq__async_1_1tests_1_1uuid__types__test.html" title="pq_async::tests::uuid\l_types_test" alt="" coords="423,828,569,869"/>
+</map>

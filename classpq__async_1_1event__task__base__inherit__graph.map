@@ -1,0 +1,6 @@
+<map id="pq_async::event_task_base" name="pq_async::event_task_base">
+<area shape="rect" id="node2" href="$classpq__async_1_1connection__task.html" title="pq_async::connection_task" alt="" coords="27,80,208,107"/>
+<area shape="rect" id="node4" href="$classpq__async_1_1event__strand.html" title="pq_async::event_strand\&lt; T \&gt;" alt="" coords="233,80,426,107"/>
+<area shape="rect" id="node5" href="$classpq__async_1_1event__task.html" title="pq_async::event_task" alt="" coords="450,80,601,107"/>
+<area shape="rect" id="node3" href="$classpq__async_1_1reader__connection__task.html" title="pq_async::reader_connection_task" alt="" coords="5,155,229,181"/>
+</map>
