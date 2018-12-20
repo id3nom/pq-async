@@ -118,3 +118,6 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# visual studio code config
+.vscode
