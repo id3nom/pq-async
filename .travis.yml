@@ -20,6 +20,7 @@ dist: trusty
 sudo: false
 compiler: g++-6
 install: export CXX="g++-6"
+env: COMPILER=g++-6
 language: cpp
 
 before_install:
@@ -52,5 +53,4 @@ script:
     - mkdir -p build
     - cd build
     - cmake ..
-    - MAKEFLAGS=-j4 make
-    - bin/pq-async++_tests --con-str "dbname='libpq_async_tests' user='postgres'" --pool-size 4
+    - MAKEFLAGS=-j4 make && bin/pq-async++_tests --con-str "dbname='libpq_async_tests' user='postgres'" --pool-size 4
