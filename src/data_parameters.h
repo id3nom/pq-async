@@ -30,7 +30,7 @@
 
 extern "C" {
 #include INCLUDE_FILE(LIBPQ_POSTGRESQL_INCLUDE_DIR,libpq-fe.h)
-#include INCLUDE_FILE(LIBPQ_POSTGRESQL_TYPE_INCLUDE_DIR,catalog/pg_type_d.h)
+#include "../deps/pg_type_d.h"
 }
 
 #define PG_BIN_FORMAT 1
