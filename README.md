@@ -1,4 +1,6 @@
-# Async c++14/17 wrapper for the PostgreSQL libpq 'C' library.
+## Async c++14/17 wrapper for the PostgreSQL libpq 'C' library.
+
+[![Build Status](https://travis-ci.org/micheldenommee/libpq-async.svg?branch=master)](https://travis-ci.org/micheldenommee/libpq-async)
 
 ## Notice
 
