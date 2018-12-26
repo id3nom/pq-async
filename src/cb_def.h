@@ -40,8 +40,8 @@ template<typename T>
 using async_item_cb = typename std::function<void(const T& val, async_cb)>;
 typedef std::function<void(async_cb)> async_series_cb;
 
-
-
+void noop_cb(const cb_error& err);
+const async_cb run_async = &noop_cb;
 
 template<typename T, typename U, typename V,
     typename std::enable_if<

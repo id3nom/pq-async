@@ -237,18 +237,6 @@ TEST_F(database_test, max_connection_async2_test)
             
             ASSERT_THAT(tbl->size(), testing::Eq(nb_con));
         });
-
-        db->query(
-            "select * from database_test",
-        [nb_con](auto err, auto tbl){
-                if(err){
-                    std::cout << "err: " << err << std::endl;
-                    FAIL();
-                    return;
-                }
-            
-            ASSERT_THAT(tbl->size(), testing::Eq(nb_con));
-        });
         
         eq->run();
         

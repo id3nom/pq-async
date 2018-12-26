@@ -29,6 +29,7 @@ set(test_sources
     type_tests/sys_types_test.cpp
     type_tests/uuid_types_test.cpp
     queue_tests/queue_test.cpp
+    queue_tests/cb_test.cpp
     db_tests/data_reader_test.cpp
     db_tests/data_prepared_test.cpp
     db_tests/database_test.cpp

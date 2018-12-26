@@ -27,6 +27,9 @@ Fixes that we'd like to add in the next minor version
 
 - [ ] Verify if c++11 can be supported.
 
+- [ ] Add an uncaught_exception event handler to event_queue class
+        it will trap any uncought exception run in async mode.
+
 - [ ] Replace logging system with
   [Gabi Melman logging library](https://github.com/gabime/spdlog)
 
