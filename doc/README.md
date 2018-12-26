@@ -98,7 +98,7 @@ pq_async::connection_pool::init(do_ssl, do_crypto);
 // to init with specific connection count use that one
 int max_connection_pool_count = 5;
 pq_async::connection_pool::init(
-	max_connection_pool_count, do_ssl, do_crypto
+    max_connection_pool_count, do_ssl, do_crypto
 );
 ~~~
 
@@ -130,7 +130,7 @@ db->open();
 
 // to prevent blocking you can call the open async function.
 auto cb = [](cb_error& err){
-	// will be called on connection or error.
+    // will be called on connection or error.
 };
 db->open(async_cb);
 
@@ -181,7 +181,7 @@ std::string sql("select * form tbl_name where id > $1");
 auto reader = db->query_reader(sql, 3);
 
 while(auto row = reader->next()){
-	// do row stuff ...
+    // do row stuff ...
 }
 
 // if you need to explicitly close the "data_reader" 
@@ -272,7 +272,7 @@ auto lo = db->get_lo(lo_oid);
 // to open the large_object for reading, writing or both
 pq_async::lo_mode m = pq_async::lo_mode::read | pq_async::lo_mode::write;
 if(!lo->is_opened())
-	lo->open(lo_oid, m);
+    lo->open(lo_oid, m);
 
 // to read from the lo
 int nb = 1024;
@@ -339,19 +339,19 @@ and the next call takes 1 second to complete the call to "run_t" will block
 std::string sql("insert into tbl_name(col_id_a, col_str_b) values ($1, $2)");
 db->execute(sql, 10, "some text value",
 [](const cb_error& err, int n){
-	if(err){
-		//...
-	}
-	// "n" is the number of record processed with the query
+    if(err){
+        //...
+    }
+    // "n" is the number of record processed with the query
 });
 
 // to fetch a single value
 std::string sql("select col_id_a form tbl_name where col_str_b = $1");
 db->query_value<int32_t>(sql, "some text value",
 [](const cb_error& err, int32_t id_a){
-	if(err){
-		//...
-	}
+    if(err){
+        //...
+    }
 });
 
 // to fetch a single row
@@ -359,30 +359,30 @@ db->query_value<int32_t>(sql, "some text value",
 std::string sql("select * form tbl_name where col_str_b = $1 limit 1");
 db->query_single(sql, "some text value",
 [](const cb_error& err, sp_data_row row){
-	if(err){
-		//...
-	}
-	// use the row...
+    if(err){
+        //...
+    }
+    // use the row...
 });
 
 // to fetch a table
 std::string sql("select * form tbl_name where id > $1");
 db->query(sql, 3,
 [](const cb_error& err, sp_data_table tbl){
-	if(err){
-		//...
-	}
-	// use the table...
+    if(err){
+        //...
+    }
+    // use the table...
 });
 
 // to create a data reader
 std::string sql("select * form tbl_name where id > $1");
 db->query_reader(sql, 3,
 [](const cb_error& err, sp_data_reader reader){
-	if(err){
-		//...
-	}
-	// use the reader...
+    if(err){
+        //...
+    }
+    // use the reader...
 });
 
 ~~~
@@ -396,33 +396,33 @@ db->query_reader(sql, 3,
 std::string sql("select * form tbl_name where id > $1");
 db->query_reader(sql, 3,
 [](const cb_error& err, sp_data_reader reader){
-	if(err){
-		//...
-	}
-	// use the reader...
-	reader->next([scb, reader]
-	(const cb_error& err, sp_data_row r){	// this callback will be called
-		if(err){							// until there is no more row to
-			scb(err);						// be processed
-			return;
-		}
-		
-		if(!r){
-			// if r is empty the reader is closed
-			return;
-		}
-		
-		// if you need to explicitly close the "data_reader" 
-		// (even if it close itself on destruction) you can call "close()"
-		reader->close(); 	// NOTE that after this call the callback 
-							// will be called one more time with an empty row.
-		
-		// use the data row
-		std::string v = *(*r)["value"];
-		std::cout
-			<< "id: " << r->as_int64("id")
-			<< ", value: " << v << std::endl;
-	});
+    if(err){
+        //...
+    }
+    // use the reader...
+    reader->next([scb, reader]
+    (const cb_error& err, sp_data_row r){	// this callback will be called
+        if(err){							// until there is no more row to
+            scb(err);						// be processed
+            return;
+        }
+        
+        if(!r){
+            // if r is empty the reader is closed
+            return;
+        }
+        
+        // if you need to explicitly close the "data_reader" 
+        // (even if it close itself on destruction) you can call "close()"
+        reader->close(); 	// NOTE that after this call the callback 
+                            // will be called one more time with an empty row.
+        
+        // use the data row
+        std::string v = *(*r)["value"];
+        std::cout
+            << "id: " << r->as_int64("id")
+            << ", value: " << v << std::endl;
+    });
 });
 
 
@@ -441,10 +441,10 @@ https://www.postgresql.org/docs/current/sql-savepoint.html
 ~~~{.cpp}
 // to start a transaction use the "begin" function
 db->begin([](const cb_error& err){
-	if(err){
-		// ...
-	}
-	
+    if(err){
+        // ...
+    }
+    
 });
 
 // will be implement in a future version
@@ -454,43 +454,43 @@ db->begin([](const cb_error& err){
 // to discard all updates made after the begining of the transaction
 // use the "rollback" function
 db->rollback([](const cb_error& err){
-	if(err){
-		// ...
-	}
-	
+    if(err){
+        // ...
+    }
+    
 });
 
 // make all changes visible to others and garanteed 
 // to be durable if a crash occurs, call the "commit" function
 db->commit([](const cb_error& err){
-	if(err){
-		// ...
-	}
-	
+    if(err){
+        // ...
+    }
+    
 });
 
 // to create a savepoint call "set_savepoint" function
 db->set_savepoint("my savepoint name", [](const cb_error& err){
-	if(err){
-		// ...
-	}
-	
+    if(err){
+        // ...
+    }
+    
 });
 
 // to rollback a savepoint call "rollback_savepoint"
 db->rollback_savepoint("my savepoint name", [](const cb_error& err){
-	if(err){
-		// ...
-	}
-	
+    if(err){
+        // ...
+    }
+    
 });
 
 // release a savepoint call "release_savepoint"
 db->release_savepoint("my savepoint name", [](const cb_error& err){
-	if(err){
-		// ...
-	}
-	
+    if(err){
+        // ...
+    }
+    
 });
 
 ~~~

@@ -1,20 +1,20 @@
 /*
-	This file is part of libpq-async++
-	Copyright (C) 2011-2018 Michel Denommee (and other contributing authors)
-	
-	This library is free software; you can redistribute it and/or
-	modify it under the terms of the GNU Lesser General Public
-	License as published by the Free Software Foundation; either
-	version 2.1 of the License, or (at your option) any later version.
+    This file is part of libpq-async++
+    Copyright (C) 2011-2018 Michel Denommee (and other contributing authors)
+    
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
 
-	This library is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-	Lesser General Public License for more details.
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
 
-	You should have received a copy of the GNU Lesser General Public
-	License along with this library; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
 
@@ -38,47 +38,47 @@
 #cmakedefine PQ_ASYNC_BUILD_SHIPPING 1
 
 #if !(defined(PQ_ASYNC_BUILD_DEBUG) || defined(PQ_ASYNC_BUILD_TEST) || defined(PQ_ASYNC_BUILD_SHIPPING))
-	#define PQ_ASYNC_BUILD_DEBUG 1
+    #define PQ_ASYNC_BUILD_DEBUG 1
 #endif
 
 #ifndef PQ_ASYNC_BUILD_DEBUG
-	#define PQ_ASYNC_BUILD_DEBUG 0
+    #define PQ_ASYNC_BUILD_DEBUG 0
 #endif
 #ifndef PQ_ASYNC_BUILD_TEST
-	#define PQ_ASYNC_BUILD_TEST 0
+    #define PQ_ASYNC_BUILD_TEST 0
 #endif
 #ifndef PQ_ASYNC_BUILD_SHIPPING
-	#define PQ_ASYNC_BUILD_SHIPPING 0
+    #define PQ_ASYNC_BUILD_SHIPPING 0
 #endif
 
 
 // arch
 // Check windows
 #if _WIN32 || _WIN64
-	#if _WIN64
-		#define ARCH64
-		#define PLATFORM_64BITS 1
-	#else
-		#define ARCH32
-		#define PLATFORM_64BITS 0
-	#endif
+    #if _WIN64
+        #define ARCH64
+        #define PLATFORM_64BITS 1
+    #else
+        #define ARCH32
+        #define PLATFORM_64BITS 0
+    #endif
 #endif
 
 // Check GCC
 #if __GNUC__
-	#if __x86_64__ || __ppc64__
-		#define ARCH64
-		#define PLATFORM_64BITS 1
-	#else
-		#define ARCH32
-		#define PLATFORM_64BITS 0
-	#endif
+    #if __x86_64__ || __ppc64__
+        #define ARCH64
+        #define PLATFORM_64BITS 1
+    #else
+        #define ARCH32
+        #define PLATFORM_64BITS 0
+    #endif
 #endif
 
 #if WIN32
-	#define PQ_ASYNC_FORCEINLINE __forceinline
+    #define PQ_ASYNC_FORCEINLINE __forceinline
 #elif _GCC || __GNUC__
-	#define PQ_ASYNC_FORCEINLINE inline __attribute((always_inline))
+    #define PQ_ASYNC_FORCEINLINE inline __attribute((always_inline))
 #endif
 
 #define LIBPQ_POSTGRESQL_INCLUDE_DIR @PostgreSQL_INCLUDE_DIR@

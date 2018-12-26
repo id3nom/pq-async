@@ -1,20 +1,20 @@
 /*
-	This file is part of libpq-async++
-	Copyright (C) 2011-2018 Michel Denommee (and other contributing authors)
-	
-	This library is free software; you can redistribute it and/or
-	modify it under the terms of the GNU Lesser General Public
-	License as published by the Free Software Foundation; either
-	version 2.1 of the License, or (at your option) any later version.
+    This file is part of libpq-async++
+    Copyright (C) 2011-2018 Michel Denommee (and other contributing authors)
+    
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
 
-	This library is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-	Lesser General Public License for more details.
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
 
-	You should have received a copy of the GNU Lesser General Public
-	License along with this library; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
 #include <gmock/gmock.h>
@@ -23,7 +23,7 @@
 namespace pq_async{ namespace tests{
 
 class enum_types_test
-	: public db_test_base
+    : public db_test_base
 {
 public:
 };
@@ -42,9 +42,9 @@ create type mood as enum ('sad', 'ok', 'happy');
 
 
 libpq_async_tests=> select n.nspname, t.typname, t.oid 
-	from pg_type t 
-	inner join pg_catalog.pg_namespace n ON n.oid = t.typnamespace
-	where typtype = 'e';
+    from pg_type t 
+    inner join pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+    where typtype = 'e';
  nspname | typname |  oid  
 ---------+---------+-------
  public  | mood    | 22630
@@ -55,8 +55,8 @@ libpq_async_tests=> select n.nspname, t.typname, t.oid
 
 TEST_F(enum_types_test, enum_test_bin)
 {
-	std::cout << "Not Implemented!" << std::endl;
-	//FAIL();
+    std::cout << "Not Implemented!" << std::endl;
+    //FAIL();
 }
 
 

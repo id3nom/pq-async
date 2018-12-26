@@ -107,11 +107,17 @@ db->query_value<std::string>(
 [](const std::string& name){
     std::cout << name << std::endl;
 });
-// and this is legal too:
+// this too:
 db->query_value<std::string>(
     "select $1", std::string("my name"),
 [](){
     std::cout << "do nothing with the result!" << std::endl;
+});
+// and auto are legal too:
+db->query_value<std::string>(
+    "select $1", std::string("my name"),
+[](auto err, auto name){
+    std::cout << name << std::endl;
 });
 
 

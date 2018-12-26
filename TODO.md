@@ -13,15 +13,15 @@ Fixes that we'd like to add in the next minor version
 - [x] Replace the current library date related dates with the 
   [Howard Hinnant's date implementation](https://github.com/HowardHinnant/date)
 
-- [ ] Replace all tabs with spaces...
+- [x] Replace all tabs with spaces...
 
 - [x] Create a README.md file for github
 
-- [ ] Create branch "gh-pages" for github pages
+- [x] Create branch "gh-pages" for github pages
 
 - [ ] Create two more branch, one named "unstable" and the other "testing".
 
-- [ ] Implement continuous build system, currently looking at travisCI.
+- [x] Implement continuous build system, currently looking at travisCI.
 
 ## [Unreleased] v0.1.1
 

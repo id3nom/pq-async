@@ -15,14 +15,14 @@ set(WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 # add_definitions(-DUNICODE -D_UNICODE)
 
 if(UNIX)
-	message(STATUS " Setting GCC flags")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions -g -Wall -Werror -fmax-errors=10 -std=gnu++14 -msse4.1")
-	
+    message(STATUS " Setting GCC flags")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions -g -Wall -Werror -fmax-errors=10 -std=gnu++14 -msse4.1")
+    
 else(UNIX)
-	message(STATUS " Setting MSVC flags")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3 /arch:SSE2")
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /VERBOSE:LIB ")
-	
+    message(STATUS " Setting MSVC flags")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3 /arch:SSE2")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /VERBOSE:LIB ")
+    
 endif(UNIX)
 message(STATUS "** CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 
@@ -49,9 +49,9 @@ message(STATUS "** BOOST Libraries: ${Boost_LIBRARIES}")
 # static or shared build configuration
 option(BUILD_SHARED_LIBS "Build shared libraries (DLLs)." OFF)
 if(${BUILD_SHARED_LIBS})
-	set(IS_MONOLITHIC 0)
+    set(IS_MONOLITHIC 0)
 else()
-	set(IS_MONOLITHIC 1)	
+    set(IS_MONOLITHIC 1)	
 endif()
 
 
@@ -62,11 +62,11 @@ set_property(CACHE PQ_ASYNC_BUILD_TYPE PROPERTY STRINGS ${PQ_ASYNC_BUILD_TYPE_VA
 
 message(STATUS "libpq-async++ build type='${PQ_ASYNC_BUILD_TYPE}'")
 if( ${PQ_ASYNC_BUILD_TYPE} STREQUAL "DEBUG")
-	set(PQ_ASYNC_BUILD_DEBUG 1)
+    set(PQ_ASYNC_BUILD_DEBUG 1)
 elseif( ${PQ_ASYNC_BUILD_TYPE} STREQUAL "TEST")
-	set(PQ_ASYNC_BUILD_TEST 1)
+    set(PQ_ASYNC_BUILD_TEST 1)
 else(${PQ_ASYNC_BUILD_TYPE} STREQUAL "DEBUG")
-	set(PQ_ASYNC_BUILD_SHIPPING 1)
+    set(PQ_ASYNC_BUILD_SHIPPING 1)
 endif(${PQ_ASYNC_BUILD_TYPE} STREQUAL "DEBUG")
 
 set(BITNESS 32)
@@ -89,7 +89,7 @@ subdirs(src tests doc)
 add_test(alltests ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/pq-async++_tests)
 option(WITH_TEST "build test" ON)
 if(WITH_TEST)
-	enable_testing()
+    enable_testing()
 endif()
 
 #######
