@@ -18,7 +18,10 @@ Find_Package(PostgreSQL REQUIRED)
 # add the binary tree to the search path for include files
 include_directories("${PROJECT_BINARY_DIR}"
     "${PROJECT_SOURCE_DIR}/src"
+    "${PROJECT_SOURCE_DIR}/include/pq-async++"
     "${PROJECT_SOURCE_DIR}/deps/date/include"
+    "${PROJECT_SOURCE_DIR}/deps/fmt/include"
+    "${PROJECT_SOURCE_DIR}/deps/json/single_include"
     ${PostgreSQL_INCLUDE_DIRS}
 )
 #link_directories(${Boost_LIBRARY_DIRS})

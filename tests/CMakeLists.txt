@@ -9,10 +9,13 @@ Find_Package(PostgreSQL REQUIRED)
 
 include_directories("${PROJECT_BINARY_DIR}"
     "${PROJECT_SOURCE_DIR}"
+    "${PROJECT_SOURCE_DIR}/include/"
     ${PostgreSQL_INCLUDE_DIRS}
     "${PROJECT_SOURCE_DIR}/deps/date/include"
-    "${PROJECT_SOURCE_DIR}/deps/gmock-1.7.0/include/"
-    "${PROJECT_SOURCE_DIR}/deps/gmock-1.7.0/gtest/include/"
+    "${PROJECT_SOURCE_DIR}/deps/fmt/include"
+    "${PROJECT_SOURCE_DIR}/deps/json/single_include"
+    "${PROJECT_SOURCE_DIR}/deps/googletest/googletest/include"
+    "${PROJECT_SOURCE_DIR}/deps/googletest/googlemock/include"
 )
 
 set(test_sources

@@ -20,8 +20,8 @@
 #include <gmock/gmock.h>
 #include "../db_test_base.h"
 
-#include "src/pg_type_date_def.h"
-#include "src/pg_type_duration_def.h"
+#include "pq-async++/pg_type_date_def.h"
+#include "pq-async++/pg_type_duration_def.h"
 
 namespace pq_async{ namespace tests{
 

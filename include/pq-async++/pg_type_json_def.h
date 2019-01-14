@@ -17,36 +17,16 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#ifndef _pq_async_db_test_base_h
-#define _pq_async_db_test_base_h
+#ifndef _pq_asyncpp_json_h
+#define _pq_asyncpp_json_h
 
-#include <gmock/gmock.h>
-#include "pq-async++/pq_async.h"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#include "nlohmann/json.hpp"
+#pragma GCC diagnostic pop
 
-extern std::string pq_async_connection_string;
+namespace pq_async {
+typedef nlohmann::json json;
+} //ns pq_async
 
-namespace pq_async{ namespace tests{
-    
-    class db_test_base
-        : public testing::Test
-    {
-    public:
-        pq_async::sp_database db;
-        
-        std::string connection_string(){ return pq_async_connection_string;}
-        
-        void SetUp() override
-        {
-            db = pq_async::database::open(pq_async_connection_string);
-        }
-        
-        void TearDown() override {
-            // Code here will be called immediately after each test (right
-            // before the destructor).
-            db.reset();
-        }
-    };
-    
-}} //namespace pq_async::tests
-
-#endif //_pq_async_db_test_base_h
+#endif //_pq_asyncpp_json_h

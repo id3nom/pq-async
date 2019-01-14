@@ -78,9 +78,9 @@ endif()
 # add subdirs
 
 # deps
-subdirs(deps/gmock-1.7.0)
-subdirs(deps/date)
-
+subdirs(deps/googletest
+    deps/date
+)
 
 # lib dir
 subdirs(src tests doc)

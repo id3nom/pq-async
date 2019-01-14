@@ -21,7 +21,7 @@
 #define _pq_async_test_env_h
 
 #include <gmock/gmock.h>
-#include "src/pq_async.h"
+#include "pq-async++/pq_async.h"
 
 
 extern int pq_async_log_level;
