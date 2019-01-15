@@ -16,6 +16,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 #set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 set(WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
+option(PQ_ASYNC_BUILD_TESTS "Build tests" OFF)
+option(PQ_ASYNC_BUILD_DOC "Create and install the HTML based API documentation (requires Doxygen)" OFF)
 
 # not using unicode at all, better using UTF-8
 # add_definitions(-DUNICODE -D_UNICODE)
@@ -42,15 +44,29 @@ set(Boost_USE_MULTITHREADED      ON CACHE BOOL "Boost_USE_MULTITHREADED")
 set(Boost_USE_STATIC_RUNTIME     OFF CACHE BOOL "Boost_USE_STATIC_RUNTIME")
 set(Boost_ALL_DYN_LINK           OFF CACHE BOOL "BOOST_ALL_DYN_LINK") 
 
-set(PQ_ASYNC_BOOST_COMPONENTS filesystem atomic date_time system iostreams regex program_options thread chrono locale)
+if(PQ_ASYNC_BUILD_TESTS)
+    set(PQ_ASYNC_BOOST_COMPONENTS ""
+        #filesystem
+        #atomic
+        #date_time
+        #system
+        #iostreams
+        #regex
+        program_options
+        #thread
+        #chrono
+        #locale
+    )
 
-include_directories(${Boost_INCLUDE_DIR})
-link_directories(${Boost_LIBRARY_DIRS})
+    find_package(Boost COMPONENTS REQUIRED ${PQ_ASYNC_BOOST_COMPONENTS} )
+    message(STATUS "** BOOST Include: ${Boost_INCLUDE_DIR}")
+    message(STATUS "** BOOST Libraries Dirs: ${Boost_LIBRARY_DIRS}")
+    message(STATUS "** BOOST Libraries: ${Boost_LIBRARIES}")
 
-find_package(Boost COMPONENTS ${PQ_ASYNC_BOOST_COMPONENTS} )
-message(STATUS "** BOOST Include: ${Boost_INCLUDE_DIR}")
-message(STATUS "** BOOST Libraries Dirs: ${Boost_LIBRARY_DIRS}")
-message(STATUS "** BOOST Libraries: ${Boost_LIBRARIES}")
+    include_directories(${Boost_INCLUDE_DIR})
+    link_directories(${Boost_LIBRARY_DIRS})
+    
+endif()
 
 # static or shared build configuration
 option(BUILD_SHARED_LIBS "Build shared libraries (DLLs)." OFF)
@@ -80,8 +96,6 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   set(BITNESS 64)
 endif()
 
-option(PQ_ASYNC_BUILD_TESTS "Build tests" OFF)
-option(PQ_ASYNC_BUILD_DOC "Create and install the HTML based API documentation (requires Doxygen)" OFF)
 
 #############
 # add subdirs

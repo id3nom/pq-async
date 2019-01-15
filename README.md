@@ -19,7 +19,10 @@ respect the GNU LGPL v2.1 license.
 
 ~~~bash
 $ sudo apt-get install libpq-dev postgresql-server-dev-all \
-libcurl4-gnutls-dev libboost-dev uuid-dev
+libcurl4-gnutls-dev libboost-dev uuid-dev \
+libboost-filesystem-dev libboost-program-options-dev \
+libboost-iostreams-dev libboost-regex-dev \
+libboost-thread-dev libboost-locale-dev
 ~~~
 
 #### Required dependencies
