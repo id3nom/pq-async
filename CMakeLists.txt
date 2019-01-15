@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.0)
 cmake_policy(SET CMP0054 NEW)
 project(pq-async VERSION 0.1.0 LANGUAGES CXX C)
 
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+#set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # define module path
 #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake")
@@ -12,8 +12,8 @@ if(NOT PrecompiledHeader_CMake_INCLUDED)
     include(PrecompiledHeader)
 endif()
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 set(WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 
@@ -81,7 +81,7 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 endif()
 
 option(PQ_ASYNC_BUILD_TESTS "Build tests" OFF)
-option(PQ_ASYNC_BUILD_DOC "Build documentation" OFF)
+option(PQ_ASYNC_BUILD_DOC "Create and install the HTML based API documentation (requires Doxygen)" OFF)
 
 #############
 # add subdirs
@@ -103,7 +103,7 @@ if(PQ_ASYNC_BUILD_TESTS)
     add_test(alltests ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/pq-async_tests)
     enable_testing()
 endif()
-if(PQ_ASYNC_BUILD_TESTS)
+if(PQ_ASYNC_BUILD_DOC)
     subdirs(doc)
 endif()
 
@@ -228,3 +228,10 @@ target_link_libraries(pq-async
     "${PostgreSQL_LIBRARY}"
     uuid
 )
+
+# install
+install( TARGETS pq-async
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})  # This is for Windows
+install( DIRECTORY include/ DESTINATION include/ )

@@ -1,8 +1,8 @@
 # add a target to generate API documentation with Doxygen
 find_package(Doxygen)
-option(PQ_ASYNC_BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
+#option(PQ_ASYNC_BUILD_DOC "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
 
-if(PQ_ASYNC_BUILD_DOCUMENTATION)
+if(PQ_ASYNC_BUILD_DOC)
     if(NOT DOXYGEN_FOUND)
         message(FATAL_ERROR "Doxygen is needed to build the documentation.")
     endif()
