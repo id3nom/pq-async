@@ -52,6 +52,12 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+if(PrecompiledHeader_CMake_INCLUDED)
+    message(WARNING "PrecompiledHeader has already been included!")
+else()
+    set(PrecompiledHeader_CMake_INCLUDED 1)
+endif()
+
 include(CMakeParseArguments)
 
 macro(combine_arguments _variable)

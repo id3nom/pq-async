@@ -1,5 +1,5 @@
 /*
-    This file is part of libpq-async++
+    This file is part of pq-async
     Copyright (C) 2011-2018 Michel Denommee (and other contributing authors)
     
     This library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 #define _pq_async_db_test_base_h
 
 #include <gmock/gmock.h>
-#include "pq-async++/pq_async.h"
+#include "pq-async/pq_async.h"
 
 extern std::string pq_async_connection_string;
 

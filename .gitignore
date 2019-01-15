@@ -1,11 +1,12 @@
 
 ##########################
-## libpq-async++ ignore ##
+## pq-async ignore ##
 ##########################
 
 # ignore the cmake build dir
 build
-src/pq_asyncpp_export.h
+include/pq-async/pq_asyncpp_export.h
+include/pq-async/pq_async_config.h
 
 ##################
 ## CMake ignore ##

@@ -1,5 +1,5 @@
 /*
-    This file is part of libpq-async++
+    This file is part of pq-async
     Copyright (C) 2011-2018 Michel Denommee (and other contributing authors)
     
     This library is free software; you can redistribute it and/or
@@ -20,7 +20,7 @@
 #include <gmock/gmock.h>
 #include "../db_test_base.h"
 
-#include "pq-async++/pg_type_date_def.h"
+#include "pq-async/pg_type_date_def.h"
 
 namespace pq_async{ namespace tests{
 

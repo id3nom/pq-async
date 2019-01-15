@@ -1,4 +1,4 @@
-# This file is part of libpq-async++
+# This file is part of pq-async
 # Copyright (C) 2011-2018 Michel Denommee (and other contributing authors)
 # 
 # This library is free software; you can redistribute it and/or
@@ -55,5 +55,5 @@ before_script:
 script:
     - mkdir -p build
     - cd build
-    - cmake -DCMAKE_CXX_STANDARD=14 ..
-    - MAKEFLAGS=-j4 make --trace && bin/pq-async++_tests --con-str "dbname='libpq_async_tests' user='postgres'" --pool-size 4
+    - cmake -DCMAKE_CXX_STANDARD=14 -DPQ_ASYNC_BUILD_TESTS=ON ..
+    - MAKEFLAGS=-j4 make --trace && bin/pq-async_tests --con-str "dbname='libpq_async_tests' user='postgres'" --pool-size 4

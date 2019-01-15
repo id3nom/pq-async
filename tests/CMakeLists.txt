@@ -37,11 +37,11 @@ set(test_sources
     db_tests/data_prepared_test.cpp
     db_tests/database_test.cpp
 )
-add_executable(pq-async++_tests ${test_sources})
+add_executable(pq-async_tests ${test_sources})
 
 
-target_link_libraries(pq-async++_tests
-    pq-async++
+target_link_libraries(pq-async_tests
+    pq-async
     tz
     ${Boost_LIBRARIES} 
     "${PostgreSQL_LIBRARY}"

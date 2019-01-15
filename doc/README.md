@@ -1,6 +1,6 @@
 [TOC]
 
-# About libpq-async++
+# About pq-async
 
 This library is a c++ wrapper for the PostgreSQL libpq 'C' library.
 
