@@ -43,6 +43,7 @@ add_executable(pq-async_tests ${test_sources})
 target_link_libraries(pq-async_tests
     pq-async
     tz
+    fmt
     ${Boost_LIBRARIES} 
     "${PostgreSQL_LIBRARY}"
     pthread

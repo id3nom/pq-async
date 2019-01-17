@@ -45,7 +45,7 @@ set(Boost_USE_STATIC_RUNTIME     OFF CACHE BOOL "Boost_USE_STATIC_RUNTIME")
 set(Boost_ALL_DYN_LINK           OFF CACHE BOOL "BOOST_ALL_DYN_LINK") 
 
 if(PQ_ASYNC_BUILD_TESTS)
-    set(PQ_ASYNC_BOOST_COMPONENTS ""
+    set(PQ_ASYNC_BOOST_COMPONENTS
         #filesystem
         #atomic
         #date_time
@@ -73,7 +73,7 @@ option(BUILD_SHARED_LIBS "Build shared libraries (DLLs)." OFF)
 if(${BUILD_SHARED_LIBS})
     set(IS_MONOLITHIC 0)
 else()
-    set(IS_MONOLITHIC 1)	
+    set(IS_MONOLITHIC 1)
 endif()
 
 
@@ -117,6 +117,7 @@ if(PQ_ASYNC_BUILD_TESTS)
     add_test(alltests ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/pq-async_tests)
     enable_testing()
 endif()
+# doc
 if(PQ_ASYNC_BUILD_DOC)
     subdirs(doc)
 endif()
@@ -135,9 +136,9 @@ endif()
 
 
 
-#####################
+################
 ### pq-async ###
-#####################
+################
 
 # configure a header file to pass some of the CMake settings
 # to the source code
@@ -238,6 +239,8 @@ else(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
 target_link_libraries(pq-async 
+    fmt
+    tz
     ${Boost_LIBRARIES} 
     "${PostgreSQL_LIBRARY}"
     uuid
