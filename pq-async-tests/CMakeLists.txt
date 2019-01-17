@@ -8,15 +8,17 @@ include(FindPostgreSQL)
 Find_Package(PostgreSQL REQUIRED)
 
 include_directories("${PROJECT_BINARY_DIR}"
-    "${PROJECT_SOURCE_DIR}"
-    "${PROJECT_SOURCE_DIR}/include/"
+    "${CMAKE_CURRENT_BINARY_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../deps/date/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../deps/fmt/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../deps/json/single_include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../deps/googletest/googletest/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../deps/googletest/googlemock/include"
+
     ${PostgreSQL_INCLUDE_DIRS}
-    "${PROJECT_SOURCE_DIR}/deps/date/include"
-    "${PROJECT_SOURCE_DIR}/deps/fmt/include"
-    "${PROJECT_SOURCE_DIR}/deps/json/single_include"
-    "${PROJECT_SOURCE_DIR}/deps/googletest/googletest/include"
-    "${PROJECT_SOURCE_DIR}/deps/googletest/googlemock/include"
 )
+
 
 set(test_sources
     main.cpp

@@ -113,13 +113,13 @@ endif()
 
 # tests
 if(PQ_ASYNC_BUILD_TESTS)
-    subdirs(tests)
+    subdirs(pq-async-tests)
     add_test(alltests ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/pq-async_tests)
     enable_testing()
 endif()
 # doc
 if(PQ_ASYNC_BUILD_DOC)
-    subdirs(doc)
+    subdirs(pq-async-doc)
 endif()
 
 #######
@@ -159,11 +159,6 @@ Find_Package(PostgreSQL REQUIRED)
 # add the binary tree to the search path for include files
 include_directories("${PROJECT_BINARY_DIR}"
     "${CMAKE_CURRENT_BINARY_DIR}"
-#    "${PROJECT_SOURCE_DIR}/src"
-#    "${PROJECT_SOURCE_DIR}/include/pq-async"
-#    "${PROJECT_SOURCE_DIR}/deps/date/include"
-#    "${PROJECT_SOURCE_DIR}/deps/fmt/include"
-#    "${PROJECT_SOURCE_DIR}/deps/json/single_include"
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/pq-async"
     "${CMAKE_CURRENT_SOURCE_DIR}/deps/date/include"
