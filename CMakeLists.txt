@@ -24,7 +24,7 @@ option(PQ_ASYNC_BUILD_DOC "Create and install the HTML based API documentation (
 
 if(UNIX)
     message(STATUS " Setting GCC flags")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions -g -Wall -Werror -fmax-errors=10 -std=gnu++14 -msse4.1")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions -g -Wall -Werror -fmax-errors=10 -msse4.1")
     
 else(UNIX)
     message(STATUS " Setting MSVC flags")
