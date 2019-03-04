@@ -10,3 +10,6 @@
 [submodule "deps/fmt"]
 	path = deps/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "deps/tools-md"]
+	path = deps/tools-md
+	url = https://github.com/micheldenommee/tools-md.git

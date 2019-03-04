@@ -29,11 +29,6 @@ SOFTWARE.
 #include "log.h"
 #include "exceptions.h"
 #include "data_parameters.h"
-//#include "delegate.h"
-#include "event_queue.h"
-#include "event_strand.h"
-
-#include "async.h"
 
 namespace pq_async{
 
@@ -75,7 +70,7 @@ typedef std::shared_ptr< pq_async::database > sp_database;
 typedef std::function<
     void(
         sp_data_reader reader,
-        const pq_async::cb_error& err,
+        const md::callback::cb_error& err,
         sp_data_row row
     )
 > query_next_cb;
@@ -196,39 +191,39 @@ enum class data_type
     !std::is_same< \
         _R, \
         typename std::remove_pointer< \
-            typename select_last<PARAMS...>::type \
+            typename md::select_last<PARAMS...>::type \
         >::type \
     >::value && \
     !std::is_array< \
         typename std::remove_pointer< \
-            typename select_last<PARAMS...>::type \
+            typename md::select_last<PARAMS...>::type \
         >::type \
     >::value && \
     (std::is_invocable_r< \
         void, \
         typename std::remove_pointer< \
-            typename select_last<PARAMS...>::type \
+            typename md::select_last<PARAMS...>::type \
         >::type, \
-        const cb_error& \
+        const md::callback::cb_error& \
     >::value || \
     std::is_invocable_r< \
         void, \
         typename std::remove_pointer< \
-            typename select_last<PARAMS...>::type \
+            typename md::select_last<PARAMS...>::type \
         >::type, \
-        const cb_error&, \
+        const md::callback::cb_error&, \
         _R \
     >::value || \
     std::is_invocable_r< \
         void, \
         typename std::remove_pointer< \
-            typename select_last<PARAMS...>::type \
+            typename md::select_last<PARAMS...>::type \
         >::type \
     >::value || \
     std::is_invocable_r< \
         void, \
         typename std::remove_pointer< \
-            typename select_last<PARAMS...>::type \
+            typename md::select_last<PARAMS...>::type \
         >::type, \
         _R \
     >::value) \
@@ -238,39 +233,39 @@ enum class data_type
     std::is_same< \
         _R, \
         typename std::remove_pointer< \
-            typename select_last<PARAMS...>::type \
+            typename md::select_last<PARAMS...>::type \
         >::type \
     >::value || \
     std::is_array< \
         typename std::remove_pointer< \
-            typename select_last<PARAMS...>::type \
+            typename md::select_last<PARAMS...>::type \
         >::type \
     >::value || \
     (!std::is_invocable_r< \
         void, \
         typename std::remove_pointer< \
-            typename select_last<PARAMS...>::type \
+            typename md::select_last<PARAMS...>::type \
         >::type, \
-        const cb_error& \
+        const md::callback::cb_error& \
     >::value && \
     !std::is_invocable_r< \
         void, \
         typename std::remove_pointer< \
-            typename select_last<PARAMS...>::type \
+            typename md::select_last<PARAMS...>::type \
         >::type, \
-        const cb_error&, \
+        const md::callback::cb_error&, \
         _R \
     >::value && \
     !std::is_invocable_r< \
         void, \
         typename std::remove_pointer< \
-            typename select_last<PARAMS...>::type \
+            typename md::select_last<PARAMS...>::type \
         >::type \
     >::value && \
     !std::is_invocable_r< \
         void, \
         typename std::remove_pointer< \
-            typename select_last<PARAMS...>::type \
+            typename md::select_last<PARAMS...>::type \
         >::type, \
         _R \
     >::value) \
@@ -287,14 +282,14 @@ enum class data_type
         typename std::remove_pointer< \
             _T \
         >::type, \
-        const cb_error& \
+        const md::callback::cb_error& \
     >::value || \
     std::is_invocable_r< \
         void, \
         typename std::remove_pointer< \
             _T \
         >::type, \
-        const cb_error&, \
+        const md::callback::cb_error&, \
         _R \
     >::value || \
     std::is_invocable_r< \
@@ -323,14 +318,14 @@ enum class data_type
         typename std::remove_pointer< \
             _T \
         >::type, \
-        const cb_error& \
+        const md::callback::cb_error& \
     >::value && \
     !std::is_invocable_r< \
         void, \
         typename std::remove_pointer< \
             _T \
         >::type, \
-        const cb_error&, \
+        const md::callback::cb_error&, \
         _R \
     >::value && \
     !std::is_invocable_r< \
@@ -356,7 +351,7 @@ enum class data_type
     (std::is_invocable_r< \
         void, \
         typename std::remove_pointer<_T>::type, \
-        const cb_error& \
+        const md::callback::cb_error& \
     >::value || \
     std::is_invocable_r< \
         void, \
@@ -371,7 +366,7 @@ enum class data_type
     (!std::is_invocable_r< \
         void, \
         typename std::remove_pointer<_T>::type, \
-        const cb_error& \
+        const md::callback::cb_error& \
     >::value && \
     !std::is_invocable_r< \
         void, \

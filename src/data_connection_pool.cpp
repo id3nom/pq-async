@@ -43,19 +43,19 @@ static void pqasync_notice_processor(void *arg, const char *message)
     std::string e("EXCEPTION:");
     
     if(s.compare(0, d.length(), d) == 0){
-        pq_async_log_trace("%s", message);
+        pq_async::default_logger()->trace("{}", message);
     }else if(s.compare(0, l.length(), l) == 0){
-        pq_async_log_debug("%s", message);
+        pq_async::default_logger()->debug("{}", message);
     }else if(s.compare(0, i.length(), i) == 0){
-        pq_async_log_info("%s", message);
+        pq_async::default_logger()->info("{}", message);
     }else if(s.compare(0, n.length(), n) == 0){
-        pq_async_log_warn("%s", message);
+        pq_async::default_logger()->warn("{}", message);
     }else if(s.compare(0, w.length(), w) == 0){
-        pq_async_log_warn("%s", message);
+        pq_async::default_logger()->warn("{}", message);
     }else if(s.compare(0, e.length(), e) == 0){
-        pq_async_log_error("%s", message);
+        pq_async::default_logger()->error("{}", message);
     }else{
-        pq_async_log_warn("%s", message);
+        pq_async::default_logger()->warn("{}", message);
     }
 }
 
@@ -69,8 +69,9 @@ bool pq_async::connection::lock()
     if(_res.load() == 0){
         _res.store(1);
         stop_work();
-        
-        pq_async_log_trace("connection '%s' lock acquired", this->id().c_str());
+        PQ_ASYNC_DEF_TRACE(
+            "connection '{}' lock acquired", this->id()
+        );
         return true;
     } else
         return false;
@@ -94,7 +95,9 @@ void pq_async::connection::release()
     
     if(_res.load() > 0){
         _res.store(0);
-        pq_async_log_trace("connection '%s' lock released", this->id().c_str());
+        PQ_ASYNC_DEF_TRACE(
+            "connection '{}' lock released", this->id()
+        );
     }
     
     stop_work();
@@ -102,10 +105,10 @@ void pq_async::connection::release()
     return;
 }
 
-sp_event_strand<int> connection::strand()
+md::sp_event_strand<int> connection::strand()
 {
     if(!this->_owner)
-        return sp_event_strand<int>();
+        return md::sp_event_strand<int>();
     
     return this->_owner->get_strand();
 }
@@ -125,8 +128,8 @@ bool pq_async::connection::is_dead()
 
 
 connection_task::connection_task(
-    event_queue* owner, sp_database db, sp_connection_lock lock,
-    const value_cb<PGresult*>& cb)
+    md::event_queue* owner, sp_database db, sp_connection_lock lock,
+    const md::callback::value_cb<PGresult*>& cb)
     : event_task_base(owner), 
     _cmd_type(command_type::none),
     _completed(false), _db(db),
@@ -137,8 +140,8 @@ connection_task::connection_task(
 }
 
 connection_task::connection_task(
-    event_queue* owner, sp_database db, connection* conn,
-    const value_cb<sp_connection_lock>& lock_cb)
+    md::event_queue* owner, sp_database db, connection* conn,
+    const md::callback::value_cb<sp_connection_lock>& lock_cb)
     : event_task_base(owner), 
     _cmd_type(command_type::none),
     _completed(false), _db(db),
@@ -149,7 +152,7 @@ connection_task::connection_task(
 }
 
 connection_task::connection_task(
-    event_queue* owner, sp_database db, sp_connection_lock lock)
+    md::event_queue* owner, sp_database db, sp_connection_lock lock)
     : event_task_base(owner), 
     _cmd_type(command_type::none),
     _completed(false), _db(db),
@@ -160,7 +163,7 @@ connection_task::connection_task(
 }
 
 connection_task::connection_task(
-    event_queue* owner, sp_database db, connection* conn)
+    md::event_queue* owner, sp_database db, connection* conn)
     : event_task_base(owner), 
     _cmd_type(command_type::none),
     _completed(false), _db(db),
@@ -172,15 +175,16 @@ connection_task::connection_task(
 
 void pq_async::connection_task::_connect()
 {
-    pq_async_log_debug(
-        "assigning a connection\nct: %x, db: %x",
-        this, _db.get()
+    PQ_ASYNC_DBG(
+        _db->_log,
+        "assigning a connection\nct: {:p}, db: {:p}",
+        (void*)this, (void*)_db.get()
     );
     
     if(_format < std::chrono::system_clock::now().time_since_epoch().count()){
         _completed = true;
         _lock_cb(
-            pq_async::cb_error(
+            md::callback::cb_error(
             pq_async::exception(
                 "Connection request has time out!"
             )), sp_connection_lock()
@@ -221,12 +225,12 @@ void pq_async::connection_task::_connect()
         return;
     }catch(const std::exception& err){
         _completed = true;
-        _lock_cb(pq_async::cb_error(err), sp_connection_lock());
+        _lock_cb(md::callback::cb_error(err), sp_connection_lock());
     }
 }
 
 reader_connection_task::reader_connection_task(
-    event_queue* owner, sp_database db, sp_connection_lock lock)
+    md::event_queue* owner, sp_database db, sp_connection_lock lock)
     : connection_task(owner, db, lock)
 {
 }
@@ -272,14 +276,14 @@ pq_async::connection_pool::~connection_pool()
             if((*cons)[i]->_owner)
                 (*cons)[i]->_owner->_conn = NULL;
             
-            pq_async_log_debug(
-                "releasing connection '%s' because the connection pool is "
-                "destroyed, last modification date is '%s', "
-                "connection count is '%i'", 
+            PQ_ASYNC_DEF_DBG(
+                "releasing connection '{}' because the connection pool is "
+                "destroyed, last modification date is '{}', "
+                "connection count is '{}'", 
                 (*cons)[i]->id().c_str(),
                 hhdate::format("%F %T", (*cons)[i]->_last_modification_date),
                 (int)(cons->size() -1)
-                );
+            );
             
             delete (*cons)[i];
             cons->erase(cons->begin() + i);
@@ -317,15 +321,15 @@ int32_t pq_async::connection_pool::_get_opened_connection_count(
                 if((*cons)[i]->_owner)
                     (*cons)[i]->_owner->_conn = NULL;
                 
-                pq_async_log_debug(
-                    "releasing connection '%s' because it's dead, "
-                    "last modification date is '%s', connection count is '%i'", 
+                PQ_ASYNC_DEF_DBG(
+                    "releasing connection '{}' because it's dead, "
+                    "last modification date is '{}', connection count is '{}'", 
                     (*cons)[i]->id().c_str(),
                     hhdate::format(
                         "%F %T", (*cons)[i]->_last_modification_date
                     ),
                     (int)(cons->size() -1)
-                    );
+                );
                 
                 delete (*cons)[i];
                 cons->erase(cons->begin() + i);
@@ -369,9 +373,9 @@ pq_async::connection* pq_async::connection_pool::_get_connection(
                 if((*cons)[i]->_owner)
                     (*cons)[i]->_owner->_conn = NULL;
                 
-                pq_async_log_debug(
-                    "releasing connection '%s' because it's dead, "
-                    "last modification date is '%s', connection count is '%i'",
+                PQ_ASYNC_DEF_DBG(
+                    "releasing connection '{}' because it's dead, "
+                    "last modification date is '{}', connection count is '{}'",
                     (*cons)[i]->id().c_str(),
                     hhdate::format(
                         "%F %T", (*cons)[i]->_last_modification_date
@@ -390,8 +394,8 @@ pq_async::connection* pq_async::connection_pool::_get_connection(
         connection* conn = new connection(this, connection_string);
         cons->push_back(conn);
         
-        pq_async_log_debug(
-            "connection created '%s', connection count is '%i'",
+        PQ_ASYNC_DEF_DBG(
+            "connection created '{}', connection count is '{}'",
             conn->id().c_str(), (int)cons->size()
         );
         
@@ -464,10 +468,10 @@ pq_async::connection* pq_async::connection_pool::_get_connection(
                 
                 pq_async::connection_pool::last_stolen_conn_id = con->id();
                 
-                pq_async_log_debug(
-                    "connection '%s' was stolen, "
-                    "connection count is '%i'", 
-                    con->id().c_str(), (int)cons->size()
+                PQ_ASYNC_DEF_DBG(
+                    "connection '{}' was stolen, "
+                    "connection count is '{}'", 
+                    con->id(), (int)cons->size()
                 );
                 return con;
             }
@@ -482,7 +486,7 @@ pq_async::connection* pq_async::connection_pool::_get_connection(
         "unable to assign a connection because max connection "
         "count reached, connection count is '"
     );
-    err_msg += pq_async::num_to_str(
+    err_msg += md::num_to_str(
         _get_opened_connection_count(connection_string)
     );
     err_msg += "'";

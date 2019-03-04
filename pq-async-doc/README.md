@@ -338,7 +338,7 @@ and the next call takes 1 second to complete the call to "run_t" will block
 // to execute a statement without results
 std::string sql("insert into tbl_name(col_id_a, col_str_b) values ($1, $2)");
 db->execute(sql, 10, "some text value",
-[](const cb_error& err, int n){
+[](const md::callback::cb_error& err, int n){
     if(err){
         //...
     }
@@ -348,7 +348,7 @@ db->execute(sql, 10, "some text value",
 // to fetch a single value
 std::string sql("select col_id_a form tbl_name where col_str_b = $1");
 db->query_value<int32_t>(sql, "some text value",
-[](const cb_error& err, int32_t id_a){
+[](const md::callback::cb_error& err, int32_t id_a){
     if(err){
         //...
     }
@@ -358,7 +358,7 @@ db->query_value<int32_t>(sql, "some text value",
 // if multiple records are returned from PostgreSQL, only the first one is used
 std::string sql("select * form tbl_name where col_str_b = $1 limit 1");
 db->query_single(sql, "some text value",
-[](const cb_error& err, sp_data_row row){
+[](const md::callback::cb_error& err, sp_data_row row){
     if(err){
         //...
     }
@@ -368,7 +368,7 @@ db->query_single(sql, "some text value",
 // to fetch a table
 std::string sql("select * form tbl_name where id > $1");
 db->query(sql, 3,
-[](const cb_error& err, sp_data_table tbl){
+[](const md::callback::cb_error& err, sp_data_table tbl){
     if(err){
         //...
     }
@@ -378,7 +378,7 @@ db->query(sql, 3,
 // to create a data reader
 std::string sql("select * form tbl_name where id > $1");
 db->query_reader(sql, 3,
-[](const cb_error& err, sp_data_reader reader){
+[](const md::callback::cb_error& err, sp_data_reader reader){
     if(err){
         //...
     }
@@ -395,13 +395,13 @@ db->query_reader(sql, 3,
 // to create a data reader
 std::string sql("select * form tbl_name where id > $1");
 db->query_reader(sql, 3,
-[](const cb_error& err, sp_data_reader reader){
+[](const md::callback::cb_error& err, sp_data_reader reader){
     if(err){
         //...
     }
     // use the reader...
     reader->next([scb, reader]
-    (const cb_error& err, sp_data_row r){	// this callback will be called
+    (const md::callback::cb_error& err, sp_data_row r){	// this callback will be called
         if(err){							// until there is no more row to
             scb(err);						// be processed
             return;
@@ -440,7 +440,7 @@ https://www.postgresql.org/docs/current/sql-savepoint.html
 
 ~~~{.cpp}
 // to start a transaction use the "begin" function
-db->begin([](const cb_error& err){
+db->begin([](const md::callback::cb_error& err){
     if(err){
         // ...
     }
@@ -453,7 +453,7 @@ db->begin([](const cb_error& err){
 
 // to discard all updates made after the begining of the transaction
 // use the "rollback" function
-db->rollback([](const cb_error& err){
+db->rollback([](const md::callback::cb_error& err){
     if(err){
         // ...
     }
@@ -462,7 +462,7 @@ db->rollback([](const cb_error& err){
 
 // make all changes visible to others and garanteed 
 // to be durable if a crash occurs, call the "commit" function
-db->commit([](const cb_error& err){
+db->commit([](const md::callback::cb_error& err){
     if(err){
         // ...
     }
@@ -470,7 +470,7 @@ db->commit([](const cb_error& err){
 });
 
 // to create a savepoint call "set_savepoint" function
-db->set_savepoint("my savepoint name", [](const cb_error& err){
+db->set_savepoint("my savepoint name", [](const md::callback::cb_error& err){
     if(err){
         // ...
     }
@@ -478,7 +478,7 @@ db->set_savepoint("my savepoint name", [](const cb_error& err){
 });
 
 // to rollback a savepoint call "rollback_savepoint"
-db->rollback_savepoint("my savepoint name", [](const cb_error& err){
+db->rollback_savepoint("my savepoint name", [](const md::callback::cb_error& err){
     if(err){
         // ...
     }
@@ -486,7 +486,7 @@ db->rollback_savepoint("my savepoint name", [](const cb_error& err){
 });
 
 // release a savepoint call "release_savepoint"
-db->release_savepoint("my savepoint name", [](const cb_error& err){
+db->release_savepoint("my savepoint name", [](const md::callback::cb_error& err){
     if(err){
         // ...
     }

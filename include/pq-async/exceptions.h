@@ -70,62 +70,62 @@ public:
 };
 
 
-class cb_error
-{
-    friend std::ostream& operator<<(std::ostream& s, const cb_error& v);
-public:
-    static cb_error no_err;
+// class md::callback::cb_error
+// {
+//     friend std::ostream& operator<<(std::ostream& s, const md::callback::cb_error& v);
+// public:
+//     static md::callback::cb_error no_err;
     
-    cb_error(): _has_err(false), _msg("")
-    {}
+//     md::callback::cb_error(): _has_err(false), _msg("")
+//     {}
     
-    cb_error(nullptr_t /*np*/): _has_err(false), _msg("")
-    {}
+//     md::callback::cb_error(nullptr_t /*np*/): _has_err(false), _msg("")
+//     {}
     
-    cb_error(const std::exception& err): _err(err), _has_err(true)
-    {
-        _msg = std::string(err.what());
-        // std::stringstream ss;
-        // ss << "Error:\n" << err.what() << std::endl;
-        // msg = new char[ss.str().length() +1];
-        // std::strncpy(msg, ss.str().c_str(), ss.str().length() +1);
-        // msg[ss.str().length()] = 0;
-    }
+//     md::callback::cb_error(const std::exception& err): _err(err), _has_err(true)
+//     {
+//         _msg = std::string(err.what());
+//         // std::stringstream ss;
+//         // ss << "Error:\n" << err.what() << std::endl;
+//         // msg = new char[ss.str().length() +1];
+//         // std::strncpy(msg, ss.str().c_str(), ss.str().length() +1);
+//         // msg[ss.str().length()] = 0;
+//     }
     
-    virtual ~cb_error()
-    {
-        // if(msg)
-        // 	delete[] msg;
-    }
+//     virtual ~cb_error()
+//     {
+//         // if(msg)
+//         // 	delete[] msg;
+//     }
     
-    const std::exception& error() const { return _err;}
+//     const std::exception& error() const { return _err;}
     
-    explicit operator bool() const
-    {
-        return _has_err;
-    }
+//     explicit operator bool() const
+//     {
+//         return _has_err;
+//     }
     
-    explicit operator const char*() const
-    {
-        if(!_has_err)
-            return "No error assigned!";
-        return _msg.c_str();
-    }
+//     explicit operator const char*() const
+//     {
+//         if(!_has_err)
+//             return "No error assigned!";
+//         return _msg.c_str();
+//     }
     
-    const char* c_str() const
-    {
-        if(!_has_err)
-            return "No error assigned!";
-        return _msg.c_str();
-    }
+//     const char* c_str() const
+//     {
+//         if(!_has_err)
+//             return "No error assigned!";
+//         return _msg.c_str();
+//     }
 
-private:
-    std::exception _err;
-    bool _has_err;
-    std::string _msg;
-};
+// private:
+//     std::exception _err;
+//     bool _has_err;
+//     std::string _msg;
+// };
 
-std::ostream& operator<<(std::ostream& s, const cb_error& v);
+// std::ostream& operator<<(std::ostream& s, const md::callback::cb_error& v);
 
 
 } //namespace pq_async

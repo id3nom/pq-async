@@ -73,14 +73,14 @@ public:
                 typename std::remove_pointer<
                     T
                 >::type,
-                const cb_error&
+                const md::callback::cb_error&
             >::value ||
             std::is_invocable_r<
                 void,
                 typename std::remove_pointer<
                     T
                 >::type,
-                const cb_error&,
+                const md::callback::cb_error&,
                 sp_data_row
             >::value ||
             std::is_invocable_r<
@@ -100,14 +100,16 @@ public:
     >
     void next(T tcb)
     {
-        value_cb<sp_data_row> cb;
-        assign_value_cb<value_cb<sp_data_row>, sp_data_row>(
+        md::callback::value_cb<sp_data_row> cb;
+        md::callback::assign_value_cb<
+            md::callback::value_cb<sp_data_row>, sp_data_row
+        >(
             cb, tcb
         );
         
         _ct->_cb =
         [self=this->shared_from_this(), cb](
-            const cb_error& err, PGresult* res
+            const md::callback::cb_error& err, PGresult* res
         )-> void {
             if(err){
                 cb(err, sp_data_row());
@@ -149,9 +151,9 @@ public:
                 res = nullptr;
                 
                 if(self->_table->size() > 0)
-                    cb(pq_async::cb_error(err), (*self->_table)[0]);
+                    cb(md::callback::cb_error(err), (*self->_table)[0]);
             }catch(const std::exception& err){
-                cb(pq_async::cb_error(err), sp_data_row());
+                cb(md::callback::cb_error(err), sp_data_row());
                 self->_ct->_cb = nullptr;
             }
         };
@@ -210,7 +212,10 @@ public:
         PGcancel* c = PQgetCancel(_ct->conn());
         if(c){
             if(!PQcancel(c, errbuf, 256))
-                pq_async_log_error("%c", c);
+                pq_async::default_logger()->error(MD_ERR(
+                    "Unable to cancel current query: {:p}",
+                    (void*)c
+                ));
             PQfreeCancel(c);
         }
         while(PGresult* r = PQgetResult(_ct->conn())){

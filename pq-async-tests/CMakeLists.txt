@@ -1,6 +1,6 @@
 configure_file (
-    "${PROJECT_SOURCE_DIR}/pq_asyncpp_config.h.in"
-    "${PROJECT_BINARY_DIR}/pq_asyncpp_config.h"
+    "${PROJECT_SOURCE_DIR}/pq_async_config.h.in"
+    "${PROJECT_BINARY_DIR}/pq_async_config.h"
 )
 
 set(PostgreSQL_ROOT "" CACHE PATH "Set the PostgreSQL_ROOT system variable to where PostgreSQL is found on the machine E.g C:/Program Files/PostgreSQL/VERSION")
@@ -13,6 +13,7 @@ include_directories("${PROJECT_BINARY_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/../deps/date/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/../deps/fmt/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/../deps/json/single_include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../deps/tools-md/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/../deps/googletest/googletest/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/../deps/googletest/googlemock/include"
 

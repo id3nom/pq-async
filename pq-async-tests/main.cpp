@@ -110,7 +110,7 @@ int main(int argc, char** argv)
     //     if(std::string(argv[i]).compare(
     //         0, con_cnt_param.size(), con_cnt_param) == 0
     //     ){
-    //         pq_async_max_pool_size = pq_async::str_to_num<int>(
+    //         pq_async_max_pool_size = md::str_to_num<int>(
     //             std::string(argv[++i])
     //         );
     //         continue;
@@ -119,7 +119,7 @@ int main(int argc, char** argv)
     //     if(std::string(argv[i]).compare(
     //         0, log_lvl_param.size(), log_lvl_param) == 0
     //     ){
-    //         pq_async_log_level = pq_async::str_to_num<int>(
+    //         pq_async_log_level = md::str_to_num<int>(
     //             std::string(argv[++i])
     //         );
     //         continue;

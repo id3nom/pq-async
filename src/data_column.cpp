@@ -27,14 +27,14 @@ SOFTWARE.
 namespace pq_async{
 
 data_column::data_column(int oid, int index, const std::string& name, int fmt)
-    :_oid(oid), _index(index), _name(pq_async::str_to_lower(name)), _fmt(fmt)
+    :_oid(oid), _index(index), _name(md::lower_case_copy(name)), _fmt(fmt)
 {
-    pq_async_log_trace("ptr: %p", this);
+    PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 }
     
 data_column::~data_column()
 {
-    pq_async_log_trace("ptr: %p", this);
+    PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 }
 
 

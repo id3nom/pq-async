@@ -117,7 +117,7 @@ TEST_F(net_types_test, macaddr8_test_bin)
     try{
         int32_t ver = db->query_value<int32_t>("show server_version_num;");
         if(ver < 100000){
-            pq_async_log_info(
+            PQ_ASYNC_DEF_INFO(
                 "Current PostgreSQL server version do not support macaddr8 data type, minimum required version is 10.0"
             );
             return;

@@ -247,10 +247,10 @@ public:
         int64_t m = std::pow(10L, (int64_t)frac_digits);
         int64_t n = _val / m;
         int64_t d = std::abs(_val % m);
-        std::string ds = num_to_str(d, false);
+        std::string ds = md::num_to_str(d, false);
         if(ds.size() < (size_t)frac_digits)
             ds.insert(0, (size_t)frac_digits - ds.size(), '0');
-        return num_to_str(n, false) + "." + ds;
+        return md::num_to_str(n, false) + "." + ds;
     }
     
     static const std::locale& getLocale()
@@ -327,8 +327,8 @@ public:
             else if(dbs.size() < (size_t)frac_digits)
                 dbs.append((size_t)frac_digits - dbs.size(), '0');
             
-            r._val = str_to_num<int64_t>(nbs) * m;
-            r._val += str_to_num<int64_t>(dbs);
+            r._val = md::str_to_num<int64_t>(nbs) * m;
+            r._val += md::str_to_num<int64_t>(dbs);
         }
         
         return r;

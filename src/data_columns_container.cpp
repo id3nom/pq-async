@@ -28,12 +28,12 @@ namespace pq_async{
 
 data_columns_container::data_columns_container()
 {
-    pq_async_log_trace("ptr: %p", this);
+    PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 }
 
 data_columns_container::~data_columns_container()
 {
-    pq_async_log_trace("ptr: %p", this);
+    PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 }
 
 pq_async::sp_data_column pq_async::data_columns_container::get_col(int idx)

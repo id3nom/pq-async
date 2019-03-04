@@ -77,7 +77,7 @@ TEST_F(database_test, max_connection_sync_test)
             auto ldb = dbs[i];
             ldb->execute(
                 "insert into database_test(value) values ($1)",
-                std::string("acb") + num_to_str(i)
+                std::string("acb") + md::num_to_str(i)
             );
             std::cout << "execute " << i << " completed" << std::endl;
         }
@@ -112,44 +112,44 @@ TEST_F(database_test, max_connection_async_test)
         }
         for(size_t i = 0; i < nb_con; ++i){
             auto ldb = dbs[i];
-            pq_async_log_debug("starting exec %i", i);
+            pq_async::default_logger()->debug("starting exec {}", i);
             ldb->execute(
                 "insert into database_test(value) values ($1)",
-                std::string("acb-") + num_to_str(i),
-                [i](const cb_error& err){
+                std::string("acb-") + md::num_to_str(i),
+                [i](const md::callback::cb_error& err){
                     if(err){
                         std::cout << "exec " << i 
                             << " err: " << err << std::endl;
                         FAIL();
                         return;
                     }
-                    pq_async_log_debug("exec %i completed", i);
+                    pq_async::default_logger()->debug("exec {} completed", i);
                 }
             );
         }
         
         for(size_t i = 0; i < nb_con; ++i){
             auto ldb = dbs[i];
-            pq_async_log_debug("starting select %i", i);
+            pq_async::default_logger()->debug("starting select {}", i);
             ldb->query(
                 "select * from database_test",
-                [i](const cb_error& err, sp_data_table tbl){
+                [i](const md::callback::cb_error& err, sp_data_table tbl){
                     if(err){
                         std::cout << "select " << i 
                             << " err: " << err << std::endl;
                         FAIL();
                         return;
                     }
-                    pq_async_log_debug("select %i completed", i);
+                    pq_async::default_logger()->debug("select {} completed", i);
                 }
             );
         }
         
-        pq_async::event_queue::get_default()->run();
+        md::event_queue::get_default()->run();
         
         db->query(
             "select * from database_test",
-        [nb_con](const cb_error& err, sp_data_table tbl){
+        [nb_con](const md::callback::cb_error& err, sp_data_table tbl){
                 if(err){
                     std::cout << "err: " << err << std::endl;
                     FAIL();
@@ -159,7 +159,7 @@ TEST_F(database_test, max_connection_async_test)
             ASSERT_THAT(tbl->size(), testing::Eq(nb_con));
         });
 
-        pq_async::event_queue::get_default()->run();
+        md::event_queue::get_default()->run();
         
     }catch(const std::exception& err){
         std::cout << "Error: " << err.what() << std::endl;
@@ -185,46 +185,50 @@ TEST_F(database_test, max_connection_async2_test)
             dbs[i]->get_strand()->data(i);
         }
         
-        auto eq = pq_async::event_queue::get_default();
+        auto eq = md::event_queue::get_default();
         
         eq->each(dbs, dbs+nb_con,
-        [eq](const sp_database& ldb, async_cb ecb)->void{
+        [eq](const sp_database& ldb, md::callback::async_cb ecb)->void{
             eq->series({
-                [ldb](async_cb scb){
+                [ldb](md::callback::async_cb scb){
                     int i = ldb->get_strand()->data();
                     ldb->execute(
                         "insert into database_test(value) values ($1)",
-                        std::string("acb-") + num_to_str(i),
-                        [scb, i](const cb_error& err){
+                        std::string("acb-") + md::num_to_str(i),
+                        [scb, i](const md::callback::cb_error& err){
                             if(err){
                                 std::cout << "exec " << i 
                                     << " err: " << err << std::endl;
                                 scb(err);
                                 return;
                             }
-                            pq_async_log_debug("exec %i completed", i);
+                            pq_async::default_logger()->debug(
+                                "exec {} completed", i
+                            );
                             scb(nullptr);
                         }
                     );
                 },
-                [ldb](async_cb scb){
+                [ldb](md::callback::async_cb scb){
                     int i = ldb->get_strand()->data();
                     ldb->query(
                         "select * from database_test",
-                        [scb, i](const cb_error& err, sp_data_table tbl){
+                        [scb, i](const md::callback::cb_error& err, sp_data_table tbl){
                             if(err){
                                 std::cout << "select " << i 
                                     << " err: " << err << std::endl;
                                 scb(err);
                                 return;
                             }
-                            pq_async_log_debug("select %i completed", i);
+                            pq_async::default_logger()->debug(
+                                "select {} completed", i
+                            );
                             scb(nullptr);
                         }
                     );
                 }
             }, ecb);
-        }, [](const cb_error& err)->void{
+        }, [](const md::callback::cb_error& err)->void{
             if(err)
                 FAIL();
         });
@@ -233,7 +237,7 @@ TEST_F(database_test, max_connection_async2_test)
         
         db->query(
             "select * from database_test",
-        [nb_con](const cb_error& err, sp_data_table tbl){
+        [nb_con](const md::callback::cb_error& err, sp_data_table tbl){
                 if(err){
                     std::cout << "err: " << err << std::endl;
                     FAIL();

@@ -24,23 +24,25 @@
 namespace pq_async{
 
 database::database(
-    sp_event_strand<int> strand,
-    const std::string& connection_string)
+    md::sp_event_strand<int> strand,
+    const std::string& connection_string,
+    md::log::sp_logger log = nullptr)
     :_connection_string(connection_string),
     _conn(NULL),
     _strand(strand),
-    _lock()
+    _lock(),
+    _log(log)
 {
-    pq_async_log_trace("ptr: %p", this);
+    PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 }
 
 database::~database()
 {
-    pq_async_log_trace("ptr: %p", this);
+    PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
     this->close();
 }
 
-void database::exec_queries(const std::string& sql, const async_cb& cb)
+void database::exec_queries(const std::string& sql, const md::callback::async_cb& cb)
 {
     std::vector< std::string > queries;
     split_queries(sql, queries);
@@ -58,13 +60,17 @@ void database::exec_queries(const std::string& sql)
     std::vector< std::string > queries;
     split_queries(sql, queries);
     
-    pq_async_log_debug(
-        "splitting sql queries:\noriginal:\n%s\n\nresults:\n\n%s", 
-        sql.c_str(), pq_async::join(queries, "\n\n--next-query--\n")
-        );
+    PQ_ASYNC_DBG(
+        _log,
+        "splitting sql queries:\noriginal:\n{}\n\nresults:\n\n{}", 
+        sql, md::join(queries, "\n\n--next-query--\n")
+    );
     
     for(const std::string& qry: queries){
-        pq_async_log_debug("Executing query:\n%s", qry.c_str());
+        PQ_ASYNC_DBG(
+            _log,
+            "Executing query:\n{}", qry
+        );
         PGresult* res = PQexec(_conn->conn(), qry.c_str());
         
         int result_status = PQresultStatus(res);
@@ -110,7 +116,7 @@ void database::split_queries(
             if(cur_char != ';')
                 cur_qry += cur_char;
             
-            pq_async::trim(cur_qry);
+            md::trim(cur_qry);
             if(cur_qry.size() > 0)
                 queries.push_back(cur_qry);
             continue;
@@ -207,7 +213,7 @@ void database::split_queries(
         
         // end of query
         if(cur_char == ';'){
-            pq_async::trim(cur_qry);
+            md::trim(cur_qry);
             if(cur_qry.size() > 0)
                 queries.push_back(cur_qry);
             cur_qry = "";
@@ -222,7 +228,7 @@ void database::split_queries(
 
 int database::_process_execute_result(PGresult* res)
 {
-    pq_async_log_trace("");
+    PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
     
     if(!_conn){
         std::string err_msg("connection is dead!");
@@ -258,7 +264,7 @@ int database::_process_execute_result(PGresult* res)
 
 sp_data_table database::_process_query_result(PGresult* res)
 {
-    pq_async_log_trace("");
+    PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
     
     if(!_conn){
         std::string err_msg("connection is dead!");
@@ -304,7 +310,7 @@ sp_data_table database::_process_query_result(PGresult* res)
 
 sp_data_row database::_process_query_single_result(PGresult* res)
 {
-    pq_async_log_trace("");
+    PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
     if(!_conn){
         std::string err_msg("connection is dead!");
         throw pq_async::exception(err_msg);
@@ -352,7 +358,7 @@ sp_data_prepared database::_process_send_prepare_result(
     const std::string& name, bool auto_deallocate,
     sp_connection_lock lock, PGresult* res)
 {
-    pq_async_log_trace("");
+    PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
     if(!_conn){
         std::string err_msg("connection is dead!");
         throw pq_async::exception(err_msg);

@@ -47,14 +47,14 @@ namespace pq_async{
     parameters p; \
     p.push_back<sizeof...(PARAMS) -1>(args...); \
      \
-    value_cb<__val> cb; \
-    assign_value_cb<value_cb<__val>, __val>(cb, get_last(args...)); \
+    md::callback::value_cb<__val> cb; \
+    md::callback::assign_value_cb<md::callback::value_cb<__val>, __val>(cb, md::get_last(args...)); \
      \
     this->open_connection( \
     [self=this->shared_from_this(), \
         _sql = std::string(sql),_p = std::move(p), \
         cb] \
-    (const cb_error& err, sp_connection_lock lock){ \
+    (const md::callback::cb_error& err, sp_connection_lock lock){ \
         if(err){ \
             cb(err, __def_val); \
             return; \
@@ -64,7 +64,7 @@ namespace pq_async{
             auto ct = std::make_shared<connection_task>( \
                 self->_strand.get(), self, lock, \
             [self, cb]( \
-                const cb_error& err, PGresult* r \
+                const md::callback::cb_error& err, PGresult* r \
             )-> void { \
                 if(err){ \
                     cb(err, __def_val); \
@@ -74,29 +74,29 @@ namespace pq_async{
                 try{ \
                     cb(nullptr, self->__process_fn(r)); \
                 }catch(const std::exception& err){ \
-                    cb(pq_async::cb_error(err), __def_val); \
+                    cb(md::callback::cb_error(err), __def_val); \
                 } \
             }); \
-            pq_async_log_debug( \
-                "queuing query: %s\ndb: %x, ct: %x, lock: %x, conn: %x", \
-                _sql.c_str(), self.get(), ct.get(), lock.get(), lock->conn() \
+            PQ_ASYNC_DBG(self->_log, \
+                "queuing query: {}\ndb: {:p}, ct: {:p}, lock: {:p}, conn: {:p}", \
+                _sql.c_str(), (void*)self.get(), (void*)ct.get(), (void*)lock.get(), (void*)lock->conn() \
             ); \
             ct->send_query(_sql.c_str(), _p); \
             self->_strand->push_front(ct); \
              \
         }catch(const std::exception& err){ \
-            cb(pq_async::cb_error(err), __def_val); \
+            cb(md::callback::cb_error(err), __def_val); \
         } \
     });
 
 #define _PQ_ASYNC_SEND_QRY_BODY_T(__val, __process_fn, __def_val) \
-    value_cb<__val> cb; \
-    assign_value_cb<value_cb<__val>, __val>(cb, acb); \
+    md::callback::value_cb<__val> cb; \
+    md::callback::assign_value_cb<md::callback::value_cb<__val>, __val>(cb, acb); \
     this->open_connection( \
     [self=this->shared_from_this(), \
         _sql = std::string(sql),_p = std::move(p), \
         cb] \
-    (const cb_error& err, sp_connection_lock lock){ \
+    (const md::callback::cb_error& err, sp_connection_lock lock){ \
         if(err){ \
             cb(err, __def_val); \
             return; \
@@ -106,7 +106,7 @@ namespace pq_async{
             auto ct = std::make_shared<connection_task>( \
                 self->_strand.get(), self, lock, \
             [self, cb]( \
-                const cb_error& err, PGresult* r \
+                const md::callback::cb_error& err, PGresult* r \
             )-> void { \
                 if(err){ \
                     cb(err, __def_val); \
@@ -116,14 +116,14 @@ namespace pq_async{
                 try{ \
                     cb(nullptr, self->__process_fn(r)); \
                 }catch(const std::exception& err){ \
-                    cb(pq_async::cb_error(err), __def_val); \
+                    cb(md::callback::cb_error(err), __def_val); \
                 } \
             }); \
             ct->send_query(_sql.c_str(), _p); \
             self->_strand->push_back(ct); \
              \
         }catch(const std::exception& err){ \
-            cb(pq_async::cb_error(err), __def_val); \
+            cb(md::callback::cb_error(err), __def_val); \
         } \
     });
 
@@ -150,8 +150,9 @@ class database
     friend class data_prepared;
 
     database(
-        sp_event_strand<int> strand, 
-        const std::string& connection_string
+        md::sp_event_strand<int> strand, 
+        const std::string& connection_string,
+        md::log::sp_logger log
     );
     
 public:
@@ -159,7 +160,9 @@ public:
     virtual ~database();
     
     
-    sp_event_strand<int> get_strand(){ return _strand;}
+    md::sp_event_strand<int> get_strand(){ return _strand;}
+    
+    md::log::sp_logger log(){ return _log;}
     
     /*!
      * \brief synchronously try to acquire and open a connection
@@ -216,8 +219,11 @@ public:
     void open_connection(const CB& acb,
         int32_t timeout_ms = PQ_ASYNC_DEFAULT_TIMEOUT_MS)
     {
-        value_cb<sp_connection_lock> cb;
-        assign_value_cb<value_cb<sp_connection_lock>, sp_connection_lock>(
+        md::callback::value_cb<sp_connection_lock> cb;
+        md::callback::assign_value_cb<
+            md::callback::value_cb<sp_connection_lock>,
+            sp_connection_lock
+        >(
             cb, acb
         );
         
@@ -232,7 +238,7 @@ public:
             auto ct = std::make_shared<connection_task>(
                 this->_strand.get(), this->shared_from_this(), this->_conn,
             [self=this->shared_from_this(), cb](
-                const cb_error& err, sp_connection_lock lock
+                const md::callback::cb_error& err, sp_connection_lock lock
             )-> void {
                 if(err){
                     cb(err, sp_connection_lock());
@@ -242,19 +248,19 @@ public:
                 try{
                     cb(nullptr, lock);
                 }catch(const std::exception& err){
-                    cb(pq_async::cb_error(err), sp_connection_lock());
+                    cb(md::callback::cb_error(err), sp_connection_lock());
                 }
             });
-            pq_async_log_debug(
-                "queuing open connection\ndb: %x, ct: %x",
-                this, ct.get()
+            PQ_ASYNC_DBG(_log,
+                "queuing open connection\ndb: {:p}, ct: {:p}",
+                (void*)this, (void*)ct.get()
             );
             
             ct->connect(_connection_string, timeout_ms);
             this->_strand->push_back(ct);
             
         }catch(const std::exception& err){
-            cb(pq_async::cb_error(err), sp_connection_lock());
+            cb(md::callback::cb_error(err), sp_connection_lock());
         }
     }
     
@@ -323,23 +329,26 @@ public:
      * 
      * \tparam CB 
      * \tparam PQ_ASYNC_VALID_DB_ASY_CALLBACK(CB) 
-     * \param acb async_cb callback to call on completion
+     * \param acb md::callback::async_cb callback to call on completion
      */
     template< typename CB, PQ_ASYNC_VALID_DB_ASY_CALLBACK(CB)>
     void begin(const CB& acb)
     {
-        async_cb cb;
-        assign_async_cb<async_cb>(cb, acb);
+        md::callback::async_cb cb;
+        md::callback::assign_async_cb<md::callback::async_cb>(cb, acb);
         if(this->in_transaction()){
             this->_strand->push_back(
-                std::bind(cb, cb_error("Already in a transaction!"))
+                std::bind(
+                    cb,
+                    md::callback::cb_error("Already in a transaction!")
+                )
             );
             return;
         }
 
         this->open_connection(
         [self=this->shared_from_this(), cb]
-        (const cb_error& err, sp_connection_lock lock){
+        (const md::callback::cb_error& err, sp_connection_lock lock){
             if(err){
                 cb(err);
                 return;
@@ -347,7 +356,7 @@ public:
             self->_lock = lock;
             
             self->execute("BEGIN",
-            [self, cb](const cb_error& err){
+            [self, cb](const md::callback::cb_error& err){
                 if(err){
                     self->_lock.reset();
                     cb(err);
@@ -381,18 +390,18 @@ public:
     template< typename CB, PQ_ASYNC_VALID_DB_ASY_CALLBACK(CB)>
     void commit(const CB& acb)
     {
-        async_cb cb;
-        assign_async_cb<async_cb>(cb, acb);
+        md::callback::async_cb cb;
+        md::callback::assign_async_cb<md::callback::async_cb>(cb, acb);
         if(!this->in_transaction()){
             this->_strand->push_back(
-                std::bind(cb, cb_error("Not in a transaction!"))
+                std::bind(cb, md::callback::cb_error("Not in a transaction!"))
             );
             return;
         }
         
         this->_conn->touch();
         this->execute("COMMIT",
-        [self=this->shared_from_this(), cb](const cb_error& err){
+        [self=this->shared_from_this(), cb](const md::callback::cb_error& err){
             if(err){
                 self->_lock.reset();
                 cb(err);
@@ -426,18 +435,18 @@ public:
     template< typename CB, PQ_ASYNC_VALID_DB_ASY_CALLBACK(CB)>
     void roollback(const CB& acb)
     {
-        async_cb cb;
-        assign_async_cb<async_cb>(cb, acb);
+        md::callback::async_cb cb;
+        md::callback::assign_async_cb<md::callback::async_cb>(cb, acb);
         if(!this->in_transaction()){
             this->_strand->push_back(
-                std::bind(cb, cb_error("Not in a transaction!"))
+                std::bind(cb, md::callback::cb_error("Not in a transaction!"))
             );
             return;
         }
         
         this->_conn->touch();
         this->execute("ROLLBACK",
-        [self=this->shared_from_this(), cb](const cb_error& err){
+        [self=this->shared_from_this(), cb](const md::callback::cb_error& err){
             if(err){
                 self->_lock.reset();
                 cb(err);
@@ -475,11 +484,11 @@ public:
     template< typename CB, PQ_ASYNC_VALID_DB_ASY_CALLBACK(CB)>
     void set_savepoint(const CB& acb, const char* name)
     {
-        async_cb cb;
-        assign_async_cb<async_cb>(cb, acb);
+        md::callback::async_cb cb;
+        md::callback::assign_async_cb<md::callback::async_cb>(cb, acb);
         if(!this->in_transaction()){
             this->_strand->push_back(
-                std::bind(cb, cb_error("Not in a transaction!"))
+                std::bind(cb, md::callback::cb_error("Not in a transaction!"))
             );
             return;
         }
@@ -488,7 +497,7 @@ public:
         std::string s("SAVEPOINT ");
         s += name;
         this->execute(s.c_str(),
-        [self=this->shared_from_this(), cb](const cb_error& err){
+        [self=this->shared_from_this(), cb](const md::callback::cb_error& err){
             if(err){
                 cb(err);
                 return;
@@ -521,11 +530,11 @@ public:
     template< typename CB, PQ_ASYNC_VALID_DB_ASY_CALLBACK(CB)>
     void release_savepoint(const CB& acb, const char* name)
     {
-        async_cb cb;
-        assign_async_cb<async_cb>(cb, acb);
+        md::callback::async_cb cb;
+        md::callback::assign_async_cb<md::callback::async_cb>(cb, acb);
         if(!this->in_transaction()){
             this->_strand->push_back(
-                std::bind(cb, cb_error("Not in a transaction!"))
+                std::bind(cb, md::callback::cb_error("Not in a transaction!"))
             );
             return;
         }
@@ -534,7 +543,7 @@ public:
         std::string s("RELEASE SAVEPOINT ");
         s += name;
         this->execute(s.c_str(),
-        [self=this->shared_from_this(), cb](const cb_error& err){
+        [self=this->shared_from_this(), cb](const md::callback::cb_error& err){
             if(err){
                 cb(err);
                 return;
@@ -566,11 +575,11 @@ public:
     template< typename CB, PQ_ASYNC_VALID_DB_ASY_CALLBACK(CB)>
     void rollback_savepoint(const CB& acb, const char* name)
     {
-        async_cb cb;
-        assign_async_cb<async_cb>(cb, acb);
+        md::callback::async_cb cb;
+        md::callback::assign_async_cb<md::callback::async_cb>(cb, acb);
         if(!this->in_transaction()){
             this->_strand->push_back(
-                std::bind(cb, cb_error("Not in a transaction!"))
+                std::bind(cb, md::callback::cb_error("Not in a transaction!"))
             );
             return;
         }
@@ -579,7 +588,7 @@ public:
         std::string s("ROLLBACK TO SAVEPOINT ");
         s += name;
         this->execute(s.c_str(),
-        [self=this->shared_from_this(), cb](const cb_error& err){
+        [self=this->shared_from_this(), cb](const md::callback::cb_error& err){
             if(err){
                 cb(err);
                 return;
@@ -620,7 +629,7 @@ public:
      * \tparam PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, int) 
      * \param sql the SQL query to process
      * \param p query parameters
-     * \param acb completion void(const cb_error&, int) callback
+     * \param acb completion void(const md::callback::cb_error&, int) callback
      */
     template<typename T, PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, int)>
     void execute(const char* sql, const parameters& p, const T& acb)
@@ -678,7 +687,7 @@ public:
      * \tparam PQ_ASYNC_VALID_DB_CALLBACK(sp_data_table) 
      * \param sql the SQL query to process
      * \param args query parameters, the last parameter is 
-     * the completion void(const cb_error&, sp_data_table) callback
+     * the completion void(const md::callback::cb_error&, sp_data_table) callback
      */
     template<typename... PARAMS, PQ_ASYNC_VALID_DB_CALLBACK(sp_data_table)>
     void query(const char* sql, const PARAMS&... args)
@@ -695,7 +704,7 @@ public:
      * \tparam PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_table) 
      * \param sql the SQL query to process
      * \param p query parameters
-     * \param acb completion void(const cb_error&, sp_data_table) callback
+     * \param acb completion void(const md::callback::cb_error&, sp_data_table) callback
      */
     template<typename T, PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_table)>
     void query(const char* sql, const parameters& p, const T& acb)
@@ -754,7 +763,7 @@ public:
      * \tparam PQ_ASYNC_VALID_DB_CALLBACK(sp_data_row) 
      * \param sql the SQL query to process
      * \param args query parameters, the last parameter is
-     * the completion void(const cb_error&, sp_data_row) callback
+     * the completion void(const md::callback::cb_error&, sp_data_row) callback
      */
     template<typename... PARAMS, PQ_ASYNC_VALID_DB_CALLBACK(sp_data_row)>
     void query_single(const char* sql, const PARAMS&... args)
@@ -771,7 +780,7 @@ public:
      * \tparam PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_row) 
      * \param sql the SQL query to process
      * \param p query parameters
-     * \param acb the completion void(const cb_error&, sp_data_row) callback
+     * \param acb the completion void(const md::callback::cb_error&, sp_data_row) callback
      */
     template<typename T, PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_row)>
     void query_single(const char* sql, const parameters& p, const T& acb)
@@ -850,7 +859,7 @@ public:
      * \tparam PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, R) 
      * \param sql the SQL query to process
      * \param p query parameters
-     * \param acb completion void(const cb_error&, R) callback
+     * \param acb completion void(const md::callback::cb_error&, R) callback
      */
     template<
         typename R, typename T,
@@ -927,16 +936,19 @@ public:
         parameters p;
         p.push_back<sizeof...(PARAMS) -1>(args...);
         
-        value_cb<sp_data_reader> cb;
-        assign_value_cb<value_cb<sp_data_reader>, sp_data_reader>(
-            cb, get_last(args...)
+        md::callback::value_cb<sp_data_reader> cb;
+        md::callback::assign_value_cb<
+            md::callback::value_cb<sp_data_reader>,
+            sp_data_reader
+        >(
+            cb, md::get_last(args...)
         );
         
         this->open_connection(
         [self=this->shared_from_this(),
             _sql = std::string(sql),_p = std::move(p),
             cb]
-        (const cb_error& err, sp_connection_lock lock){
+        (const md::callback::cb_error& err, sp_connection_lock lock){
             if(err){
                 cb(err, sp_data_reader());
                 return;
@@ -951,7 +963,7 @@ public:
                 self->_strand->push_back(ct);
                 
             }catch(const std::exception& err){
-                cb(pq_async::cb_error(err), sp_data_reader());
+                cb(md::callback::cb_error(err), sp_data_reader());
             }
         });
     }
@@ -963,19 +975,21 @@ public:
      * \tparam PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_reader) 
      * \param sql the SQL query to process
      * \param p query parameters
-     * \param acb completion void(const cb_error&, sp_data_reader) callback
+     * \param acb completion void(const md::callback::cb_error&, sp_data_reader) callback
      */
     template<typename T, PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_reader)>
     void query_reader(const char* sql, const parameters& p, const T& acb)
     {
-        value_cb<sp_data_reader> cb;
-        assign_value_cb<value_cb<sp_data_reader>, sp_data_reader>(cb, acb);
-
+        md::callback::value_cb<sp_data_reader> cb;
+        md::callback::assign_value_cb<
+            md::callback::value_cb<sp_data_reader>, sp_data_reader
+        >(cb, acb);
+        
         this->open_connection(
         [self=this->shared_from_this(),
             _sql = std::string(sql),_p = std::move(p),
             cb]
-        (const cb_error& err, sp_connection_lock lock){
+        (const md::callback::cb_error& err, sp_connection_lock lock){
             if(err){
                 cb(err, sp_data_reader());
                 return;
@@ -990,7 +1004,7 @@ public:
                 self->_strand->push_back(ct);
                 
             }catch(const std::exception& err){
-                cb(pq_async::cb_error(err), sp_data_reader());
+                cb(md::callback::cb_error(err), sp_data_reader());
             }
         });
     }
@@ -1069,9 +1083,9 @@ public:
      * 
      * \param sql script commands to execute
      * \param cb callback to call on completion or error
-     * cb: void(const cb_error& err)
+     * cb: void(const md::callback::cb_error& err)
      */
-    void exec_queries(const std::string& sql, const async_cb& cb);
+    void exec_queries(const std::string& sql, const md::callback::async_cb& cb);
     
     /*!
      * \brief Create a large object
@@ -1175,11 +1189,11 @@ public:
      * \param name the prepared statement name
      * \param sql the prepared statement query
      * \param auto_deallocate if the prepared statement shoul be delete on
-     * \param acb completion void(const cb_error&, sp_data_prepared) callback
+     * \param acb completion void(const md::callback::cb_error&, sp_data_prepared) callback
      */
     void prepare(
         const char* name, const char* sql, bool auto_deallocate,
-        value_cb<sp_data_prepared> acb)
+        md::callback::value_cb<sp_data_prepared> acb)
     {
         prepare(
             name, sql, auto_deallocate, std::vector<data_type>{}, acb
@@ -1195,7 +1209,7 @@ public:
      * \param sql the prepared statement query
      * \param auto_deallocate if the prepared statement shoul be delete on
      * \param args list of query parameter's data_type, the last argument is
-     * the completion void(const cb_error&, sp_data_prepared) callback
+     * the completion void(const md::callback::cb_error&, sp_data_prepared) callback
      */
     template<typename... PARAMS, PQ_ASYNC_VALID_DB_CALLBACK(sp_data_prepared)>
     void prepare(
@@ -1205,9 +1219,12 @@ public:
         std::vector<data_type> t;
         _build_prepared<sizeof...(PARAMS) -1>(t, args...);
         
-        value_cb<sp_data_prepared> cb;
-        assign_value_cb<value_cb<sp_data_prepared>, sp_data_prepared>(
-            cb, get_last(args...)
+        md::callback::value_cb<sp_data_prepared> cb;
+        md::callback::assign_value_cb<
+            md::callback::value_cb<sp_data_prepared>,
+            sp_data_prepared
+        >(
+            cb, md::get_last(args...)
         );
         
         prepare(name, sql, auto_deallocate, t, cb);
@@ -1220,18 +1237,18 @@ public:
      * \param sql the prepared statement query
      * \param auto_deallocate if the prepared statement shoul be delete on
      * \param types list of query parameter's data_type
-     * \param cb completion void(const cb_error&, sp_data_prepared) callback
+     * \param cb completion void(const md::callback::cb_error&, sp_data_prepared) callback
      */
     void prepare(
         const char* name, const char* sql, bool auto_deallocate,
         const std::vector<data_type>& types,
-        value_cb<sp_data_prepared> cb)
+        md::callback::value_cb<sp_data_prepared> cb)
     {
         this->open_connection(
         [self=this->shared_from_this(),
             _name = std::string(name), _sql = std::string(sql),
             auto_deallocate, types, cb]
-        (const cb_error& err, sp_connection_lock lock){
+        (const md::callback::cb_error& err, sp_connection_lock lock){
             if(err){
                 cb(err, sp_data_prepared());
                 return;
@@ -1241,7 +1258,7 @@ public:
                 auto ct = std::make_shared<connection_task>(
                     self->_strand.get(), self, lock,
                 [self, lock, _name, auto_deallocate, cb]
-                (const cb_error& err, PGresult* r)-> void {
+                (const md::callback::cb_error& err, PGresult* r)-> void {
                     if(err){
                         cb(err, sp_data_prepared());
                         return;
@@ -1255,14 +1272,14 @@ public:
                             )
                         );
                     }catch(const std::exception& err){
-                        cb(pq_async::cb_error(err), sp_data_prepared());
+                        cb(md::callback::cb_error(err), sp_data_prepared());
                     }
                 });
                 ct->send_prepare(_name.c_str(), _sql.c_str(), types);
                 self->_strand->push_back(ct);
                 
             }catch(const std::exception& err){
-                cb(pq_async::cb_error(err), sp_data_prepared());
+                cb(md::callback::cb_error(err), sp_data_prepared());
             }
         });
     }
@@ -1294,19 +1311,19 @@ public:
      * \tparam CB 
      * \tparam PQ_ASYNC_VALID_DB_ASY_CALLBACK(CB) 
      * \param name the prepared statement name
-     * \param acb completion void(const cb_error&) callback
+     * \param acb completion void(const md::callback::cb_error&) callback
      */
     template< typename CB, PQ_ASYNC_VALID_DB_ASY_CALLBACK(CB)>
     void deallocate_prepared(const char* name, const CB& acb)
     {
-        async_cb cb;
-        assign_async_cb<async_cb>(cb, acb);
+        md::callback::async_cb cb;
+        md::callback::assign_async_cb<md::callback::async_cb>(cb, acb);
         
         this->open_connection(
         [self=this->shared_from_this(),
             _name = std::string(name),
             cb]
-        (const cb_error& err, sp_connection_lock lock){
+        (const md::callback::cb_error& err, sp_connection_lock lock){
             if(err){
                 cb(err);
                 return;
@@ -1316,7 +1333,7 @@ public:
                 self->_conn->_conn, _name.c_str(), _name.size()
             );
             if(!es_name){
-                cb(cb_error(
+                cb(md::callback::cb_error(
                     pq_async::exception("Deallocate prepared invalid name!")
                 ));
             }
@@ -1326,7 +1343,7 @@ public:
             lock.reset();
             
             self->execute(sql.c_str(), 
-            [self, cb](const cb_error& err){
+            [self, cb](const md::callback::cb_error& err){
                 if(err){
                     cb(err);
                     return;
@@ -1348,11 +1365,14 @@ public:
      * \return sp_database 
      */
     static sp_database open(
-        const std::string& connection_string)
+        const std::string& connection_string,
+        md::log::sp_logger log = nullptr)
     {
         sp_database dbso(
             new database(
-                event_queue::get_default()->new_strand<int>(), connection_string
+                md::event_queue::get_default()->new_strand<int>(),
+                connection_string,
+                log
             )
         );
         return dbso;
@@ -1366,11 +1386,12 @@ public:
      * \return sp_database 
      */
     static sp_database open(
-        sp_event_strand<int> strand, 
-        const std::string& connection_string)
+        md::sp_event_strand<int> strand, 
+        const std::string& connection_string,
+        md::log::sp_logger log = nullptr)
     {
         sp_database dbso(
-            new database(strand, connection_string)
+            new database(strand, connection_string, log)
         );
         return dbso;
     }
@@ -1436,7 +1457,7 @@ private:
     template<typename RETURN_T>
     RETURN_T _process_query_value_result(PGresult* res)
     {
-        pq_async_log_trace("");
+        PQ_ASYNC_TRACE(_log, "");
         
         if(!_conn){
             std::string err_msg("connection is dead!");
@@ -1480,8 +1501,9 @@ private:
     std::string _connection_string;
     
     connection* _conn;
-    sp_event_strand<int> _strand;
+    md::sp_event_strand<int> _strand;
     sp_connection_lock _lock;
+    md::log::sp_logger _log;
 };
 
 

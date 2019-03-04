@@ -34,3 +34,6 @@ SOFTWARE.
 #include <atomic>
 #include <algorithm>
 #include <deque>
+
+#include "tools-md/tools-md.h"
+#include "log.h"

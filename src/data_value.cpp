@@ -29,12 +29,12 @@ namespace pq_async{
 data_value::data_value(sp_data_column col, char* value, int length)
     :_col(col), _value(value), _length(length), _ele_oid(-1), _dim(-1)
 {
-    pq_async_log_trace("ptr: %p", this);
+    PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 }
     
 data_value::~data_value()
 {
-    pq_async_log_trace("ptr: %p", this);
+    PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
     delete[] _value;
 }
 

@@ -50,11 +50,11 @@ public:
         std::cout << "Current time zone: " << cz->name() << std::endl;
         
         std::cout << "Initializing the log setting" << std::endl;
-        pq_async::log::init(
-            std::string("pq_async++_test"),
-            pq_async_log_level,
-            true
-        );
+        // pq_async::log::init(
+        //     std::string("pq_async++_test"),
+        //     pq_async_log_level,
+        //     true
+        // );
         
         std::cout << "Initializing the connection pool" << std::endl;
         pq_async::connection_pool::init(pq_async_max_pool_size, true, true);
@@ -64,7 +64,7 @@ public:
     {
         std::cout << "Destroying the connection pool" << std::endl;
         pq_async::connection_pool::destroy();
-        pq_async::event_queue::destroy_default();
+        md::event_queue::destroy_default();
     }
 };
 

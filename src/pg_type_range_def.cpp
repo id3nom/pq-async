@@ -53,8 +53,8 @@ namespace pq_async{
         v1 = in.substr(1, cp -1);
         v2 = in.substr(cp +1, in.size() - (cp +1));
         
-        pq_async::trim(v1);
-        pq_async::trim(v2);
+        md::trim(v1);
+        md::trim(v2);
         
         if(v1.size() == 0)
             f |= range_flag::lb_inf;
@@ -81,7 +81,7 @@ namespace pq_async{
     range<int32_t>::range(const char* str)
     {
         std::string s(str);
-        pq_async::trim(s);
+        md::trim(s);
         
         range_flag f = range_flag::none;
         std::string v1, v2;
@@ -93,9 +93,9 @@ namespace pq_async{
         }
         
         if(v1.size() > 0)
-            this->_lb = str_to_num<int32_t>(v1);
+            this->_lb = md::str_to_num<int32_t>(v1);
         if(v2.size() > 0)
-            this->_ub = str_to_num<int32_t>(v1);
+            this->_ub = md::str_to_num<int32_t>(v1);
     }
     
     template<>
@@ -103,8 +103,8 @@ namespace pq_async{
     {
         return format(
             this->_flags,
-            this->has_lbound() ? num_to_str(this->_lb, false) : "",
-            this->has_ubound() ? num_to_str(this->_ub, false) : ""
+            this->has_lbound() ? md::num_to_str(this->_lb, false) : "",
+            this->has_ubound() ? md::num_to_str(this->_ub, false) : ""
         );
     }
     
@@ -112,7 +112,7 @@ namespace pq_async{
     int8range::range(const char* str)
     {
         std::string s(str);
-        pq_async::trim(s);
+        md::trim(s);
         
         range_flag f = range_flag::none;
         std::string v1, v2;
@@ -124,9 +124,9 @@ namespace pq_async{
         }
         
         if(v1.size() > 0)
-            this->_lb = str_to_num<int64_t>(v1);
+            this->_lb = md::str_to_num<int64_t>(v1);
         if(v2.size() > 0)
-            this->_ub = str_to_num<int64_t>(v1);
+            this->_ub = md::str_to_num<int64_t>(v1);
     }
 
     template<>
@@ -134,8 +134,8 @@ namespace pq_async{
     {
         return format(
             this->_flags,
-            this->has_lbound() ? num_to_str(this->_lb, false) : "",
-            this->has_ubound() ? num_to_str(this->_ub, false) : ""
+            this->has_lbound() ? md::num_to_str(this->_lb, false) : "",
+            this->has_ubound() ? md::num_to_str(this->_ub, false) : ""
         );
     }
     
@@ -143,7 +143,7 @@ namespace pq_async{
     numrange::range(const char* str)
     {
         std::string s(str);
-        pq_async::trim(s);
+        md::trim(s);
         
         range_flag f = range_flag::none;
         std::string v1, v2;
@@ -175,7 +175,7 @@ namespace pq_async{
     tsrange::range(const char* str)
     {
         std::string s(str);
-        pq_async::trim(s);
+        md::trim(s);
         
         range_flag f = range_flag::none;
         std::string v1, v2;
@@ -206,7 +206,7 @@ namespace pq_async{
     tstzrange::range(const char* str)
     {
         std::string s(str);
-        pq_async::trim(s);
+        md::trim(s);
         
         range_flag f = range_flag::none;
         std::string v1, v2;
@@ -237,7 +237,7 @@ namespace pq_async{
     daterange::range(const char* str)
     {
         std::string s(str);
-        pq_async::trim(s);
+        md::trim(s);
         
         range_flag f = range_flag::none;
         std::string v1, v2;

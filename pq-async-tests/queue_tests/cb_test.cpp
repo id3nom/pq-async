@@ -62,14 +62,14 @@ public:
 TEST_F(cb_test, auto_cb_test)
 {
     try{
-        auto eq = pq_async::event_queue::get_default();
+        auto eq = md::event_queue::get_default();
         
         // insert some value
         pq_async::range<int32_t> r(0, 5);
         for(auto v: r)
             db->execute("insert into cb_test (value) values ($1)", 
-            std::string("value is ") + num_to_str(v, false),
-            run_async // this enable async mode.
+            std::string("value is ") + md::num_to_str(v, false),
+            md::callback::run_async // this enable async mode.
             );
         
         db->execute("update cb_test set value = $1 where id = $2",
@@ -150,7 +150,7 @@ TEST_F(cb_test, auto_cb_test)
                         );
                     else{
                         auto val = std::string("value is ") +
-                            num_to_str(row->as_int32("id") -1, false);
+                            md::num_to_str(row->as_int32("id") -1, false);
                         ASSERT_STREQ(
                             row->as_text("value").c_str(),
                             val.c_str()

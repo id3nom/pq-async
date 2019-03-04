@@ -322,19 +322,19 @@ namespace pq_async{
     }
     
     numeric::numeric(double val)
-        : numeric(num_to_str(val).c_str())
+        : numeric(md::num_to_str(val).c_str())
     {
     }
     numeric::numeric(float val)
-        : numeric(num_to_str(val).c_str())
+        : numeric(md::num_to_str(val).c_str())
     {
     }
     numeric::numeric(int64_t val)
-        : numeric(num_to_str(val).c_str())
+        : numeric(md::num_to_str(val).c_str())
     {
     }
     numeric::numeric(int32_t val)
-        : numeric(num_to_str(val).c_str())
+        : numeric(md::num_to_str(val).c_str())
     {
     }
     
@@ -583,7 +583,7 @@ namespace pq_async{
     }
     numeric numeric::from(double val)
     {
-        return numeric(num_to_str(val).c_str());
+        return numeric(md::num_to_str(val).c_str());
     }
     
     std::ostream& operator<<(std::ostream& os, const numeric& v)

@@ -68,10 +68,10 @@ bool pgval_to_bool(char* val, int len, int fmt)
     if(!fmt){
         std::string str1(val, len);
         return
-            pq_async::iequals(str1, "true") ||
-            pq_async::iequals(str1, "yes") ||
-            pq_async::iequals(str1, "on") ||
-            pq_async::iequals(str1, "1");
+            md::iequals(str1, "true") ||
+            md::iequals(str1, "yes") ||
+            md::iequals(str1, "on") ||
+            md::iequals(str1, "1");
     }
 
     // else result is in bin format.
@@ -94,7 +94,7 @@ int16_t pgval_to_int16(char* val, int len, int fmt)
         return 0;
 
     if(!fmt)
-        return pq_async::str_to_num<int16_t>(std::string(val, len));
+        return md::str_to_num<int16_t>(std::string(val, len));
 
     int16_t value = 0;// *((int16_t*)val);
     pq_async::swap2((int16_t*)val, &value, false);
@@ -108,7 +108,7 @@ int32_t pgval_to_int32(char* val, int len, int fmt)
         return 0;
 
     if(!fmt)
-        return pq_async::str_to_num<int32_t>(std::string(val, len));
+        return md::str_to_num<int32_t>(std::string(val, len));
 
     int32_t value = 0; //*((int32_t*)val);
     pq_async::swap4((int32_t*)val, &value, false);
@@ -122,7 +122,7 @@ int64_t pgval_to_int64(char* val, int len, int fmt)
         return 0;
 
     if(!fmt)
-        return pq_async::str_to_num<int64_t>(std::string(val, len));
+        return md::str_to_num<int64_t>(std::string(val, len));
 
     int64_t value = 0;// *((int64_t*)val);
     pq_async::swap8((int64_t*)val, &value, false);
@@ -178,7 +178,7 @@ pq_async::money pgval_to_money(char* val, int len, int fmt)
 
     pq_async::money m;
     if(!fmt){
-        m._val = pq_async::str_to_num<int64_t>(std::string(val, len));
+        m._val = md::str_to_num<int64_t>(std::string(val, len));
         return m;
     }
     int64_t value = 0;// *((int64_t*)val);
@@ -193,7 +193,7 @@ float pgval_to_float(char* val, int len, int fmt)
         return 0.0f;
 
     if(!fmt)
-        return pq_async::str_to_num<float>(std::string(val, len));
+        return md::str_to_num<float>(std::string(val, len));
 
     float value = 0.0f; //*((int32_t*)val);
     pq_async::swap4((int32_t*)val, (int32_t*)&value, false);
@@ -207,7 +207,7 @@ double pgval_to_double(char* val, int len, int fmt)
         return 0.0;
 
     if(!fmt)
-        return pq_async::str_to_num<double>(std::string(val, len));
+        return md::str_to_num<double>(std::string(val, len));
 
     double value = 0.0;// *((int64_t*)val);
     pq_async::swap8((int64_t*)val, (int64_t*)&value, false);
@@ -369,7 +369,7 @@ pq_async::oid pgval_to_oid(char* val, int len, int fmt)
         return 0;
 
     if(!fmt)
-        return pq_async::str_to_num<uint32_t>(std::string(val, len));
+        return md::str_to_num<uint32_t>(std::string(val, len));
 
     uint32_t value = 0; //*((int32_t*)val);
     pq_async::swap4((int32_t*)val, (int32_t*)&value, false);
@@ -936,8 +936,10 @@ pq_async::parameter* new_parameter(const pq_async::json& value)
 
 pq_async::parameter* new_parameter(const std::vector<int8_t>& value)
 {
-    std::string str = "\\x" + hex_to_str((u_char*)value.data(), value.size());
-
+    std::string str = "\\x" + md::hex_to_str(
+        (u_char*)value.data(), value.size()
+    );
+    
     char* values = new char[str.size() +1];
     std::copy(str.begin(), str.end(), values);
     values[str.size()] = '\0';
@@ -1446,7 +1448,7 @@ template<>
 bool val_from_pgparam<bool>(int oid, char* val, int len, int format)
 {
     if(!format)
-        return pq_async::str_to_num<int32_t>(std::string(val, len));
+        return md::str_to_num<int32_t>(std::string(val, len));
 
     // else result is in bin format.
     switch(oid){
@@ -1514,15 +1516,15 @@ std::string val_from_pgparam<std::string>(
         case TEXTOID:
             return pgval_to_string(val, len, format);
         case INT2OID:
-            return num_to_str(pgval_to_int16(val, len, format));
+            return md::num_to_str(pgval_to_int16(val, len, format));
         case INT4OID:
-            return num_to_str(pgval_to_int32(val, len, format));
+            return md::num_to_str(pgval_to_int32(val, len, format));
         case INT8OID:
-            return num_to_str(pgval_to_int64(val, len, format));
+            return md::num_to_str(pgval_to_int64(val, len, format));
         case FLOAT4OID:
-            return num_to_str(pgval_to_float(val, len, format));
+            return md::num_to_str(pgval_to_float(val, len, format));
         case FLOAT8OID:
-            return num_to_str(pgval_to_double(val, len, format));
+            return md::num_to_str(pgval_to_double(val, len, format));
         case NUMERICOID:
             return pgval_to_numeric(val, len, format);
         case TIMEOID:
@@ -1748,14 +1750,14 @@ template<>
 int16_t val_from_pgparam<int16_t>(int oid, char* val, int len, int format)
 {
     if(!format)
-        return pq_async::str_to_num<int16_t>(std::string(val, len));
+        return md::str_to_num<int16_t>(std::string(val, len));
 
     // else result is in bin format.
     switch(oid){
         case BOOLOID:
             return pgval_to_bool(val, len, format) ? 1 : 0;
         case TEXTOID:
-            return str_to_num<int16_t>(pgval_to_string(val, len, format));
+            return md::str_to_num<int16_t>(pgval_to_string(val, len, format));
         case INT2OID:
             return pgval_to_int16(val, len, format);
         case INT4OID:
@@ -1767,7 +1769,7 @@ int16_t val_from_pgparam<int16_t>(int oid, char* val, int len, int format)
         case FLOAT8OID:
             return (int16_t)pgval_to_double(val, len, format);
         case NUMERICOID:
-            return str_to_num<int16_t>(
+            return md::str_to_num<int16_t>(
                 val_from_pgparam<std::string>(oid, val, len, format)
             );
 
@@ -1788,14 +1790,14 @@ template<>
 int32_t val_from_pgparam<int32_t>(int oid, char* val, int len, int format)
 {
     if(!format)
-        return pq_async::str_to_num<int32_t>(std::string(val, len));
+        return md::str_to_num<int32_t>(std::string(val, len));
 
     // else result is in bin format.
     switch(oid){
         case BOOLOID:
             return pgval_to_bool(val, len, format) ? 1 : 0;
         case TEXTOID:
-            return str_to_num<int32_t>(pgval_to_string(val, len, format));
+            return md::str_to_num<int32_t>(pgval_to_string(val, len, format));
         case INT2OID:
             return (int32_t)pgval_to_int16(val, len, format);
         case INT4OID:
@@ -1807,7 +1809,7 @@ int32_t val_from_pgparam<int32_t>(int oid, char* val, int len, int format)
         case FLOAT8OID:
             return (int32_t)pgval_to_double(val, len, format);
         case NUMERICOID:
-            return str_to_num<int32_t>(
+            return md::str_to_num<int32_t>(
                 val_from_pgparam<std::string>(oid, val, len, format)
             );
 
@@ -1833,14 +1835,14 @@ template<>
 int64_t val_from_pgparam<int64_t>(int oid, char* val, int len, int format)
 {
     if(!format)
-        return pq_async::str_to_num<int64_t>(std::string(val, len));
+        return md::str_to_num<int64_t>(std::string(val, len));
 
     // else result is in bin format.
     switch(oid){
         case BOOLOID:
             return pgval_to_bool(val, len, format) ? 1 : 0;
         case TEXTOID:
-            return str_to_num<int64_t>(pgval_to_string(val, len, format));
+            return md::str_to_num<int64_t>(pgval_to_string(val, len, format));
         case INT2OID:
             return (int64_t)pgval_to_int16(val, len, format);
         case INT4OID:
@@ -1852,7 +1854,7 @@ int64_t val_from_pgparam<int64_t>(int oid, char* val, int len, int format)
         case FLOAT8OID:
             return (int64_t)pgval_to_double(val, len, format);
         case NUMERICOID:
-            return str_to_num<int16_t>(
+            return md::str_to_num<int16_t>(
                 val_from_pgparam<std::string>(oid, val, len, format)
             );
 
@@ -1878,14 +1880,14 @@ template<>
 float val_from_pgparam<float>(int oid, char* val, int len, int format)
 {
     if(!format)
-        return pq_async::str_to_num<float>(std::string(val, len));
+        return md::str_to_num<float>(std::string(val, len));
 
     // else result is in bin format.
     switch(oid){
         case BOOLOID:
             return pgval_to_bool(val, len, format) ? 1 : 0;
         case TEXTOID:
-            return str_to_num<float>(pgval_to_string(val, len, format));
+            return md::str_to_num<float>(pgval_to_string(val, len, format));
         case INT2OID:
             return (float)pgval_to_int16(val, len, format);
         case INT4OID:
@@ -1897,7 +1899,7 @@ float val_from_pgparam<float>(int oid, char* val, int len, int format)
         case FLOAT8OID:
             return (float)pgval_to_double(val, len, format);
         case NUMERICOID:
-            return str_to_num<float>(
+            return md::str_to_num<float>(
                 val_from_pgparam<std::string>(oid, val, len, format)
             );
 
@@ -1911,14 +1913,14 @@ template<>
 double val_from_pgparam<double>(int oid, char* val, int len, int format)
 {
     if(!format)
-        return pq_async::str_to_num<double>(std::string(val, len));
+        return md::str_to_num<double>(std::string(val, len));
 
     // else result is in bin format.
     switch(oid){
         case BOOLOID:
             return pgval_to_bool(val, len, format) ? 1 : 0;
         case TEXTOID:
-            return str_to_num<double>(pgval_to_string(val, len, format));
+            return md::str_to_num<double>(pgval_to_string(val, len, format));
         case INT2OID:
             return (double)pgval_to_int16(val, len, format);
         case INT4OID:
@@ -1930,7 +1932,7 @@ double val_from_pgparam<double>(int oid, char* val, int len, int format)
         case FLOAT8OID:
             return pgval_to_double(val, len, format);
         case NUMERICOID:
-            return str_to_num<double>(
+            return md::str_to_num<double>(
                 val_from_pgparam<std::string>(oid, val, len, format)
             );
 

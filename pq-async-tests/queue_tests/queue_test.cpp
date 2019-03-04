@@ -63,21 +63,21 @@ TEST_F(queue_test, queue_test)
 {
     try{
         int value = 0;
-        pq_async::event_queue::get_default()->push_back(
+        md::event_queue::get_default()->push_back(
             [&value]() -> void {
                 ASSERT_THAT(value, testing::Eq(0));
                 ++value;
             }
         );
         
-        pq_async::event_queue::get_default()->push_back(
+        md::event_queue::get_default()->push_back(
             [&value]() -> void {
                 ASSERT_THAT(value, testing::Eq(1));
                 value += 10;
             }
         );
         
-        pq_async::event_queue::get_default()->run();
+        md::event_queue::get_default()->run();
         ASSERT_THAT(value, testing::Eq(11));
         
     }catch(const std::exception& err){
@@ -90,10 +90,10 @@ TEST_F(queue_test, queue_test)
 TEST_F(queue_test, queue_strand_test)
 {
     try{
-        auto s1 = event_queue::get_default()->new_strand();
-        auto s2 = event_queue::get_default()->new_strand();
+        auto s1 = md::event_queue::get_default()->new_strand();
+        auto s2 = md::event_queue::get_default()->new_strand();
         
-        stopwatch t;
+        md::date::stopwatch t;
         
         bool tgl = false;
         int64_t lca = 10000;
@@ -110,7 +110,7 @@ TEST_F(queue_test, queue_strand_test)
                 });
             }
             
-            pq_async::event_queue::get_default()->run();
+            md::event_queue::get_default()->run();
         }
         
         std::cout << "lc: " << (lca * lcb)
@@ -146,7 +146,7 @@ TEST_F(queue_test, queue_db_strand_test)
         );
         std::cout << "PostgreSQL query will sleep 3 seconds" << std::endl;
         
-        pq_async::event_queue::get_default()->run();
+        md::event_queue::get_default()->run();
         ASSERT_THAT(*value, testing::Eq(11));
         
     }catch(const std::exception& err){
@@ -158,24 +158,24 @@ TEST_F(queue_test, queue_db_strand_test)
 TEST_F(queue_test, queue_db_strand_test_b)
 {
     try{
-        auto eq = pq_async::event_queue::get_default();
+        auto eq = md::event_queue::get_default();
         
         eq->series({
-            [&](async_cb scb){
+            [&](md::callback::async_cb scb){
                 pq_async::range<int32_t> r(0, 5);
                 eq->each(
                     r.cbegin(), r.cend(),
-                [&, scb](const int32_t& val, async_cb ecb){
+                [&, scb](const int32_t& val, md::callback::async_cb ecb){
                     db->execute(
                         "insert into queue_test (value) values ($1)",
-                        "val" + num_to_str(val),
+                        "val" + md::num_to_str(val),
                         ecb
                     );
                 }, scb);
             },
-            [&](async_cb scb){
+            [&](md::callback::async_cb scb){
                 db->query("select * from queue_test",
-                [scb](const cb_error& err, sp_data_table tbl){
+                [scb](const md::callback::cb_error& err, sp_data_table tbl){
                     if(err){
                         scb(err);
                         return;
@@ -190,11 +190,11 @@ TEST_F(queue_test, queue_db_strand_test_b)
                     
                 });
             }
-        }, [](const cb_error& err){
+        }, [](const md::callback::cb_error& err){
             if(err){
-                pq_async_log_error(
+                pq_async::default_logger()->error(MD_ERR(
                     "queue_db_strand_test_b failed with:\n%s", err.c_str()
-                );
+                ));
                 FAIL();
             }
         });
@@ -214,29 +214,29 @@ TEST_F(queue_test, queue_async_each_test)
         std::vector<int> v{1,0,10};
         int value = 0;
         
-        pq_async::event_queue::get_default()->each(v.begin(), v.end(),
-        [&value](const int& val, async_cb ecb)->void{
+        md::event_queue::get_default()->each(v.begin(), v.end(),
+        [&value](const int& val, md::callback::async_cb ecb)->void{
             value += val;
             ecb(nullptr);
-        }, [](const cb_error& err)->void{
+        }, [](const md::callback::cb_error& err)->void{
             if(err)
                 FAIL();
         });
         
-        pq_async::event_queue::get_default()->run();
+        md::event_queue::get_default()->run();
         ASSERT_THAT(value, testing::Eq(11));
         
-        pq_async::async::each(
-            pq_async::event_queue::get_default(), v.begin(), v.end(),
-        [&value](const int& val, async_cb ecb)->void{
+        md::async::each(
+            md::event_queue::get_default(), v.begin(), v.end(),
+        [&value](const int& val, md::callback::async_cb ecb)->void{
             value += val;
             ecb(nullptr);
-        }, [](const cb_error& err)->void{
+        }, [](const md::callback::cb_error& err)->void{
             if(err)
                 FAIL();
         });
         
-        pq_async::event_queue::get_default()->run();
+        md::event_queue::get_default()->run();
         ASSERT_THAT(value, testing::Eq(22));
         
     }catch(const std::exception& err){
@@ -251,51 +251,51 @@ TEST_F(queue_test, queue_async_series_test)
     try{
         int value = 0;
         
-        pq_async::event_queue::get_default()->series({
-            [&value](async_cb scb)->void{
+        md::event_queue::get_default()->series({
+            [&value](md::callback::async_cb scb)->void{
                 value += 1;
                 scb(nullptr);
             },
-            [&value](async_cb scb)->void{
+            [&value](md::callback::async_cb scb)->void{
                 value += 0;
                 scb(nullptr);
             },
-            [&value](async_cb scb)->void{
+            [&value](md::callback::async_cb scb)->void{
                 value += 10;
                 scb(nullptr);
             }
             
-        }, [&value](const cb_error& err)->void{
+        }, [&value](const md::callback::cb_error& err)->void{
             if(err)
                 FAIL();
             ASSERT_THAT(value, testing::Eq(11));
         });
         
-        pq_async::event_queue::get_default()->run();
+        md::event_queue::get_default()->run();
         ASSERT_THAT(value, testing::Eq(11));
         
-        pq_async::async::series(
-        pq_async::event_queue::get_default(), {
-            [&value](async_cb scb)->void{
+        md::async::series(
+        md::event_queue::get_default(), {
+            [&value](md::callback::async_cb scb)->void{
                 value += 1;
                 scb(nullptr);
             },
-            [&value](async_cb scb)->void{
+            [&value](md::callback::async_cb scb)->void{
                 value += 0;
                 scb(nullptr);
             },
-            [&value](async_cb scb)->void{
+            [&value](md::callback::async_cb scb)->void{
                 value += 10;
                 scb(nullptr);
             }
             
-        }, [&value](const cb_error& err)->void{
+        }, [&value](const md::callback::cb_error& err)->void{
             if(err)
                 FAIL();
             ASSERT_THAT(value, testing::Eq(22));
         });
         
-        pq_async::event_queue::get_default()->run();
+        md::event_queue::get_default()->run();
         ASSERT_THAT(value, testing::Eq(22));
         
     }catch(const std::exception& err){
@@ -310,27 +310,27 @@ TEST_F(queue_test, queue_async_multithread_test)
 {
     #ifdef PQ_ASYNC_THREAD_SAFE
     try{
-        stopwatch t;
+        md::date::stopwatch t;
         std::atomic<int> value(0);
         
         int cnt = 1000;
         int rnd = 10;
         for(int i = 0; i < cnt; ++i)
-            pq_async::event_queue::get_default()->series({
-                [&value](async_cb scb)->void{
+            md::event_queue::get_default()->series({
+                [&value](md::callback::async_cb scb)->void{
                     ++value;
                     scb(nullptr);
                 },
-                [&value](async_cb scb)->void{
+                [&value](md::callback::async_cb scb)->void{
                     ++value;
                     scb(nullptr);
                 },
-                [&value](async_cb scb)->void{
+                [&value](md::callback::async_cb scb)->void{
                     ++value;
                     scb(nullptr);
                 }
                 
-            }, [&value](const cb_error& err)->void{
+            }, [&value](const md::callback::cb_error& err)->void{
                 if(err)
                     FAIL();
             });
@@ -341,7 +341,7 @@ TEST_F(queue_test, queue_async_multithread_test)
             threads.emplace_back(
                 std::thread([&t, &value, rnd, cnt, cc](){
                     t.reset();
-                    auto eq = pq_async::event_queue::get_default();
+                    auto eq = md::event_queue::get_default();
                     int rc = rnd;
                     while(true){
                         size_t size = eq->local_size();
@@ -350,20 +350,22 @@ TEST_F(queue_test, queue_async_multithread_test)
                                 break;
                             for(int i = 0; i < cnt; ++i)
                                 eq->series({
-                                    [&value](async_cb scb)->void{
+                                    [&value](md::callback::async_cb scb)->void{
                                         ++value;
                                         scb(nullptr);
                                     },
-                                    [&value](async_cb scb)->void{
+                                    [&value](md::callback::async_cb scb)->void{
                                         ++value;
                                         scb(nullptr);
                                     },
-                                    [&value](async_cb scb)->void{
+                                    [&value](md::callback::async_cb scb)->void{
                                         ++value;
                                         scb(nullptr);
                                     }
                                     
-                                }, [&value](const cb_error& err)->void{
+                                },
+                                [&value]
+                                (const md::callback::cb_error& err)->void{
                                     if(err)
                                         FAIL();
                                 });

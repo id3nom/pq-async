@@ -32,7 +32,7 @@ namespace pq_async{
     point::point(const char* str)
     {
         std::string s(str);
-        pq_async::trim(s);
+        md::trim(s);
         
         int idx = 0;
         std::string sx;
@@ -51,19 +51,19 @@ namespace pq_async{
         if(sx.size() == 0 || sy.size() == 0)
             throw pq_async::exception("Invalid input for type point");
         
-        this->_x = str_to_num<double>(sx);
-        this->_y = str_to_num<double>(sy);
+        this->_x = md::str_to_num<double>(sx);
+        this->_y = md::str_to_num<double>(sy);
     }
     point::operator std::string() const
     {
-        return "(" + pq_async::num_to_str(this->_x, false) + "," + 
-            pq_async::num_to_str(this->_y, false) + ")";
+        return "(" + md::num_to_str(this->_x, false) + "," + 
+            md::num_to_str(this->_y, false) + ")";
     }
     
     line::line(const char* str)
     {
         std::string s(str);
-        pq_async::trim(s);
+        md::trim(s);
         
         size_t cc = std::count(s.begin(), s.end(), ',');
         if(cc == std::string::npos || (cc != 1 && cc != 3))
@@ -103,23 +103,23 @@ namespace pq_async{
         if(sa.size() == 0 || sb.size() == 0 || sc.size() == 0)
             throw pq_async::exception("Invalid input for type line");
         
-        this->_a = str_to_num<double>(sa);
-        this->_b = str_to_num<double>(sb);
-        this->_c = str_to_num<double>(sc);
+        this->_a = md::str_to_num<double>(sa);
+        this->_b = md::str_to_num<double>(sb);
+        this->_c = md::str_to_num<double>(sc);
     }
     line::operator std::string() const
     {
         return "{" + 
-            pq_async::num_to_str(this->_a, false) + "," + 
-            pq_async::num_to_str(this->_b, false) + "," + 
-            pq_async::num_to_str(this->_c, false) +
+            md::num_to_str(this->_a, false) + "," + 
+            md::num_to_str(this->_b, false) + "," + 
+            md::num_to_str(this->_c, false) +
             "}";
     }
     
     lseg::lseg(const char* str)
     {
         std::string s(str);
-        pq_async::trim(s);
+        md::trim(s);
         
         size_t cc = std::count(s.begin(), s.end(), ',');
         if(cc != 3)
@@ -142,7 +142,7 @@ namespace pq_async{
     box::box(const char* str)
     {
         std::string s(str);
-        pq_async::trim(s);
+        md::trim(s);
         
         size_t cc = std::count(s.begin(), s.end(), ',');
         if(cc != 3)
@@ -162,7 +162,7 @@ namespace pq_async{
     path::path(const char* str)
     {
         std::string s(str);
-        pq_async::trim(s);
+        md::trim(s);
         
         this->_closed = s[0] == '(';
         
@@ -204,7 +204,7 @@ namespace pq_async{
     polygon::polygon(const char* str)
     {
         std::string s(str);
-        pq_async::trim(s);
+        md::trim(s);
         
         size_t cc = std::count(s.begin(), s.end(), ',');
         if(cc % 2 == 0)
@@ -245,7 +245,7 @@ namespace pq_async{
     circle::circle(const char* str)
     {
         std::string s(str);
-        pq_async::trim(s);
+        md::trim(s);
         
         size_t cc = std::count(s.begin(), s.end(), ',');
         if(cc != 2)
@@ -266,13 +266,13 @@ namespace pq_async{
         if(sr.size() == 0)
             throw pq_async::exception("Invalid input for type circle");
         
-        this->_radius = str_to_num<double>(sr);
+        this->_radius = md::str_to_num<double>(sr);
     }
     circle::operator std::string() const
     {
         return "<" +
             (std::string)this->_center + "," + 
-            pq_async::num_to_str(this->_radius, false) +
+            md::num_to_str(this->_radius, false) +
             ">";
     }
 

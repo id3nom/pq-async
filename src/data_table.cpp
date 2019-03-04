@@ -28,13 +28,13 @@ namespace pq_async{
 
 data_table::data_table()
 {
-    pq_async_log_trace("ptr: %p", this);
+    PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
     _cols.reset(new data_columns_container());
 }
 
 data_table::~data_table()
 {
-    pq_async_log_trace("ptr: %p", this);
+    PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 }
 
 

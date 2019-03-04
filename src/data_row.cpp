@@ -30,7 +30,7 @@ data_row::data_row(
     sp_data_columns_container cols, 
     PGresult* row_result, int row_id)
 {
-    pq_async_log_trace("ptr: %p", this);
+    PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 
     _cols = cols;
     initialize(row_result, row_id);
@@ -38,7 +38,7 @@ data_row::data_row(
 
 data_row::~data_row()
 {
-    pq_async_log_trace("ptr: %p", this);
+    PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 }
 
 
@@ -308,8 +308,8 @@ void data_row::to_json(pq_async::json& row_obj) const
                 )
 
                 default:
-                    pq_async_log_trace(
-                        "Unsupported OID: %d for field: %s",
+                    pq_async::default_logger()->warn(
+                        "Unsupported OID: {} for field: {}",
                         oid, name
                     );
                     row_obj[name] = 

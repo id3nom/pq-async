@@ -44,15 +44,15 @@ namespace pq_async{
             );
         
         std::string tval(val);
-        pq_async::trim(tval);
+        md::trim(tval);
         
         std::smatch sm;
         if(std::regex_match(tval, sm, re)){
             std::string n_str(sm[1].str());
             std::string type_str(sm[2].str());
-            type_str = pq_async::str_to_lower(type_str);
+            type_str = md::lower_case_copy(type_str);
             
-            long double n = str_to_num<long double>(n_str);
+            long double n = md::str_to_num<long double>(n_str);
             
             if(type_str == "years" || type_str == "year" || type_str == "yrs" || type_str == "yr" || type_str == "y")
                 return n * y;
@@ -78,7 +78,7 @@ namespace pq_async{
     std::string plural(long double ms_val, long double ms_abs, long double n, const std::string& name)
     {
         bool is_plural = ms_abs >= n * 1.5L;
-        return num_to_str(std::round(ms_val / n)) + " " + name + (is_plural ? "s" : "");
+        return md::num_to_str(std::round(ms_val / n)) + " " + name + (is_plural ? "s" : "");
     }
     
     duration::duration(const std::string& val)
@@ -95,15 +95,15 @@ namespace pq_async{
     {
         long double ms_abs = std::abs(this->_milliseconds);
         if(ms_abs >= d)
-            return num_to_str(std::round(this->_milliseconds / d)) + "d";
+            return md::num_to_str(std::round(this->_milliseconds / d)) + "d";
         if(ms_abs >= h)
-            return num_to_str(std::round(this->_milliseconds / h)) + "h";
+            return md::num_to_str(std::round(this->_milliseconds / h)) + "h";
         if(ms_abs >= m)
-            return num_to_str(std::round(this->_milliseconds / m)) + "m";
+            return md::num_to_str(std::round(this->_milliseconds / m)) + "m";
         if(ms_abs >= s)
-            return num_to_str(std::round(this->_milliseconds / s)) + "s";
+            return md::num_to_str(std::round(this->_milliseconds / s)) + "s";
         
-        return num_to_str(this->_milliseconds) + "ms";
+        return md::num_to_str(this->_milliseconds) + "ms";
     }
     
     std::string duration::to_long_string() const
@@ -118,7 +118,7 @@ namespace pq_async{
         if(ms_abs >= s)
             return plural(this->_milliseconds, ms_abs, s, "second");
         
-        return num_to_str(this->_milliseconds) + " ms";
+        return md::num_to_str(this->_milliseconds) + " ms";
     }
     
     duration::operator std::string() const

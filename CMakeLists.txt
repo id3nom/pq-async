@@ -101,6 +101,9 @@ endif()
 # add subdirs
 
 # deps
+if(NOT TARGET fmt)
+    subdirs(deps/fmt)
+endif()
 if(NOT TARGET gmock)
     subdirs(deps/googletest)
 endif()
@@ -164,6 +167,7 @@ include_directories("${PROJECT_BINARY_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/deps/date/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/deps/fmt/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/deps/json/single_include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/deps/tools-md/include"
 
     ${PostgreSQL_INCLUDE_DIRS}
 )

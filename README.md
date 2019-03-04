@@ -63,7 +63,7 @@ db->execute("insert into my_table (name) values ('my name')");
 
 // to execute the same query in async mode:
 db->execute("insert into my_table (name) values ('my name')",
-[](const cb_error& err){
+[](const md::callback::cb_error& err){
     if(err){
         // an error occured.
     }
@@ -94,7 +94,7 @@ std::string name = db->query_value<std::string>(
 // there last parameter e.g:
 db->query_value<std::string>(
     "select $1", std::string("my name"),
-[](const cb_error& err, const std::string& name){
+[](const md::callback::cb_error& err, const std::string& name){
     if(err){
         // ...
     }
@@ -102,7 +102,7 @@ db->query_value<std::string>(
     std::cout << name << std::endl;
 });
 
-// all callback are not required to have the "const cb_error& err" argument
+// all callback are not required to have the "const md::callback::cb_error& err" argument
 // in that case if an error occured it is sent to the unhandle error handler
 // this is legal:
 db->query_value<std::string>(

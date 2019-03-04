@@ -40,14 +40,14 @@ namespace pq_async {
     parameters p; \
     p.push_back<sizeof...(PARAMS) -1>(args...); \
      \
-    value_cb<__val> cb; \
-    assign_value_cb<value_cb<__val>, __val>(cb, get_last(args...)); \
+    md::callback::value_cb<__val> cb; \
+    md::callback::assign_value_cb<md::callback::value_cb<__val>, __val>(cb, get_last(args...)); \
      \
     this->_db->open_connection( \
     [self=this->shared_from_this(), \
         _p = std::move(p), \
         cb] \
-    (const cb_error& err, sp_connection_lock lock){ \
+    (const md::callback::cb_error& err, sp_connection_lock lock){ \
         if(err){ \
             cb(err, __def_val); \
             return; \
@@ -57,7 +57,7 @@ namespace pq_async {
             auto ct = std::make_shared<connection_task>( \
                 self->_db->_strand.get(), self->_db, lock, \
             [self, cb]( \
-                const cb_error& err, PGresult* r \
+                const md::callback::cb_error& err, PGresult* r \
             )-> void { \
                 if(err){ \
                     cb(err, __def_val); \
@@ -67,25 +67,25 @@ namespace pq_async {
                 try{ \
                     cb(nullptr, self->_db->__process_fn(r)); \
                 }catch(const std::exception& err){ \
-                    cb(pq_async::cb_error(err), __def_val); \
+                    cb(md::callback::cb_error(err), __def_val); \
                 } \
             }); \
             ct->send_query_prepared(self->_name.c_str(), _p); \
             self->_db->_strand->push_back(ct); \
              \
         }catch(const std::exception& err){ \
-            cb(pq_async::cb_error(err), __def_val); \
+            cb(md::callback::cb_error(err), __def_val); \
         } \
     });
 
 #define _PQ_ASYNC_SEND_QRY_PREP_BODY_T(__val, __process_fn, __def_val) \
-    value_cb<__val> cb; \
-    assign_value_cb<value_cb<__val>, __val>(cb, acb); \
+    md::callback::value_cb<__val> cb; \
+    md::callback::assign_value_cb<md::callback::value_cb<__val>, __val>(cb, acb); \
     this->_db->open_connection( \
     [self=this->shared_from_this(), \
         _p = std::move(p), \
         cb] \
-    (const cb_error& err, sp_connection_lock lock){ \
+    (const md::callback::cb_error& err, sp_connection_lock lock){ \
         if(err){ \
             cb(err, __def_val); \
             return; \
@@ -95,7 +95,7 @@ namespace pq_async {
             auto ct = std::make_shared<connection_task>( \
                 self->_db->_strand.get(), self->_db, lock, \
             [self, cb]( \
-                const cb_error& err, PGresult* r \
+                const md::callback::cb_error& err, PGresult* r \
             )-> void { \
                 if(err){ \
                     cb(err, __def_val); \
@@ -105,14 +105,14 @@ namespace pq_async {
                 try{ \
                     cb(nullptr, self->_db->__process_fn(r)); \
                 }catch(const std::exception& err){ \
-                    cb(pq_async::cb_error(err), __def_val); \
+                    cb(md::callback::cb_error(err), __def_val); \
                 } \
             }); \
             ct->send_query_prepared(self->_name.c_str(), _p); \
             self->_db->_strand->push_back(ct); \
              \
         }catch(const std::exception& err){ \
-            cb(pq_async::cb_error(err), __def_val); \
+            cb(md::callback::cb_error(err), __def_val); \
         } \
     });
 
@@ -176,7 +176,7 @@ public:
      * \tparam T 
      * \tparam PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, int) 
      * \param p query parameters
-     * \param acb completion void(const cb_error&, int) callback
+     * \param acb completion void(const md::callback::cb_error&, int) callback
      */
     template<typename T, PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, int)>
     void execute(const parameters& p, const T& acb)
@@ -232,7 +232,7 @@ public:
      * \tparam PARAMS 
      * \tparam PQ_ASYNC_VALID_DB_CALLBACK(sp_data_table) 
      * \param args query parameters, the last parameter is 
-     * the completion void(const cb_error&, sp_data_table) callback
+     * the completion void(const md::callback::cb_error&, sp_data_table) callback
      */
     template<typename... PARAMS, PQ_ASYNC_VALID_DB_CALLBACK(sp_data_table)>
     void query(const PARAMS&... args)
@@ -248,7 +248,7 @@ public:
      * \tparam T 
      * \tparam PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_table) 
      * \param p query parameters
-     * \param acb completion void(const cb_error&, sp_data_table) callback
+     * \param acb completion void(const md::callback::cb_error&, sp_data_table) callback
      */
     template<typename T, PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_table)>
     void query(const parameters& p, const T& acb)
@@ -303,7 +303,7 @@ public:
      * \tparam PARAMS 
      * \tparam PQ_ASYNC_VALID_DB_CALLBACK(sp_data_row) 
      * \param args query parameters, the last parameter is
-     * the completion void(const cb_error&, sp_data_row) callback
+     * the completion void(const md::callback::cb_error&, sp_data_row) callback
      */
     template<typename... PARAMS, PQ_ASYNC_VALID_DB_CALLBACK(sp_data_row)>
     void query_single(const PARAMS&... args)
@@ -319,7 +319,7 @@ public:
      * \tparam T 
      * \tparam PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_row) 
      * \param p query parameters
-     * \param acb the completion void(const cb_error&, sp_data_row) callback
+     * \param acb the completion void(const md::callback::cb_error&, sp_data_row) callback
      */
     template<typename T, PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_row)>
     void query_single(const parameters& p, const T& acb)
@@ -393,7 +393,7 @@ public:
      * \tparam T 
      * \tparam PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, R) 
      * \param p query parameters
-     * \param acb completion void(const cb_error&, R) callback
+     * \param acb completion void(const md::callback::cb_error&, R) callback
      */
     template<
         typename R, typename T,
@@ -466,8 +466,11 @@ public:
         parameters p;
         p.push_back<sizeof...(PARAMS) -1>(args...);
         
-        value_cb<sp_data_reader> cb;
-        assign_value_cb<value_cb<sp_data_reader>, sp_data_reader>(
+        md::callback::value_cb<sp_data_reader> cb;
+        md::callback::assign_value_cb<
+            md::callback::value_cb<sp_data_reader>,
+            sp_data_reader
+        >(
             cb, get_last(args...)
         );
         
@@ -475,7 +478,7 @@ public:
         [self=this->shared_from_this(),
             _p = std::move(p),
             cb]
-        (const cb_error& err, sp_connection_lock lock){
+        (const md::callback::cb_error& err, sp_connection_lock lock){
             if(err){
                 cb(err, sp_data_reader());
                 return;
@@ -490,7 +493,7 @@ public:
                 self->_db->_strand->push_back(ct);
                 
             }catch(const std::exception& err){
-                cb(pq_async::cb_error(err), sp_data_reader());
+                cb(md::callback::cb_error(err), sp_data_reader());
             }
         });
     }
@@ -501,19 +504,22 @@ public:
      * \tparam T 
      * \tparam PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_reader) 
      * \param p query parameters
-     * \param acb completion void(const cb_error&, sp_data_reader) callback
+     * \param acb completion void(const md::callback::cb_error&, sp_data_reader) callback
      */
     template<typename T, PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_reader)>
     void query_reader(const parameters& p, const T& acb)
     {
-        value_cb<sp_data_reader> cb;
-        assign_value_cb<value_cb<sp_data_reader>, sp_data_reader>(cb, acb);
+        md::callback::value_cb<sp_data_reader> cb;
+        md::callback::assign_value_cb<
+            md::callback::value_cb<sp_data_reader>,
+            sp_data_reader
+        >(cb, acb);
 
         this->_db->open_connection(
         [self=this->shared_from_this(),
             _p = std::move(p),
             cb]
-        (const cb_error& err, sp_connection_lock lock){
+        (const md::callback::cb_error& err, sp_connection_lock lock){
             if(err){
                 cb(err, sp_data_reader());
                 return;
@@ -528,7 +534,7 @@ public:
                 self->_db->_strand->push_back(ct);
                 
             }catch(const std::exception& err){
-                cb(pq_async::cb_error(err), sp_data_reader());
+                cb(md::callback::cb_error(err), sp_data_reader());
             }
         });
     }

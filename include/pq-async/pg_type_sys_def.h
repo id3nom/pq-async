@@ -60,7 +60,7 @@ public:
     
     operator std::string() const
     {
-        return num_to_str(_oid);
+        return md::num_to_str(_oid);
     }
     
     bool operator ==(const oid& b) const

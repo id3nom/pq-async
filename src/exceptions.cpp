@@ -43,14 +43,14 @@ namespace pq_async{
     connection_pool_assign_exception::~connection_pool_assign_exception(){}
     
     
-    cb_error cb_error::no_err;
+    //cb_error md::callback::cb_error::no_err;
 
 
-    std::ostream& operator<<(std::ostream& s, const cb_error& v)
-    {
-        s << std::string(v.c_str());
-        return s;
-    }
+    // std::ostream& operator<<(std::ostream& s, const md::callback::cb_error& v)
+    // {
+    //     s << std::string(v.c_str());
+    //     return s;
+    // }
 
 
 } //namespace pq_async

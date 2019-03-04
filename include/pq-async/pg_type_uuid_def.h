@@ -78,11 +78,11 @@ public:
     
     operator std::string() const
     {
-        return hex_to_str((uint8_t*)_uuid, 4) + "-" +
-            hex_to_str((uint8_t*)(_uuid +4), 2) + "-" +
-            hex_to_str((uint8_t*)(_uuid +6), 2) + "-" +
-            hex_to_str((uint8_t*)(_uuid +8), 2) + "-" +
-            hex_to_str((uint8_t*)(_uuid +10), 6);
+        return md::hex_to_str((uint8_t*)_uuid, 4) + "-" +
+            md::hex_to_str((uint8_t*)(_uuid +4), 2) + "-" +
+            md::hex_to_str((uint8_t*)(_uuid +6), 2) + "-" +
+            md::hex_to_str((uint8_t*)(_uuid +8), 2) + "-" +
+            md::hex_to_str((uint8_t*)(_uuid +10), 6);
     }
     
     bool operator ==(const uuid& b) const

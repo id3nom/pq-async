@@ -66,7 +66,7 @@ TEST_F(data_reader_test, data_reader_sync_test)
         for(const int& i : pq_async::range<int32_t>(0, 5)){
             db->execute(
                 "insert into data_reader_test (value) values ($1)",
-                "val" + num_to_str(i)
+                "val" + md::num_to_str(i)
             );
             std::cout << i << (i < 4 ? ", ": "\n");
         }
@@ -94,7 +94,7 @@ TEST_F(data_reader_test, data_reader_sync_close_test)
         for(const int& i : pq_async::range<int32_t>(0, 5)){
             db->execute(
                 "insert into data_reader_test (value) values ($1)",
-                "val" + num_to_str(i)
+                "val" + md::num_to_str(i)
             );
             std::cout << i << (i < 4 ? ", ": "\n");
         }
@@ -124,32 +124,32 @@ TEST_F(data_reader_test, data_reader_sync_close_test)
 TEST_F(data_reader_test, data_reader_async_test)
 {
     try{
-        auto eq = pq_async::event_queue::get_default();
+        auto eq = md::event_queue::get_default();
         
         eq->series({
-            [&](async_cb scb){
+            [&](md::callback::async_cb scb){
                 pq_async::range<int32_t> r(0, 5);
                 eq->each(
                     r.cbegin(), r.cend(),
-                [&, scb](const int32_t& val, async_cb ecb){
+                [&, scb](const int32_t& val, md::callback::async_cb ecb){
                     db->execute(
                         "insert into data_reader_test (value) values ($1)",
-                        "val" + num_to_str(val),
+                        "val" + md::num_to_str(val),
                         ecb
                     );
                     std::cout << val << (val < 4 ? ", ": "\n");
                 }, scb);
             },
-            [&](async_cb scb){
+            [&](md::callback::async_cb scb){
                 db->query_reader("select * from data_reader_test",
-                [scb](const cb_error& err, sp_data_reader reader){
+                [scb](const md::callback::cb_error& err, sp_data_reader reader){
                     if(err){
                         scb(err);
                         return;
                     }
                     
                     reader->next([scb, reader]
-                    (const cb_error& err, sp_data_row r){
+                    (const md::callback::cb_error& err, sp_data_row r){
                         if(err){
                             scb(err);
                             return;
@@ -170,11 +170,11 @@ TEST_F(data_reader_test, data_reader_async_test)
                     });
                 });
             }
-        }, [](const cb_error& err){
+        }, [](const md::callback::cb_error& err){
             if(err){
-                pq_async_log_error(
-                    "data_reader_async_test failed with:\n%s", err.c_str()
-                );
+                pq_async::default_logger()->error(MD_ERR(
+                    "data_reader_async_test failed with:\n{}", err
+                ));
                 FAIL();
             }
         });
@@ -191,31 +191,31 @@ TEST_F(data_reader_test, data_reader_async_test)
 TEST_F(data_reader_test, data_reader_async_close_test)
 {
     try{
-        auto eq = pq_async::event_queue::get_default();
+        auto eq = md::event_queue::get_default();
         
         eq->series({
-            [&](async_cb scb){
+            [&](md::callback::async_cb scb){
                 pq_async::range<int32_t> r(0, 5);
                 eq->each(r.cbegin(), r.cend(),
-                [&, scb](const int32_t& val, async_cb ecb){
+                [&, scb](const int32_t& val, md::callback::async_cb ecb){
                     db->execute(
                         "insert into data_reader_test (value) values ($1)",
-                        "val" + num_to_str(val),
+                        "val" + md::num_to_str(val),
                         ecb
                     );
                     std::cout << val << (val < 4 ? ", ": "\n");
                 }, scb);
             },
-            [&](async_cb scb){
+            [&](md::callback::async_cb scb){
                 db->query_reader("select * from data_reader_test",
-                [scb](const cb_error& err, sp_data_reader reader){
+                [scb](const md::callback::cb_error& err, sp_data_reader reader){
                     if(err){
                         scb(err);
                         return;
                     }
                     
                     reader->next([scb, reader]
-                    (const cb_error& err, sp_data_row r){
+                    (const md::callback::cb_error& err, sp_data_row r){
                         if(err){
                             scb(err);
                             return;
@@ -242,11 +242,11 @@ TEST_F(data_reader_test, data_reader_async_close_test)
                     });
                 });
             }
-        }, [](const cb_error& err){
+        }, [](const md::callback::cb_error& err){
             if(err){
-                pq_async_log_error(
+                pq_async::default_logger()->error(MD_ERR(
                     "data_reader_async_test failed with:\n%s", err.c_str()
-                );
+                ));
                 FAIL();
             }
         });

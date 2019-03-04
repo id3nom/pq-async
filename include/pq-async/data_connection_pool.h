@@ -48,7 +48,7 @@ class connection
     
 private:
     connection(connection_pool* pool, std::string connection_string
-        ): _res(0), _running(0), _id(pq_async::num_to_str(++s_next_id)),
+        ): _res(0), _running(0), _id(md::num_to_str(++s_next_id)),
         _pool(pool),_connection_string(connection_string), 
         is_in_transaction(false), 
         _conn(NULL), _sock_fd(-1),
@@ -79,7 +79,7 @@ public:
     bool lock();
     void release();
     
-    sp_event_strand<int> strand();
+    md::sp_event_strand<int> strand();
     
     void touch()
     {
@@ -304,7 +304,7 @@ public:
             return;
         
         if(_conn->_running.load() == 1){
-            pq_async_log_error(
+            pq_async::default_logger()->error(
                 "unable to lock the connection because it's already locked"
             );
             
@@ -333,7 +333,7 @@ private:
 };
 
 class connection_task
-    : public event_task_base, 
+    : public md::event_task_base, 
     public std::enable_shared_from_this< connection_task >
 {
     friend data_reader;
@@ -351,19 +351,19 @@ protected:
     
 public:
     connection_task(
-        event_queue* owner, sp_database db, sp_connection_lock lock,
-        const value_cb<PGresult*>& cb
+        md::event_queue* owner, sp_database db, sp_connection_lock lock,
+        const md::callback::value_cb<PGresult*>& cb
     );
     
     connection_task(
-        event_queue* owner, sp_database db, connection* conn,
-        const value_cb<sp_connection_lock>& cb
+        md::event_queue* owner, sp_database db, connection* conn,
+        const md::callback::value_cb<sp_connection_lock>& cb
     );
     
     connection_task(
-        event_queue* owner, sp_database db, sp_connection_lock lock
+        md::event_queue* owner, sp_database db, sp_connection_lock lock
     );
-    connection_task(event_queue* owner, sp_database db, connection* conn);
+    connection_task(md::event_queue* owner, sp_database db, connection* conn);
     
     sp_database db(){ return _db;}
     
@@ -514,15 +514,15 @@ public:
                 _cb(nullptr, r);
             }
         }catch(const std::exception& err){
-            _cb(cb_error(err), nullptr);
+            _cb(md::callback::cb_error(err), nullptr);
         }
     }
     
-    virtual event_requeue_pos requeue()
+    virtual md::event_requeue_pos requeue()
     {
         if(_completed)
-            return event_requeue_pos::none;
-        return event_requeue_pos::front;
+            return md::event_requeue_pos::none;
+        return md::event_requeue_pos::front;
     }
     virtual size_t size() const
     {
@@ -538,9 +538,9 @@ protected:
     
     void _send_query()
     {
-        pq_async_log_debug(
-            "sending query: %s\nct: %x, db: %x",
-            _sql.c_str(), this, _db.get()
+        PQ_ASYNC_DEF_DBG(
+            "sending query: {}\nct: {:p}, db: {:p}",
+            _sql, (void*)this, (void*)_db.get()
         );
         
         if(PQsendQueryParams(
@@ -555,9 +555,9 @@ protected:
     
     void _send_prepare()
     {
-        pq_async_log_debug(
-            "sending prepare query '%s': %s\nct: %x, db: %x",
-            _name.c_str(), _sql.c_str(), this, _db.get()
+        PQ_ASYNC_DEF_DBG(
+            "sending prepare query, name: {}, sql: {}\nct: {:p}, db: {:p}",
+            _name, _sql, (void*)this, (void*)_db.get()
         );
         
         Oid* _types = new Oid[_t.size()];
@@ -577,9 +577,9 @@ protected:
     
     void _send_query_prepared()
     {
-        pq_async_log_debug(
-            "sending query prepared: %s\nct: %x, db: %x",
-            _name.c_str(), this, _db.get()
+        PQ_ASYNC_DEF_DBG(
+            "sending query prepared: {}\nct: {:p}, db: {:p}",
+            _name, (void*)this, (void*)_db.get()
         );
         
         if(PQsendQueryPrepared(
@@ -594,9 +594,9 @@ protected:
     
     void _cancel_command()
     {
-        pq_async_log_debug(
-            "canceling current command\nct: %x, db: %x",
-            this, _db.get()
+        PQ_ASYNC_DEF_DBG(
+            "canceling current command\nct: {:p}, db: {:p}",
+            (void*)this, (void*)_db.get()
         );
         
         char errbuf[256];
@@ -614,9 +614,9 @@ protected:
         
         #if PQ_ASYNC_BUILD_DEBUG == 1
         bool busy = !PQisBusy(this->conn());
-        pq_async_log_trace(
-            "is busy: %s\nct: %x, db: %x",
-            busy ? "false" : "true", this, _db.get()
+        PQ_ASYNC_DEF_TRACE(
+            "is busy: {}\nct: {:p}, db: {:p}",
+            busy ? "false" : "true", (void*)this, (void*)_db.get()
         );
         return busy;
         #else
@@ -636,10 +636,10 @@ protected:
     sp_database _db;
 
     connection* _conn;
-    value_cb<sp_connection_lock> _lock_cb;
+    md::callback::value_cb<sp_connection_lock> _lock_cb;
 
     sp_connection_lock _lock;
-    value_cb<PGresult*> _cb;
+    md::callback::value_cb<PGresult*> _cb;
 };
 
 class reader_connection_task
@@ -647,9 +647,9 @@ class reader_connection_task
 {
 public:
     reader_connection_task(
-        event_queue* owner, sp_database db, sp_connection_lock lock
+        md::event_queue* owner, sp_database db, sp_connection_lock lock
     );
-
+    
     virtual PGresult* run_now()
     {
         if(_cmd_type == command_type::none)
@@ -731,7 +731,7 @@ public:
             _cb(nullptr, r);
             
         }catch(const std::exception& err){
-            _cb(cb_error(err), nullptr);
+            _cb(md::callback::cb_error(err), nullptr);
         }
     }
 

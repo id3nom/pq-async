@@ -48,7 +48,7 @@ public:
     
     int32_t get_col_index(const char* col_name) const
     {
-        std::string tmp_name = pq_async::str_to_lower(col_name);
+        std::string tmp_name = md::lower_case_copy(col_name);
 
         for(unsigned int i = 0; i < this->size(); ++i)
             if(strcmp((*this)[i]->get_cname(), tmp_name.c_str()) == 0)
