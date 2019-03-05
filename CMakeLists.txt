@@ -245,9 +245,9 @@ target_link_libraries(pq-async
     uuid
 )
 
-# install
-install( TARGETS pq-async
-	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})  # This is for Windows
-install( DIRECTORY include/ DESTINATION include/ )
+# # install
+# install( TARGETS pq-async
+# 	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+# 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+# 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})  # This is for Windows
+# install( DIRECTORY include/ DESTINATION include/ )
