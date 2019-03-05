@@ -5,8 +5,7 @@ project(pq-async VERSION 0.1.0 LANGUAGES CXX C)
 #set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # define module path
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
 
 if(NOT PrecompiledHeader_CMake_INCLUDED)
     include(PrecompiledHeader)
