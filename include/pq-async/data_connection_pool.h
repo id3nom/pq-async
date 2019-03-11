@@ -365,6 +365,13 @@ public:
     );
     connection_task(md::event_queue* owner, sp_database db, connection* conn);
     
+    ~connection_task()
+    {
+        if(_ev)
+            event_free(_ev);
+        _ev = nullptr;
+    }
+    
     sp_database db(){ return _db;}
     
     void connect(const std::string& connection_string, int32_t timeout_ms)
@@ -378,6 +385,9 @@ public:
                 std::chrono::milliseconds(timeout_ms)
             );
         _format = timeout_date.time_since_epoch().count();
+        // force activation on connect action because no event is bond to
+        // the connection socket.
+        this->_owner->activate();
     }
 
     void send_query(const char* sql, const parameters& p,
@@ -387,6 +397,7 @@ public:
         _sql = sql;
         _p = p;
         _format = format;
+        this->_owner->activate();
     }
     
     void send_query(const char* sql, parameters& p, int format = PG_BIN_FORMAT)
@@ -395,6 +406,7 @@ public:
         _sql = sql;
         _p = std::move(p);
         _format = format;
+        this->_owner->activate();
     }
     
     void send_prepare(
@@ -404,6 +416,7 @@ public:
         _name = name;
         _sql = sql;
         _t = t;
+        this->_owner->activate();
     }
     
     void send_query_prepared(
@@ -413,6 +426,7 @@ public:
         _name = name;
         _p = std::move(p);
         _format = format;
+        this->_owner->activate();
     }
     void send_query_prepared(
         const char* name, const parameters& p, int format = PG_BIN_FORMAT)
@@ -421,6 +435,7 @@ public:
         _name = name;
         _p = p;
         _format = format;
+        this->_owner->activate();
     }
     
     void cancel()
@@ -429,10 +444,15 @@ public:
             throw pq_async::exception("No command in progress!");
         
         _cmd_type = command_type::cancel;
+        this->_owner->activate();
     }
     
     virtual PGresult* run_now()
     {
+        if(_ev){
+            event_free(_ev);
+            _ev = nullptr;
+        }
         if(_cmd_type == command_type::none)
             return nullptr;
         
@@ -518,10 +538,16 @@ public:
         }
     }
     
-    virtual md::event_requeue_pos requeue()
+    virtual md::event_requeue_pos requeue() const
     {
         if(_completed)
             return md::event_requeue_pos::none;
+        
+        // must reactivate because database strand do not reactivate
+        // on requeue, and no event is created for connect task
+        if(_cmd_type == command_type::connect)
+            this->_owner->activate();
+        
         return md::event_requeue_pos::front;
     }
     virtual size_t size() const
@@ -529,12 +555,25 @@ public:
         return 0;
     }
     
-    
     PGconn* conn();
     
 protected:
     
     void _connect();
+    
+    void _create_event()
+    {
+        _ev = event_new(
+            this->_owner->ev_base(),
+            PQsocket(this->conn()),
+            EV_READ | EV_PERSIST,
+            [](int fd, short events, void* arg){
+                md::event_queue* eq = (md::event_queue*)arg;
+                eq->activate();
+            },
+            this->_owner
+        );
+    }
     
     void _send_query()
     {
@@ -547,8 +586,10 @@ protected:
             this->conn(), _sql.c_str(), _p.size(), _p.types(), 
             _p.values(), _p.lengths(), _p.formats(), 
             _format
-        ))
+        )){
+            _create_event();
             return;
+        }
         std::string errMsg = PQerrorMessage(this->conn());
         throw pq_async::exception(errMsg);
     }
@@ -568,6 +609,7 @@ protected:
             this->conn(), _name.c_str(), _sql.c_str(), _t.size(), _types
         )){
             delete[] _types;
+            _create_event();
             return;
         }
         delete[] _types;
@@ -586,8 +628,10 @@ protected:
             this->conn(), _name.c_str(), _p.size(),
             _p.values(), _p.lengths(), _p.formats(), 
             _format
-        ))
+        )){
+            _create_event();
             return;
+        }
         std::string errMsg = PQerrorMessage(this->conn());
         throw pq_async::exception(errMsg);
     }
@@ -640,6 +684,8 @@ protected:
 
     sp_connection_lock _lock;
     md::callback::value_cb<PGresult*> _cb;
+    
+    event* _ev;
 };
 
 class reader_connection_task

@@ -34,6 +34,7 @@ database::database(
     _log(log ? log : pq_async::default_logger())
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
+    strand->enable_activate_on_requeue(false);
 }
 
 database::~database()

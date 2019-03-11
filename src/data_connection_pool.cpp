@@ -135,7 +135,9 @@ connection_task::connection_task(
     _completed(false), _db(db),
     
     _conn(nullptr), _lock_cb(),
-    _lock(lock), _cb(cb)
+    _lock(lock), _cb(cb),
+
+    _ev(nullptr)
 {
 }
 
@@ -147,7 +149,9 @@ connection_task::connection_task(
     _completed(false), _db(db),
     
     _conn(conn), _lock_cb(lock_cb),
-    _lock(), _cb()
+    _lock(), _cb(),
+    
+    _ev(nullptr)
 {
 }
 
@@ -158,7 +162,9 @@ connection_task::connection_task(
     _completed(false), _db(db),
     
     _conn(nullptr), _lock_cb(),
-    _lock(lock), _cb()
+    _lock(lock), _cb(),
+
+    _ev(nullptr)
 {
 }
 
@@ -169,7 +175,9 @@ connection_task::connection_task(
     _completed(false), _db(db),
     
     _conn(conn), _lock_cb(),
-    _lock(), _cb()
+    _lock(), _cb(),
+
+    _ev(nullptr)
 {
 }
 
