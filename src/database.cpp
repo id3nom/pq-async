@@ -31,7 +31,7 @@ database::database(
     _conn(NULL),
     _strand(strand),
     _lock(),
-    _log(log)
+    _log(log ? log : pq_async::default_logger())
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 }

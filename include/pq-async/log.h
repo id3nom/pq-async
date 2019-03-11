@@ -67,6 +67,8 @@ inline md::log::sp_logger default_logger(md::log::sp_logger new_log = nullptr)
     static md::log::sp_logger _log = nullptr;
     if(new_log)
         _log = new_log;
+    if(!_log)
+        _log = md::log::default_logger()->add_child("pq_async");
     return _log;
 }
 
