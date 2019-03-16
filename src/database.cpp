@@ -55,8 +55,13 @@ void database::exec_queries(const std::string& sql)
 {
     this->wait_for_sync();
     
-    open_connection();
-    connection_lock conn_lock(_conn);
+    bool local_trans = false;
+    if(!this->in_transaction()){
+        local_trans = true;
+        this->begin();
+    }
+    //open_connection();
+    //connection_lock conn_lock(_conn);
     
     std::vector< std::string > queries;
     split_queries(sql, queries);
@@ -68,10 +73,29 @@ void database::exec_queries(const std::string& sql)
     );
     
     for(const std::string& qry: queries){
+        #if PQ_ASYNC_BUILD_DEBUG
+        std::vector<std::string> qry_lines;
+        boost::algorithm::split(
+            qry_lines, qry, boost::is_any_of("\n")
+        );
+        std::string num_qry;
+        for(size_t i = 0; i < qry_lines.size(); ++i){
+            std::string num = md::num_to_str(i+1);
+            for(size_t j = num.size(); j < 4; ++j)
+                num += " ";
+            num_qry += num + " " + qry_lines[i] + "\n";
+        }
+            
+        PQ_ASYNC_DBG(
+            _log,
+            "Executing query:\n{}", num_qry
+        );
+        #else
         PQ_ASYNC_DBG(
             _log,
             "Executing query:\n{}", qry
         );
+        #endif//PQ_ASYNC_BUILD_DEBUG
         PGresult* res = PQexec(_conn->conn(), qry.c_str());
         
         int result_status = PQresultStatus(res);
@@ -95,6 +119,9 @@ void database::exec_queries(const std::string& sql)
             throw pq_async::exception(errMsg);
         }
     }
+    
+    if(local_trans)
+        this->commit();
 }
 
 void database::split_queries(
@@ -169,7 +196,7 @@ void database::split_queries(
                 dollar_quote_string == sql.substr(i, dollar_quote_string.size())
             ){
                 cur_qry += dollar_quote_string;
-                i += dollar_quote_string.size();
+                i += dollar_quote_string.size() -1;
                 in_dollar_quote = false;
                 continue;
             }
