@@ -192,16 +192,16 @@ public:
         return _dim;
     }
 
-    template<class T, int32_t dim_count>
-    operator boost::multi_array<T, dim_count>() const
+    template<class T>
+    operator md::jagged_vector<T>() const
     {
-        return as_array<T, dim_count>();
+        return as_array<T>();
     }
     
-    template<class T, int32_t dim_count>
-    boost::multi_array<T, dim_count> as_array() const
+    template<class T>
+    md::jagged_vector<T> as_array() const
     {
-        return pgval_to_array<T, dim_count>(
+        return pgval_to_array<T>(
             (char*)_value, _length, _col->get_format()
             );
     }

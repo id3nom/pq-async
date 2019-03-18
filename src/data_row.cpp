@@ -86,50 +86,23 @@ sp_data_value data_row::get_value(
 
 
 
-#define _PQ_ASYNC_ARRAY_DIM_TO_JSON(DIM_TYPE, DIM_SIZE, __arr_cast) \
-} else if(dim == DIM_SIZE) { \
-    boost::multi_array< DIM_TYPE, DIM_SIZE > data_arr =  \
-        _values[i]->as_array< DIM_TYPE, DIM_SIZE >(); \
- \
-    auto itval = data_arr.data(); \
-    for(unsigned int j = 0; j < DIM_SIZE; ++j){ \
-        pq_async::json row_arr = pq_async::json::array(); \
-        uint32_t dim_ele_cnt = data_arr.shape()[i]; \
-        for(unsigned int k = 0; k < dim_ele_cnt; ++k){ \
-            DIM_TYPE v = *itval; \
-            row_arr.push_back((__arr_cast)v); \
-            ++itval; \
-        } \
-        rows_arr.push_back(row_arr); \
-    }
 
 #define _PQ_ASYNC_ARRAY_TO_JSON(DIM_TYPE, __arr_cast) \
 if(_values[i]->is_null()) \
     row_obj[name] = nullptr; \
 else { \
-    int dim = _values[i]->get_array_dim(); \
+    md::jagged_vector<DIM_TYPE> jv = _values[i]->as_array<DIM_TYPE>(); \
     pq_async::json rows_arr = pq_async::json::array(); \
-    \
-    if(dim == 1){ \
-        boost::multi_array< DIM_TYPE, 1 > data_arr =  \
-            _values[i]->as_array< DIM_TYPE, 1 >(); \
-    \
-        for(unsigned int j = 0; j < data_arr.shape()[0]; ++j){ \
-            DIM_TYPE v = data_arr[j]; \
-            rows_arr.push_back((__arr_cast)v); \
+    for(size_t d = 0; d < jv.dim_size(); ++i){ \
+        pq_async::json row_arr = pq_async::json::array(); \
+        for(auto it = jv.cbegin(d); it != jv.cend(d); ++it){ \
+            row_arr.push_back((__arr_cast)(*it)); \
         } \
-    \
-    _PQ_ASYNC_ARRAY_DIM_TO_JSON(DIM_TYPE, 2, __arr_cast) \
-    _PQ_ASYNC_ARRAY_DIM_TO_JSON(DIM_TYPE, 3, __arr_cast) \
-    _PQ_ASYNC_ARRAY_DIM_TO_JSON(DIM_TYPE, 4, __arr_cast) \
-    _PQ_ASYNC_ARRAY_DIM_TO_JSON(DIM_TYPE, 5, __arr_cast) \
-    \
-    } else { \
-        throw pq_async::exception( \
-            "6 Dimension and higher are not supported!." \
-        ); \
+        if(jv.dim_size() == 1) \
+            rows_arr = row_arr; \
+        else \
+            rows_arr.push_back(row_arr); \
     } \
-    \
     row_obj[name] = rows_arr; \
 }
 

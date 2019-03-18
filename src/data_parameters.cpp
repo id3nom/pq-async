@@ -769,11 +769,16 @@ pq_async::parameter* new_parameter(const std::string& value)
 
     return params;
 }
-
 pq_async::parameter* new_parameter(const char* value)
 {
     return new_parameter(std::string(value));
 }
+pq_async::parameter* new_parameter(md::string_view value)
+{
+    return new_parameter(value.to_string());
+}
+
+
 
 pq_async::parameter* new_parameter(bool value)
 {
@@ -921,15 +926,26 @@ pq_async::parameter* new_parameter(const pq_async::money& value)
 
 pq_async::parameter* new_parameter(const pq_async::json& value)
 {
+    // std::string sval = value.dump();
+    // char* values = new char[sval.size() +2];
+
+    // values[0] = 1;
+    // std::copy(sval.begin(), sval.end(), values +1);
+    // values[sval.size() +1] = '\0';
+
+    // pq_async::parameter* params =
+    //     new pq_async::parameter(JSONBOID, values, value.size() + 2, 0);
+
+    // return params;
     std::string sval = value.dump();
-    char* values = new char[sval.size() +2];
+    char* values = new char[sval.size() +1];
 
-    values[0] = 1;
-    std::copy(sval.begin(), sval.end(), values +1);
-    values[sval.size() +1] = '\0';
-
+    //values[0] = 1;
+    std::copy(sval.begin(), sval.end(), values);
+    values[sval.size()] = '\0';
+    
     pq_async::parameter* params =
-        new pq_async::parameter(JSONBOID, values, value.size() + 2, 0);
+        new pq_async::parameter(JSONBOID, values, value.size() + 1, 0);
 
     return params;
 }
@@ -1386,60 +1402,53 @@ void get_array_oid_and_dim(char* val, int len, int fmt, int& oid, int& dim)
 // array specialization //
 //////////////////////////
 
-#define PQ_ASYNC_NEW_PARAMETER(__type, __name, __dim, __eleOid, __arrEleOid) \
+#define PQ_ASYNC_NEW_PARAMETER(__type, __name, __eleOid, __arrEleOid) \
 pq_async::parameter* new_parameter( \
-    const boost::multi_array<__type, __dim> & value) \
+    const md::jagged_vector<__type> & value) \
 { \
-    return new_parameter_gen<__type, __dim>(value, __eleOid, __arrEleOid); \
+    return new_parameter_gen<__type>(value, __eleOid, __arrEleOid); \
 } \
 template<> \
-boost::multi_array< __type, __dim > \
-val_from_pgparam< boost::multi_array< __type, __dim > >( \
+md::jagged_vector< __type > \
+val_from_pgparam< md::jagged_vector< __type > >( \
 int oid, char* val, int len, int format) \
 { \
-    return pgval_to_array< __type, __dim >( \
+    return pgval_to_array< __type >( \
         val, len, format \
     ); \
 }
 
-
-#define PQ_ASYNC_NEW_PARAMETER_DIM(__dim) \
-PQ_ASYNC_NEW_PARAMETER(std::string, string, __dim, TEXTOID, TEXTARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(char*, char, __dim, TEXTOID, TEXTARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(int16_t, int16, __dim, INT2OID, INT2ARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(int32_t, int32, __dim, INT4OID, INT4ARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(int64_t, int64, __dim, INT8OID, INT8ARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(float, float, __dim, FLOAT4OID, FLOAT4ARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(double, double, __dim, FLOAT8OID, FLOAT8ARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::numeric, numeric, __dim, NUMERICOID, NUMERICARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::money, money, __dim, CASHOID, MONEYARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::time, time, __dim, TIMEOID, TIMEARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::time_tz, time_tz, __dim, TIMETZOID, TIMETZARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::timestamp, timestamp, __dim, TIMESTAMPOID, TIMESTAMPARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::timestamp_tz, timestamp_tz, __dim, TIMESTAMPTZOID, TIMESTAMPTZARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::date, date, __dim, DATEOID, DATEARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::interval, interval, __dim, INTERVALOID, INTERVALARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::json, json, __dim, JSONBOID, JSONBARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(std::vector<int8_t>, bytea, __dim, BYTEAOID, BYTEAARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::uuid, uuid, __dim, UUIDOID, UUIDARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::oid, oid, __dim, OIDOID, OIDARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::cidr, cidr, __dim, CIDROID, CIDRARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::inet, inet, __dim, INETOID, INETARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::macaddr, macaddr, __dim, MACADDROID, MACADDRARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::macaddr8, macaddr8, __dim, MACADDR8OID, MACADDR8ARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::point, point, __dim, POINTOID, POINTARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::line, line, __dim, LINEOID, LINEARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::lseg, lseg, __dim, LSEGOID, LSEGARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::box, box, __dim, BOXOID, BOXARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::path, path, __dim, PATHOID, PATHARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::polygon, polygon, __dim, POLYGONOID, POLYGONARRAYOID); \
-PQ_ASYNC_NEW_PARAMETER(pq_async::circle, circle, __dim, CIRCLEOID, CIRCLEARRAYOID); \
-
-PQ_ASYNC_NEW_PARAMETER_DIM(1);
-PQ_ASYNC_NEW_PARAMETER_DIM(2);
-PQ_ASYNC_NEW_PARAMETER_DIM(3);
-PQ_ASYNC_NEW_PARAMETER_DIM(4);
-PQ_ASYNC_NEW_PARAMETER_DIM(5);
+PQ_ASYNC_NEW_PARAMETER(std::string, string, TEXTOID, TEXTARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(char*, char, TEXTOID, TEXTARRAYOID);
+//PQ_ASYNC_NEW_PARAMETER(md::string_view, string, TEXTOID, TEXTARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(int16_t, int16, INT2OID, INT2ARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(int32_t, int32, INT4OID, INT4ARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(int64_t, int64, INT8OID, INT8ARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(float, float, FLOAT4OID, FLOAT4ARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(double, double, FLOAT8OID, FLOAT8ARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::numeric, numeric, NUMERICOID, NUMERICARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::money, money, CASHOID, MONEYARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::time, time, TIMEOID, TIMEARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::time_tz, time_tz, TIMETZOID, TIMETZARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::timestamp, timestamp, TIMESTAMPOID, TIMESTAMPARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::timestamp_tz, timestamp_tz, TIMESTAMPTZOID, TIMESTAMPTZARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::date, date, DATEOID, DATEARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::interval, interval, INTERVALOID, INTERVALARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::json, json, JSONBOID, JSONBARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(std::vector<int8_t>, bytea, BYTEAOID, BYTEAARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::uuid, uuid, UUIDOID, UUIDARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::oid, oid, OIDOID, OIDARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::cidr, cidr, CIDROID, CIDRARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::inet, inet, INETOID, INETARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::macaddr, macaddr, MACADDROID, MACADDRARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::macaddr8, macaddr8, MACADDR8OID, MACADDR8ARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::point, point, POINTOID, POINTARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::line, line, LINEOID, LINEARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::lseg, lseg, LSEGOID, LSEGARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::box, box, BOXOID, BOXARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::path, path, PATHOID, PATHARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::polygon, polygon, POLYGONOID, POLYGONARRAYOID);
+PQ_ASYNC_NEW_PARAMETER(pq_async::circle, circle, CIRCLEOID, CIRCLEARRAYOID);
 
 
 // val_from_pgparam...

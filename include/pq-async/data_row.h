@@ -173,10 +173,10 @@ public:
         return get_value(col_name)->get_array_dim();
     }
 
-    template<class T, int32_t dim_count>
-    boost::multi_array<T, dim_count> as_array(const char* col_name) const
+    template<class T>
+    md::jagged_vector<T> as_array(const char* col_name) const
     {
-        return get_value(col_name)->as_array<T, dim_count>();
+        return get_value(col_name)->as_array<T>();
     }
 
 
@@ -195,10 +195,10 @@ public:
         return get_value(i)->get_array_dim();
     }
 
-    template<class T, int32_t dim_count>
-    boost::multi_array<T, dim_count> as_array(uint32_t i) const
+    template<class T>
+    md::jagged_vector<T> as_array(uint32_t i) const
     {
-        return get_value(i)->as_array<T, dim_count>();
+        return get_value(i)->as_array<T>();
     }
 
 private:
