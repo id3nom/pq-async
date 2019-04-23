@@ -926,27 +926,15 @@ pq_async::parameter* new_parameter(const pq_async::money& value)
 
 pq_async::parameter* new_parameter(const pq_async::json& value)
 {
-    // std::string sval = value.dump();
-    // char* values = new char[sval.size() +2];
-
-    // values[0] = 1;
-    // std::copy(sval.begin(), sval.end(), values +1);
-    // values[sval.size() +1] = '\0';
-
-    // pq_async::parameter* params =
-    //     new pq_async::parameter(JSONBOID, values, value.size() + 2, 0);
-
-    // return params;
     std::string sval = value.dump();
     char* values = new char[sval.size() +1];
-
-    //values[0] = 1;
-    std::copy(sval.begin(), sval.end(), values);
-    values[sval.size()] = '\0';
+    
+    values[0] = 1;
+    std::copy(sval.begin(), sval.end(), values +1);
     
     pq_async::parameter* params =
-        new pq_async::parameter(JSONBOID, values, value.size() + 1, 0);
-
+        new pq_async::parameter(JSONBOID, values, sval.size() + 1, 1);
+    
     return params;
 }
 
