@@ -433,7 +433,7 @@ public:
      * \param acb 
      */
     template< typename CB, PQ_ASYNC_VALID_DB_ASY_CALLBACK(CB)>
-    void roollback(const CB& acb)
+    void rollback(const CB& acb)
     {
         md::callback::async_cb cb;
         md::callback::assign_async_cb<md::callback::async_cb>(cb, acb);
