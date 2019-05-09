@@ -31,11 +31,14 @@ namespace pq_async {
     
     interval::interval(const hhdate::sys_time<std::chrono::microseconds>& t)
     {
-        
+        this->_is_null = false;
     }
     
     std::string interval::iso_string() const
     {
+        if(_is_null)
+            return "NULL";
+        
         int32_t years = this->_m / 12;
         int32_t months = this->_m % 12;
         
@@ -59,6 +62,8 @@ namespace pq_async {
     
     interval interval::parse(const std::string& s)
     {
+        if(s == "NULL")
+            return interval::null();
         return interval();
     }
     
@@ -72,16 +77,23 @@ namespace pq_async {
         // pg to hhdate alignment...
         if(_d.year() < hhdate::year(1))
             this->_d = this->_d - hhdate::years{1};
+        this->_is_null = false;
     }
     
     
     std::string date::iso_string() const
     {
+        if(_is_null)
+            return "NULL";
+        
         return hhdate::format("%Y-%m-%d", this->_d);
     }
     
     date date::parse(const std::string& s)
     {
+        if(s == "NULL")
+            return date::null();
+        
         return date();
     }
     
@@ -90,7 +102,8 @@ namespace pq_async {
     ///////////////
     
     timestamp::timestamp(int64_t pgticks)
-        : _ts(std::chrono::microseconds(pgticks))
+        : _ts(std::chrono::microseconds(pgticks)),
+        _is_null(false)
     {
         auto daypoint = hhdate::floor<hhdate::days>(this->_ts);
         // calendar date
@@ -110,15 +123,22 @@ namespace pq_async {
     timestamp::timestamp(const timestamp_tz& tz)
     {
         this->_ts = tz._tsz.get_sys_time();
+        _is_null = tz._is_null;
     }
     
     std::string timestamp::iso_string() const
     {
+        if(_is_null)
+            return "NULL";
+        
         return hhdate::format("%Y-%m-%d %T", this->_ts);
     }
     
     timestamp_tz timestamp::as_zone(const char* zone_name) const
     {
+        if(_is_null)
+            return timestamp_tz::null();
+        
         hhdate::local_time<std::chrono::microseconds> lts(
             this->_ts.time_since_epoch()
         );
@@ -129,13 +149,19 @@ namespace pq_async {
 
     timestamp_tz timestamp::make_zoned(const char* zone_name) const
     {
+        if(_is_null)
+            return timestamp_tz::null();
+    
         hhdate::zoned_time<std::chrono::microseconds> ts =
             hhdate::make_zoned(zone_name, this->_ts);
         return timestamp_tz(ts);
     }
-
+    
     timestamp timestamp::parse(const std::string& s)
     {
+        if(s == "NULL")
+            return timestamp::null();
+            
         timestamp ts;
         std::istringstream is(s);
         is >> hhdate::parse("%Y-%m-%d %T", ts._ts);
@@ -152,7 +178,8 @@ namespace pq_async {
             hhdate::local_time<std::chrono::microseconds>(
                 std::chrono::microseconds(pgticks)
             )
-        )
+        ),
+        _is_null(false)
     {
         auto daypoint = 
             hhdate::floor<hhdate::days>(
@@ -171,12 +198,12 @@ namespace pq_async {
                 tod.seconds() + tod.subseconds()
             );
                 // hhdate::zoned_time<std::chrono::microseconds>(
-                // 	hhdate::locate_zone("UTC"),
-                // 	hhdate::local_time<std::chrono::microseconds>(
-                // 		hhdate::sys_days(ymd) + 
-                // 		tod.hours() + tod.minutes() + 
-                // 		tod.seconds() + tod.subseconds()
-                // 	)
+                //  hhdate::locate_zone("UTC"),
+                //  hhdate::local_time<std::chrono::microseconds>(
+                //      hhdate::sys_days(ymd) + 
+                //      tod.hours() + tod.minutes() + 
+                //      tod.seconds() + tod.subseconds()
+                //  )
                 // );
         }
     }
@@ -184,15 +211,22 @@ namespace pq_async {
     timestamp_tz::timestamp_tz(const timestamp& ts)
     {
         this->_tsz = ts._ts;
+        this->_is_null = ts._is_null;
     }
 
     std::string timestamp_tz::iso_string() const
     {
+        if(_is_null)
+            return "NULL";
+        
         return hhdate::format("%Y-%m-%d %T%z", this->_tsz);
     }
 
     timestamp_tz timestamp_tz::as_zone(const char* zone_name) const
     {
+        if(_is_null)
+            return timestamp_tz::null();
+        
         hhdate::local_time<std::chrono::microseconds> lts(
             this->_tsz.get_sys_time().time_since_epoch()
         );
@@ -203,12 +237,18 @@ namespace pq_async {
 
     timestamp_tz timestamp_tz::make_zoned(const char* zone_name) const
     {
+        if(_is_null)
+            return timestamp_tz::null();
+        
         auto ts = hhdate::make_zoned(zone_name, this->_tsz);
         return timestamp_tz(ts);
     }
 
     timestamp_tz timestamp_tz::parse(const std::string& s)
     {
+        if(s == "NULL")
+            return timestamp_tz::null();
+        
         timestamp_tz ts;
         hhdate::sys_time<std::chrono::microseconds> st;
         std::istringstream is(s);
@@ -231,6 +271,7 @@ namespace pq_async {
             hhdate::sys_time<std::chrono::microseconds>(
                 hhdate::floor<std::chrono::microseconds>(tod)
             );
+        this->_is_null = false;
     }
     
     pq_async::time::time(int64_t pgticks)
@@ -248,15 +289,22 @@ namespace pq_async {
     pq_async::time::time(const time_tz& tz)
     {
         this->_tod = tz._todz.get_sys_time();
+        this->_is_null = tz._is_null;
     }
     
     std::string pq_async::time::iso_string() const
     {
+        if(_is_null)
+            return "NULL";
+        
         return hhdate::format("%T", this->_tod);
     }
     
     time_tz pq_async::time::as_zone(const char* zone_name) const
     {
+        if(_is_null)
+            return time_tz::null();
+        
         hhdate::local_time<std::chrono::microseconds> lts(
             this->_tod.time_since_epoch()
         );
@@ -267,6 +315,9 @@ namespace pq_async {
     
     time_tz pq_async::time::make_zoned(const char* zone_name) const
     {
+        if(_is_null)
+            return time_tz::null();
+        
         hhdate::zoned_time<std::chrono::microseconds> ts =
             hhdate::make_zoned(zone_name, this->_tod);
         return time_tz(ts);
@@ -274,6 +325,8 @@ namespace pq_async {
     
     pq_async::time pq_async::time::parse(const std::string& s)
     {
+        if(s == "NULL")
+            return pq_async::time::null();
         pq_async::time ts;
         std::istringstream is(s);
         is >> hhdate::parse("%T", ts._tod);
@@ -297,6 +350,7 @@ namespace pq_async {
                     hhdate::floor<std::chrono::microseconds>(tod)
                 )
             );
+        this->_is_null = false;
     }
     
     time_tz::time_tz(int64_t pgticks)
@@ -312,21 +366,29 @@ namespace pq_async {
                     tod
                 )
             );
+        this->_is_null = false;
     }
     
     
     time_tz::time_tz(const pq_async::time& ts)
     {
         this->_todz = ts._tod;
+        this->_is_null = ts._is_null;
     }
     
     std::string time_tz::iso_string() const
     {
+        if(_is_null)
+            return "NULL";
+        
         return hhdate::format("%T%z", this->_todz);
     }
     
     time_tz time_tz::as_zone(const char* zone_name) const
     {
+        if(_is_null)
+            return time_tz::null();
+        
         hhdate::local_time<std::chrono::microseconds> lts(
             this->_todz.get_sys_time().time_since_epoch()
         );
@@ -337,12 +399,18 @@ namespace pq_async {
 
     time_tz time_tz::make_zoned(const char* zone_name) const
     {
+        if(_is_null)
+            return time_tz::null();
+        
         auto ts = hhdate::make_zoned(zone_name, this->_todz);
         return time_tz(ts);
     }
     
     time_tz time_tz::parse(const std::string& s)
     {
+        if(s == "NULL")
+            return time_tz::null();
+        
         time_tz ts;
         hhdate::sys_time<std::chrono::microseconds> st;
         std::istringstream is(s);

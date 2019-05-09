@@ -218,6 +218,9 @@ double pgval_to_double(char* val, int len, int fmt)
 
 pq_async::time pgval_to_time(char* val, int len, int fmt)
 {
+    if(!val)
+        return pq_async::time::null();
+    
     if(len == -1)
         return time(0);
 
@@ -234,6 +237,9 @@ pq_async::time pgval_to_time(char* val, int len, int fmt)
 
 pq_async::time_tz pgval_to_time_tz(char* val, int len, int fmt)
 {
+    if(!val)
+        return pq_async::time_tz::null();
+    
     if(len == -1)
         return time_tz(hhdate::locate_zone("UTC"), 0);
 
@@ -258,6 +264,9 @@ pq_async::time_tz pgval_to_time_tz(char* val, int len, int fmt)
 
 pq_async::timestamp pgval_to_timestamp(char* val, int len, int fmt)
 {
+    if(!val)
+        return pq_async::timestamp::null();
+    
     if(len == -1)
         return pq_async::timestamp();
 
@@ -276,6 +285,9 @@ pq_async::timestamp pgval_to_timestamp(char* val, int len, int fmt)
 
 pq_async::timestamp_tz pgval_to_timestamp_tz(char* val, int len, int fmt)
 {
+    if(!val)
+        return pq_async::timestamp_tz::null();
+    
     if(len == -1)
         return pq_async::timestamp_tz();
 
@@ -294,6 +306,9 @@ pq_async::timestamp_tz pgval_to_timestamp_tz(char* val, int len, int fmt)
 
 pq_async::date pgval_to_date(char* val, int len, int fmt)
 {
+    if(!val)
+        return pq_async::date::null();
+
     if(len == -1)
         return pq_async::date();
 
@@ -311,6 +326,9 @@ pq_async::date pgval_to_date(char* val, int len, int fmt)
 
 pq_async::interval pgval_to_interval(char* val, int len, int fmt)
 {
+    if(!val)
+        return pq_async::interval::null();
+    
     if(len == -1)
         return pq_async::interval();
 
@@ -828,6 +846,9 @@ pq_async::parameter* new_parameter(double value)
 
 pq_async::parameter* new_parameter(const pq_async::time& value)
 {
+    if(value.is_null())
+        return new_null_parameter();
+    
     int64_t val = value.pgticks();// - POSTGRES_EPOCH_USEC;
     char* out_val = new char[sizeof(int64_t)];
     pq_async::swap8(&val, (int64_t*)out_val, true);
@@ -836,6 +857,9 @@ pq_async::parameter* new_parameter(const pq_async::time& value)
 
 pq_async::parameter* new_parameter(const pq_async::time_tz& value)
 {
+    if(value.is_null())
+        return new_null_parameter();
+
     int64_t val = value.pgticks() - POSTGRES_EPOCH_USEC;
     int32_t len = sizeof(int64_t) + sizeof(int32_t);
     char* out_val = new char[len];
@@ -853,6 +877,9 @@ pq_async::parameter* new_parameter(const pq_async::time_tz& value)
 
 pq_async::parameter* new_parameter(const pq_async::timestamp& value)
 {
+    if(value.is_null())
+        return new_null_parameter();
+
     int64_t val = value.pgticks() - POSTGRES_EPOCH_USEC;
     char* out_val = new char[sizeof(int64_t)];
     pq_async::swap8(&val, (int64_t*)out_val, true);
@@ -861,6 +888,9 @@ pq_async::parameter* new_parameter(const pq_async::timestamp& value)
 
 pq_async::parameter* new_parameter(const pq_async::timestamp_tz& value)
 {
+    if(value.is_null())
+        return new_null_parameter();
+
     int64_t val = value.pgticks() - POSTGRES_EPOCH_USEC;
     char* out_val = new char[sizeof(int64_t)];
     pq_async::swap8(&val, (int64_t*)out_val, true);
@@ -869,6 +899,9 @@ pq_async::parameter* new_parameter(const pq_async::timestamp_tz& value)
 
 pq_async::parameter* new_parameter(const pq_async::date& value)
 {
+    if(value.is_null())
+        return new_null_parameter();
+
     int32_t val = value.pgticks() - POSTGRES_EPOCH_JDATE;
     char* out_val = new char[sizeof(int32_t)];
     pq_async::swap4(&val, (int32_t*)out_val, true);
@@ -877,6 +910,9 @@ pq_async::parameter* new_parameter(const pq_async::date& value)
 
 pq_async::parameter* new_parameter(const pq_async::interval& value)
 {
+    if(value.is_null())
+        return new_null_parameter();
+    
     int64_t tval = value.time_of_day().to_duration().count();
     int32_t dval = value.days();
     int32_t mval = value.months();

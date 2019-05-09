@@ -47,17 +47,27 @@ class interval
     friend std::istream& operator>> (std::istream& is, interval& v);
 public:
     interval()
-        : _t(std::chrono::microseconds(0)), _d(0), _m(0)
+        : _t(std::chrono::microseconds(0)), _d(0), _m(0),
+        _is_null(false)
     {
     }
     
     interval(int64_t t, int32_t d, int32_t m)
-        : _t(std::chrono::microseconds(t)), _d(d), _m(m)
+        : _t(std::chrono::microseconds(t)), _d(d), _m(m),
+        _is_null(false)
     {
     }
     
     interval(const hhdate::sys_time<std::chrono::microseconds>& t);
     
+    bool is_null() const { return _is_null;}
+    static interval null()
+    {
+        auto v = interval();
+        v._is_null = true;
+        return v;
+    }
+
     int64_t pgticks() const
     {
         return _t.to_duration().count();
@@ -110,6 +120,7 @@ private:
     hhdate::time_of_day<std::chrono::microseconds> _t;
     int32_t _d;
     int32_t _m;
+    bool _is_null;
 };
 
 class date
@@ -122,15 +133,25 @@ public:
             hhdate::floor<hhdate::days>(
                 std::chrono::system_clock::now()
             )
-        )
+        ),
+        _is_null(false)
     {
     }
     
     date(int32_t val);
 
     date(const hhdate::year_month_day& d)
-        : _d(d)
+        : _d(d),
+        _is_null(false)
     {
+    }
+    
+    bool is_null() const { return _is_null;}
+    static date null()
+    {
+        auto v = date();
+        v._is_null = true;
+        return v;
     }
     
     int32_t pgticks() const
@@ -160,7 +181,7 @@ public:
     
 private:
     hhdate::year_month_day _d;
-    
+    bool _is_null;
 };
 
 class timestamp
@@ -174,7 +195,8 @@ public:
             hhdate::floor<std::chrono::microseconds>(
                 std::chrono::system_clock::now()
             )
-        )
+        ),
+        _is_null(false)
     {
     }
     
@@ -182,11 +204,20 @@ public:
         
     template< typename Dur >
     explicit timestamp(const hhdate::sys_time<Dur>& ts)
-        : _ts(hhdate::floor<Dur>(ts))
+        : _ts(hhdate::floor<Dur>(ts)),
+        _is_null(false)
     {
     }
     
     explicit timestamp(const timestamp_tz& tz);
+    
+    bool is_null() const { return _is_null;}
+    static timestamp null()
+    {
+        auto v = timestamp();
+        v._is_null = true;
+        return v;
+    }
     
     int64_t pgticks() const
     {
@@ -228,7 +259,7 @@ public:
     
 private:
     hhdate::sys_time<std::chrono::microseconds> _ts;
-    
+    bool _is_null;
 };
 
 class timestamp_tz
@@ -243,7 +274,8 @@ public:
             hhdate::floor<std::chrono::microseconds>(
                 std::chrono::system_clock::now()
             )
-        )
+        ),
+        _is_null(false)
     {
     }
     
@@ -256,6 +288,14 @@ public:
     }
     
     explicit timestamp_tz(const timestamp& ts);
+    
+    bool is_null() const { return _is_null;}
+    static timestamp_tz null()
+    {
+        auto v = timestamp_tz();
+        v._is_null = true;
+        return v;
+    }
     
     const hhdate::time_zone* zone() const
     {
@@ -310,7 +350,7 @@ public:
     
 private:
     hhdate::zoned_time<std::chrono::microseconds> _tsz;
-    
+    bool _is_null;
 };
 
 class time
@@ -325,11 +365,20 @@ public:
     
     template< typename Dur >
     explicit time(const hhdate::sys_time<Dur>& tod)
-        : _tod(hhdate::floor<Dur>(tod))
+        : _tod(hhdate::floor<Dur>(tod)),
+        _is_null(false)
     {
     }
     
     explicit time(const time_tz& tz);
+    
+    bool is_null() const { return _is_null;}
+    static time null()
+    {
+        auto v = time();
+        v._is_null = true;
+        return v;
+    }
     
     int64_t pgticks() const
     {
@@ -352,6 +401,7 @@ public:
     
 private:
     hhdate::sys_time<std::chrono::microseconds> _tod;
+    bool _is_null;
 };
 
 class time_tz
@@ -369,7 +419,8 @@ public:
             hhdate::local_time<std::chrono::microseconds>(
                 std::chrono::microseconds(pgticks)
             )
-        )
+        ),
+        _is_null(false)
     {
     }
     
@@ -379,17 +430,27 @@ public:
             hhdate::local_time<std::chrono::microseconds>(
                 std::chrono::microseconds(pgticks)
             )
-        )
+        ),
+        _is_null(false)
     {
     }
     
     template< typename Dur >
     explicit time_tz(const hhdate::zoned_time<Dur>& ts)
-        : _todz(ts)
+        : _todz(ts),
+        _is_null(false)
     {
     }
     
     explicit time_tz(const time& ts);
+    
+    bool is_null() const { return _is_null;}
+    static time_tz null()
+    {
+        auto v = time_tz();
+        v._is_null = true;
+        return v;
+    }
     
     const hhdate::time_zone* zone() const
     {
@@ -426,7 +487,7 @@ public:
     
 private:
     hhdate::zoned_time<std::chrono::microseconds> _todz;
-    
+    bool _is_null;
 };
 
 std::ostream& operator<<(std::ostream& os, const interval& v);
