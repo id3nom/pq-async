@@ -768,13 +768,21 @@ pq_async::daterange pgval_to_range<pq_async::daterange>(
 
 pq_async::parameter* new_null_parameter(int oid)
 {
-    pq_async::parameter* params =
-        //new pq_async::parameter(TEXTOID, NULL, 0, 0);
-        new pq_async::parameter(oid, NULL, 0, 1);
-        // test with zero OID
-        //new pq_async::parameter(nullptr, 0, 0);
+    // BINARY NULL NOT WORKING???
+    pq_async::parameter* param =
+        new pq_async::parameter(oid, nullptr, 0, 1);
     
-    return params;
+    // char* values = new char[5];
+    // values[0] = 'N';
+    // values[1] = 'U';
+    // values[2] = 'L';
+    // values[3] = 'L';
+    // values[4] = '\0';
+    
+    // pq_async::parameter* params =
+    //     new pq_async::parameter(oid, values, 5, 0);
+    
+    return param;
 }
 
 #ifdef PQ_ASYNC_NULL_TYPE
