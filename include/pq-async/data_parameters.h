@@ -366,66 +366,6 @@ pq_async::daterange pgval_to_range<pq_async::daterange>(
 void get_array_oid_and_dim(char* val, int len, int fmt, int& oid, int& dim);
 
 
-//template <class T, int32_t dim_count>
-//boost::multi_array<T, dim_count> 
-// {
-//     if(!fmt)
-//         throw pq_async::exception(PQ_ASYNC_ERR_NO_TEXT_FMT);
-//
-//     boost::array<int32_t, dim_count> dimSizes;
-//    
-//     // dimension count.
-//     int32_t svrDimCount = 0;
-//     pq_async::swap4((int32_t*)val, &svrDimCount, false);
-//     val += 4;
-//
-//     if(svrDimCount != dim_count)
-//         throw pq_async::exception(PQ_ASYNC_ERR_DIM_NO_MATCH);
-//    
-//     // skip NULL flag.
-//     val += 4;
-//
-//     // verify element OID.
-//     int32_t eleOid = 0;
-//     pq_async::swap4((int32_t*)val, &eleOid, false);
-//     val += 4;
-//    
-//     //TODO: verify eleOid vs T.
-//    
-//     // fetch dim size.
-//     int32_t eleCount = 1;
-//     for(int32_t i = 0; i < svrDimCount; ++i){
-//         int32_t dimVal = 0;
-//         pq_async::swap4((int32_t*)val, &dimVal, false);
-//        
-//         eleCount *= dimVal;
-//
-//         dimSizes[i] = dimVal;
-//         val += 4;
-//
-//         //TODO: maby check what to do with the dimension lower bound.
-//         val += 4;
-//     }
-//    
-//     boost::multi_array<T, dim_count> result_array(dimSizes);
-//    
-//     std::vector<T> values;
-//
-//     for(int32_t i = 0; i < eleCount; ++i){
-//         int32_t valLen = 0;
-//         pq_async::swap4((int32_t*)val, &valLen, false);
-//         val += 4;
-//
-//         T value = val_from_pgparam<T>(eleOid, val, valLen, 1); 
-//         val += valLen;
-//
-//         values.push_back(value);
-//     }
-//    
-//     result_array.assign(values.begin(), values.end());
-//
-//     return result_array;
-// }
 
 template <typename T>
 md::jagged_vector<T> pgval_to_array(char* val, int len, int fmt)
@@ -487,18 +427,72 @@ md::jagged_vector<T> pgval_to_array(char* val, int len, int fmt)
 // new_parameter implementations...======
 // ======================================
 
-pq_async::parameter* new_null_parameter();
+pq_async::parameter* new_null_parameter(int oid);
 
-/*
-template< typename T >
-pq_async::parameter* new_parameter(T& value)
+template<typename T>
+pq_async::parameter* null()
 {
-    std::string msg("Unsupported type '");
-    msg += typeid(value).name();
-    msg += "'!";
-    throw pq_async::exception(msg.c_str());
+    std::string errMsg = "Unknown nullable type \"";
+    errMsg.append(__PRETTY_FUNCTION__);
+    errMsg.append("\"");
+    throw pq_async::exception(errMsg);
 }
-*/
+template<typename T>
+pq_async::parameter* null_array()
+{
+    std::string errMsg = "Unknown nullable array type \"";
+    errMsg.append(__PRETTY_FUNCTION__);
+    errMsg.append("\"");
+    throw pq_async::exception(errMsg);
+}
+
+#ifdef PQ_ASYNC_NULL_TYPE
+#undef PQ_ASYNC_NULL_TYPE
+#endif
+#define PQ_ASYNC_NULL_TYPE(type, oid, arroid) \
+template<> \
+pq_async::parameter* null<type>(); \
+template<> \
+pq_async::parameter* null_array<type>();
+
+
+PQ_ASYNC_NULL_TYPE(bool,                    BOOLOID       , BOOLARRAYOID       )
+PQ_ASYNC_NULL_TYPE(std::string,             TEXTOID       , TEXTARRAYOID       )
+PQ_ASYNC_NULL_TYPE(char*,                   TEXTOID       , TEXTARRAYOID       )
+PQ_ASYNC_NULL_TYPE(md::string_view,         BOOLOID       , BOOLARRAYOID       )
+PQ_ASYNC_NULL_TYPE(int16_t,                 INT2OID       , INT2ARRAYOID       )
+PQ_ASYNC_NULL_TYPE(int32_t,                 INT4OID       , INT4ARRAYOID       )
+PQ_ASYNC_NULL_TYPE(int64_t,                 INT8OID       , INT8ARRAYOID       )
+PQ_ASYNC_NULL_TYPE(float,                   FLOAT4OID     , FLOAT4ARRAYOID     )
+PQ_ASYNC_NULL_TYPE(double,                  FLOAT8OID     , FLOAT8ARRAYOID     )
+PQ_ASYNC_NULL_TYPE(pq_async::time,          TIMEOID       , TIMEARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::time_tz,       TIMETZOID     , TIMETZARRAYOID     )
+PQ_ASYNC_NULL_TYPE(pq_async::timestamp,     TIMESTAMPOID  , TIMESTAMPARRAYOID  )
+PQ_ASYNC_NULL_TYPE(pq_async::timestamp_tz,  TIMESTAMPTZOID, TIMESTAMPTZARRAYOID)
+PQ_ASYNC_NULL_TYPE(pq_async::date,          DATEOID       , DATEARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::interval,      INTERVALOID   , INTERVALARRAYOID   )
+PQ_ASYNC_NULL_TYPE(pq_async::numeric,       NUMERICOID    , NUMERICARRAYOID    )
+PQ_ASYNC_NULL_TYPE(pq_async::money,         CASHOID       , CASHARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::json,          JSONBOID      , JSONBARRAYOID      )
+PQ_ASYNC_NULL_TYPE(std::vector<int8_t>,     BYTEAOID      , BYTEAARRAYOID      )
+PQ_ASYNC_NULL_TYPE(pq_async::uuid,          UUIDOID       , UUIDARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::oid,           OIDOID        , OIDARRAYOID        )
+PQ_ASYNC_NULL_TYPE(pq_async::cidr,          CIDROID       , CIDRARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::inet,          INETOID       , INETARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::macaddr,       MACADDROID    , MACADDRARRAYOID    )
+PQ_ASYNC_NULL_TYPE(pq_async::macaddr8,      MACADDR8OID   , MACADDR8ARRAYOID   )
+PQ_ASYNC_NULL_TYPE(pq_async::point,         POINTOID      , POINTARRAYOID      )
+PQ_ASYNC_NULL_TYPE(pq_async::lseg,          LSEGOID       , LSEGARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::box,           BOXOID        , BOXARRAYOID        )
+PQ_ASYNC_NULL_TYPE(pq_async::path,          PATHOID       , PATHARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::polygon,       POLYGONOID    , POLYGONARRAYOID    )
+PQ_ASYNC_NULL_TYPE(pq_async::circle,        CIRCLEOID     , CIRCLEARRAYOID     )
+PQ_ASYNC_NULL_TYPE(pq_async::int4range,     INT4RANGEOID  , INT4RANGEARRAYOID  )
+PQ_ASYNC_NULL_TYPE(pq_async::int8range,     INT8RANGEOID  , INT8RANGEARRAYOID  )
+PQ_ASYNC_NULL_TYPE(pq_async::numrange,      NUMRANGEOID   , NUMRANGEARRAYOID   )
+PQ_ASYNC_NULL_TYPE(pq_async::tsrange,       TSRANGEOID    , TSRANGEARRAYOID    )
+PQ_ASYNC_NULL_TYPE(pq_async::tstzrange,     TSTZRANGEOID  , TSTZRANGEARRAYOID  )
+PQ_ASYNC_NULL_TYPE(pq_async::daterange,     DATERANGEOID  , DATERANGEARRAYOID  )
 
 pq_async::parameter* new_parameter(bool);
 pq_async::parameter* new_parameter(const std::string& value);
@@ -540,78 +534,7 @@ pq_async::parameter* new_parameter(const pq_async::tstzrange& value);
 pq_async::parameter* new_parameter(const pq_async::daterange& value);
 
 
-//template <class T, int32_t dim_count>
-// specialisation
-
 void vec_append(std::vector<char> &vec, char* buf, int len);
-
-// template< class T, int32_t dim_count>
-// pq_async::parameter* new_parameter_gen(
-//     boost::multi_array<T, dim_count> value,
-//     int32_t eleOid, int32_t arrEleOid
-//     )
-// {
-//     std::vector<char> membuf2;
-//    
-//     // dimension count.
-//     int32_t dimCount = dim_count;
-//     int32_t outDimCount = 0;
-//     pq_async::swap4(&dimCount, &outDimCount, true);
-//     vec_append(membuf2, (char*)&outDimCount, sizeof(outDimCount));
-//
-//     // null flag.
-//     int32_t nullFlag = 0;
-//     int32_t outNullFlag = 0;
-//     pq_async::swap4(&nullFlag, &outNullFlag, true);
-//     vec_append(membuf2, (char*)&outNullFlag, sizeof(outNullFlag));
-//
-//     int32_t outEleOid = 0;
-//     pq_async::swap4(&eleOid, &outEleOid, true);
-//     vec_append(membuf2, (char*)&outEleOid, sizeof(outEleOid));
-//    
-//     // dimension sizes.
-//     for(int32_t i = 0; i < dim_count; ++i){
-//         // dim size.
-//         int32_t dimEleCnt = value.shape()[i];
-//         int32_t outDimEleCnt = 0;
-//         pq_async::swap4(&dimEleCnt, &outDimEleCnt, true);
-//         vec_append(membuf2, (char*)&outDimEleCnt, sizeof(outDimEleCnt));
-//    
-//         // lbound.
-//         int32_t lBound = 0;
-//         int32_t outLBound = 0;
-//         pq_async::swap4(&lBound, &outLBound, true);
-//         vec_append(membuf2, (char*)&outLBound, sizeof(outLBound));
-//     }
-//    
-//     T* itVal = value.data();
-//    
-//     int32_t num_elements = (int32_t)value.num_elements();
-//     for(int32_t i = 0; i < num_elements; ++i){
-//         pq_async::parameter* param = 
-//             pq_async::new_parameter(*((const T*)itVal));
-//        
-//         char* val = (char*)param->get_value();
-//         int32_t len = param->get_length();
-//        
-//         int32_t outLen = 0;
-//         pq_async::swap4(&len, &outLen, true);
-//         vec_append(membuf2, (char*)&outLen, sizeof(int32_t));
-//    
-//         vec_append(membuf2, val, len);
-//        
-//         delete param;
-//         ++itVal;
-//     }
-//
-//     int size = membuf2.size();
-//
-//     char* buf = new char[size];
-//     for(int32_t i = 0; i < size; ++i)
-//         buf[i] = membuf2[i];
-//    
-//     return new pq_async::parameter(arrEleOid, buf, size, 1);
-// }
 
 template< class T>//, int32_t dim_count>
 pq_async::parameter* new_parameter_gen(
@@ -679,8 +602,6 @@ pq_async::parameter* new_parameter_gen(
     
     return new pq_async::parameter(arr_ele_oid, buf, size, 1);
 }
-
-
 
 #define PQ_ASYNC_ARRAY_SPEC(__type, __name) \
 typedef md::jagged_vector<__type> arr_ ## __name; \
@@ -902,6 +823,24 @@ public:
     {
         this->cleanup();
         _p.emplace_back(pq_async::new_parameter(value));
+        push_back<SIZE -1>(args...);
+    }
+    
+    /*!
+     * \brief creates and push_back parameter object in the parameters object
+     * will be called recursively until all provided parameters have been 
+     * processed
+     * \tparam PARAMS Type of parameters pack
+     * \param value current processed value
+     * \param args parameters pack
+     */
+    template<int SIZE, typename... PARAMS,
+        typename std::enable_if<(SIZE > 0), int32_t>::type = 0
+    >
+    void push_back(pq_async::parameter* value, const PARAMS& ...args)
+    {
+        this->cleanup();
+        _p.emplace_back(value);
         push_back<SIZE -1>(args...);
     }
     

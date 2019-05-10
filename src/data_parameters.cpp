@@ -766,15 +766,72 @@ pq_async::daterange pgval_to_range<pq_async::daterange>(
 // new_parameter implementations...//
 /////////////////////////////////////
 
-pq_async::parameter* new_null_parameter()
+pq_async::parameter* new_null_parameter(int oid)
 {
     pq_async::parameter* params =
         //new pq_async::parameter(TEXTOID, NULL, 0, 0);
+        new pq_async::parameter(oid, NULL, 0, 1);
         // test with zero OID
-        new pq_async::parameter(0, NULL, 0, 0);
-
+        //new pq_async::parameter(nullptr, 0, 0);
+    
     return params;
 }
+
+#ifdef PQ_ASYNC_NULL_TYPE
+#undef PQ_ASYNC_NULL_TYPE
+#endif
+#define PQ_ASYNC_NULL_TYPE(type, oid, arroid) \
+template<> \
+pq_async::parameter* null<type>() \
+{ \
+    return new_null_parameter(oid); \
+} \
+template<> \
+pq_async::parameter* null_array<type>() \
+{ \
+    return new_null_parameter(oid); \
+} \
+
+
+PQ_ASYNC_NULL_TYPE(bool,                    BOOLOID       , BOOLARRAYOID       )
+PQ_ASYNC_NULL_TYPE(std::string,             TEXTOID       , TEXTARRAYOID       )
+PQ_ASYNC_NULL_TYPE(char*,                   TEXTOID       , TEXTARRAYOID       )
+PQ_ASYNC_NULL_TYPE(md::string_view,         BOOLOID       , BOOLARRAYOID       )
+PQ_ASYNC_NULL_TYPE(int16_t,                 INT2OID       , INT2ARRAYOID       )
+PQ_ASYNC_NULL_TYPE(int32_t,                 INT4OID       , INT4ARRAYOID       )
+PQ_ASYNC_NULL_TYPE(int64_t,                 INT8OID       , INT8ARRAYOID       )
+PQ_ASYNC_NULL_TYPE(float,                   FLOAT4OID     , FLOAT4ARRAYOID     )
+PQ_ASYNC_NULL_TYPE(double,                  FLOAT8OID     , FLOAT8ARRAYOID     )
+PQ_ASYNC_NULL_TYPE(pq_async::time,          TIMEOID       , TIMEARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::time_tz,       TIMETZOID     , TIMETZARRAYOID     )
+PQ_ASYNC_NULL_TYPE(pq_async::timestamp,     TIMESTAMPOID  , TIMESTAMPARRAYOID  )
+PQ_ASYNC_NULL_TYPE(pq_async::timestamp_tz,  TIMESTAMPTZOID, TIMESTAMPTZARRAYOID)
+PQ_ASYNC_NULL_TYPE(pq_async::date,          DATEOID       , DATEARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::interval,      INTERVALOID   , INTERVALARRAYOID   )
+PQ_ASYNC_NULL_TYPE(pq_async::numeric,       NUMERICOID    , NUMERICARRAYOID    )
+PQ_ASYNC_NULL_TYPE(pq_async::money,         CASHOID       , CASHARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::json,          JSONBOID      , JSONBARRAYOID      )
+PQ_ASYNC_NULL_TYPE(std::vector<int8_t>,     BYTEAOID      , BYTEAARRAYOID      )
+PQ_ASYNC_NULL_TYPE(pq_async::uuid,          UUIDOID       , UUIDARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::oid,           OIDOID        , OIDARRAYOID        )
+PQ_ASYNC_NULL_TYPE(pq_async::cidr,          CIDROID       , CIDRARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::inet,          INETOID       , INETARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::macaddr,       MACADDROID    , MACADDRARRAYOID    )
+PQ_ASYNC_NULL_TYPE(pq_async::macaddr8,      MACADDR8OID   , MACADDR8ARRAYOID   )
+PQ_ASYNC_NULL_TYPE(pq_async::point,         POINTOID      , POINTARRAYOID      )
+PQ_ASYNC_NULL_TYPE(pq_async::lseg,          LSEGOID       , LSEGARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::box,           BOXOID        , BOXARRAYOID        )
+PQ_ASYNC_NULL_TYPE(pq_async::path,          PATHOID       , PATHARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::polygon,       POLYGONOID    , POLYGONARRAYOID    )
+PQ_ASYNC_NULL_TYPE(pq_async::circle,        CIRCLEOID     , CIRCLEARRAYOID     )
+PQ_ASYNC_NULL_TYPE(pq_async::int4range,     INT4RANGEOID  , INT4RANGEARRAYOID  )
+PQ_ASYNC_NULL_TYPE(pq_async::int8range,     INT8RANGEOID  , INT8RANGEARRAYOID  )
+PQ_ASYNC_NULL_TYPE(pq_async::numrange,      NUMRANGEOID   , NUMRANGEARRAYOID   )
+PQ_ASYNC_NULL_TYPE(pq_async::tsrange,       TSRANGEOID    , TSRANGEARRAYOID    )
+PQ_ASYNC_NULL_TYPE(pq_async::tstzrange,     TSTZRANGEOID  , TSTZRANGEARRAYOID  )
+PQ_ASYNC_NULL_TYPE(pq_async::daterange,     DATERANGEOID  , DATERANGEARRAYOID  )
+
+
 
 pq_async::parameter* new_parameter(const std::string& value)
 {
@@ -847,7 +904,7 @@ pq_async::parameter* new_parameter(double value)
 pq_async::parameter* new_parameter(const pq_async::time& value)
 {
     if(value.is_null())
-        return new_null_parameter();
+        return new_null_parameter(TIMEOID);
     
     int64_t val = value.pgticks();// - POSTGRES_EPOCH_USEC;
     char* out_val = new char[sizeof(int64_t)];
@@ -858,7 +915,7 @@ pq_async::parameter* new_parameter(const pq_async::time& value)
 pq_async::parameter* new_parameter(const pq_async::time_tz& value)
 {
     if(value.is_null())
-        return new_null_parameter();
+        return new_null_parameter(TIMETZOID);
 
     int64_t val = value.pgticks() - POSTGRES_EPOCH_USEC;
     int32_t len = sizeof(int64_t) + sizeof(int32_t);
@@ -878,7 +935,7 @@ pq_async::parameter* new_parameter(const pq_async::time_tz& value)
 pq_async::parameter* new_parameter(const pq_async::timestamp& value)
 {
     if(value.is_null())
-        return new_null_parameter();
+        return new_null_parameter(TIMESTAMPOID);
 
     int64_t val = value.pgticks() - POSTGRES_EPOCH_USEC;
     char* out_val = new char[sizeof(int64_t)];
@@ -889,7 +946,7 @@ pq_async::parameter* new_parameter(const pq_async::timestamp& value)
 pq_async::parameter* new_parameter(const pq_async::timestamp_tz& value)
 {
     if(value.is_null())
-        return new_null_parameter();
+        return new_null_parameter(TIMESTAMPTZOID);
 
     int64_t val = value.pgticks() - POSTGRES_EPOCH_USEC;
     char* out_val = new char[sizeof(int64_t)];
@@ -900,7 +957,7 @@ pq_async::parameter* new_parameter(const pq_async::timestamp_tz& value)
 pq_async::parameter* new_parameter(const pq_async::date& value)
 {
     if(value.is_null())
-        return new_null_parameter();
+        return new_null_parameter(DATEOID);
 
     int32_t val = value.pgticks() - POSTGRES_EPOCH_JDATE;
     char* out_val = new char[sizeof(int32_t)];
@@ -911,7 +968,7 @@ pq_async::parameter* new_parameter(const pq_async::date& value)
 pq_async::parameter* new_parameter(const pq_async::interval& value)
 {
     if(value.is_null())
-        return new_null_parameter();
+        return new_null_parameter(INTERVALOID);
     
     int64_t tval = value.time_of_day().to_duration().count();
     int32_t dval = value.days();
