@@ -50,6 +50,10 @@ target_link_libraries(pq-async_tests
     ${Boost_LIBRARIES} 
     "${PostgreSQL_LIBRARY}"
     pthread
+    event
+    event_core
+    event_extra
+    event_pthreads
     gmock
 #	gtest
 )

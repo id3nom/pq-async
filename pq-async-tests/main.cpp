@@ -57,13 +57,10 @@ int main(int argc, char** argv)
         )
         ;
     
-    //po::positional_options_description p;
-    //p.add("config-file", -1);
     po::variables_map vm;
     po::store(
         po::command_line_parser(argc, argv)
         .options(desc)
-        //.positional(p)
         .run(),
         vm
     );
@@ -84,48 +81,20 @@ int main(int argc, char** argv)
     
     if(vm.count("verbosity"))
         verbosity_values += "v";
-    if(std::any_of(
-        begin(verbosity_values), end(verbosity_values), [](auto&c) {
-            return c != 'v';
-        }
-    ))
+    if(
+        std::any_of(
+            begin(verbosity_values), end(verbosity_values), [](auto& c){
+                return c != 'v';
+            }
+        )
+    ){
         throw std::runtime_error("Invalid verbosity level");
-    pq_async_log_level = verbosity_values.size();
+    }
     
-    // pq_async_log_level = (int)pq_async::log_level::ll_warning;
-    // pq_async_connection_string = "dbname=libpq_async_tests";
-    // pq_async_max_pool_size = 20;
+    pq_async_log_level = verbosity_values.size() +4;
+    if((md::log::log_level)pq_async_log_level > md::log::log_level::trace)
+        pq_async_log_level = (int)md::log::log_level::trace;
     
-    // std::string con_str_param("--con-str");
-    // std::string con_cnt_param("--pool-size");
-    // std::string log_lvl_param("--log-level");
-    // for(int i = 0; i < argc -1; ++i){
-    //     if(std::string(argv[i]).compare(
-    //         0, con_str_param.size(), con_str_param) == 0
-    //     ){
-    //         pq_async_connection_string = argv[++i];
-    //         continue;
-    //     }
-
-    //     if(std::string(argv[i]).compare(
-    //         0, con_cnt_param.size(), con_cnt_param) == 0
-    //     ){
-    //         pq_async_max_pool_size = md::str_to_num<int>(
-    //             std::string(argv[++i])
-    //         );
-    //         continue;
-    //     }
-        
-    //     if(std::string(argv[i]).compare(
-    //         0, log_lvl_param.size(), log_lvl_param) == 0
-    //     ){
-    //         pq_async_log_level = md::str_to_num<int>(
-    //             std::string(argv[++i])
-    //         );
-    //         continue;
-    //     }
-        
-    // }
     
     testing::InitGoogleMock(&argc, argv);
     testing::AddGlobalTestEnvironment(new pq_async::tests::pq_async_test_env());

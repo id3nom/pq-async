@@ -22,7 +22,7 @@ The project is in it's alpha phase and bugs can still be present,
 It havn't been tested on any other distro than Debian Stretch.
 
 So if you want to use that lib do it at your own risk as long that you
-respect the GNU LGPL v2.1 license.
+respect the MIT license.
 
 ## Configuration
 
@@ -66,6 +66,12 @@ postgres=# \c libpq_async_test
 --You are now connected to database "libpq_async_tests" as user "postgres".
 libpq_async_tests=# create extension ltree;
 --CREATE EXTENSION
+~~~
+
+### Testing command
+
+~~~{.sh}
+./pq-async_tests --db "dbname='libpq_async_tests' user='...'" --pool-size 4
 ~~~
 
 ## Limitations
@@ -557,7 +563,7 @@ TODO: document this
 
 ### Arrays
 
-Array for any of the supported types, up to five dimensions.
+Array for any of the supported types.
 
 ### Binary data types:
 

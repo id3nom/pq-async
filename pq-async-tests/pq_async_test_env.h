@@ -26,8 +26,9 @@ SOFTWARE.
 #define _pq_async_test_env_h
 
 #include <gmock/gmock.h>
-#include "pq-async/pq_async.h"
+#include <event2/event.h>
 
+#include "pq-async/pq_async.h"
 
 extern int pq_async_log_level;
 extern int pq_async_max_pool_size;
@@ -39,7 +40,8 @@ class pq_async_test_env
 {
 public:
     pq_async_test_env()
-        : testing::Environment()
+        : testing::Environment(),
+        _ev_base(nullptr)
     {
     }
     
@@ -50,12 +52,12 @@ public:
         std::cout << "Current time zone: " << cz->name() << std::endl;
         
         std::cout << "Initializing the log setting" << std::endl;
-        // pq_async::log::init(
-        //     std::string("pq_async++_test"),
-        //     pq_async_log_level,
-        //     true
-        // );
+        pq_async::default_logger()->set_level(
+            (md::log::log_level)pq_async_log_level
+        );
         
+        _ev_base = event_base_new();
+        md::event_queue::reset(_ev_base);
         std::cout << "Initializing the connection pool" << std::endl;
         pq_async::connection_pool::init(pq_async_max_pool_size, true, true);
     }
@@ -65,7 +67,12 @@ public:
         std::cout << "Destroying the connection pool" << std::endl;
         pq_async::connection_pool::destroy();
         md::event_queue::destroy_default();
+        event_base_free(_ev_base);
+        _ev_base = nullptr;
     }
+    
+private:
+    event_base* _ev_base;
 };
 
 }} //namespace pq_async::tests

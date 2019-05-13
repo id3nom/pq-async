@@ -40,7 +40,7 @@ TEST_F(date_types_test, timestamp_array)
 {
     try{
         auto a =
-            db->query_value<pq_async::arr_timestamp_1d>(
+            db->query_value<pq_async::arr_timestamp>(
                 "select ARRAY["
                 "'2017-09-26 22:01:00.123456'::"
                 "timestamp without time zone, "
@@ -51,7 +51,7 @@ TEST_F(date_types_test, timestamp_array)
         std::cout << "a[0]: " << a[0].iso_string() << std::endl;
         std::cout << "a[1]: " << a[1].iso_string() << std::endl;
         auto b = a;
-        a = db->query_value<pq_async::arr_timestamp_1d>(
+        a = db->query_value<pq_async::arr_timestamp>(
             "select $1", b
         );
         std::cout << "a[0]: " << a[0].iso_string() << std::endl;
@@ -71,9 +71,7 @@ TEST_F(date_types_test, timestamp_array)
                 "] as arr"
             );
         
-        arr_timestamp_1d a1 = r->as< arr_timestamp_1d >("arr");
-        //arr_timestamp_1d a2 = *((*r)["arr"]);
-        //int32_t i = *(*r)[0];
+        arr_timestamp a1 = r->as< arr_timestamp >("arr");
         
     }catch(const std::exception& err){
         std::cout << "Error: " << err.what() << std::endl;
