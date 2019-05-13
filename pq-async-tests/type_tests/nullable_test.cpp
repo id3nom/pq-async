@@ -53,28 +53,6 @@ public:
         db_test_base::TearDown();
     }
     
-    // std::string gen_insert(
-    //     std::string type_name,
-    //     std::vector<std::string> flds)
-    // {
-    //     std::string r(fmt::format(
-    //         "insert into null_{}_test (",
-    //         type_name
-    //     ));
-    //     std::string ps;
-    //     for(size_t i = 0; i < flds.size(); ++i){
-    //         r += flds[i];
-    //         ps += "$" + md::num_to_str(i+1, false);
-    //         if(i < flds.size() -1){
-    //             r += ",";
-    //             ps += ",";
-    //         }
-    //     }
-        
-    //     return r + ") values (" + ps + ")";
-    // }
-    
-    
     template<typename... Params>
     void exec_null_test(
         bool drop_table,
