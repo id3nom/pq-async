@@ -283,6 +283,7 @@ namespace pq_async {
             hhdate::sys_time<std::chrono::microseconds>(
                 tod
             );
+        this->_is_null = false;
     }
     
     
@@ -353,6 +354,115 @@ namespace pq_async {
         this->_is_null = false;
     }
     
+    time_tz::time_tz(const char* zone_name, int64_t pgticks)
+        // : _todz(
+        //     hhdate::locate_zone(zone_name),
+        //     hhdate::local_time<std::chrono::microseconds>(
+        //         std::chrono::microseconds(pgticks)
+        //     )
+        // ),
+        // _is_null(false)
+    {
+        // auto now = std::chrono::system_clock::now();
+        // auto dayp = hhdate::floor<hhdates::days>(now);
+        
+        
+        auto now = hhdate::zoned_time<std::chrono::microseconds>{
+            hhdate::current_zone(),
+            std::chrono::time_point_cast<std::chrono::microseconds>(
+                std::chrono::system_clock::now()
+            )
+        };
+        auto now_d = hhdate::floor<hhdate::days>(now.get_local_time());
+        auto self_time = hhdate::zoned_time<std::chrono::microseconds>(
+            hhdate::locate_zone(zone_name),
+            hhdate::local_time<std::chrono::microseconds>(
+                std::chrono::microseconds(pgticks)
+            )
+        );
+        auto self_time_d = hhdate::floor<hhdate::days>(
+            self_time.get_local_time()
+        );
+        auto diff_d = now_d - self_time_d;
+        
+        _todz = hhdate::zoned_time<std::chrono::microseconds>(
+            hhdate::locate_zone(zone_name),
+            hhdate::local_time<std::chrono::microseconds>(
+                self_time.get_sys_time().time_since_epoch() + diff_d
+            )
+        );
+
+        // auto lt = hhdate::local_time<std::chrono::microseconds>(
+        //     std::chrono::microseconds(pgticks)
+        // );
+        
+        // auto ltf = hhdate::floor<hhdate::days>(lt);
+        // auto sd = hhdate::floor<hhdate::days>(std::chrono::system_clock::now());
+        // auto diff = 
+        //     std::chrono::time_point_cast<hhdate::local_t, hhdate::days>(sd) -
+        //     ltf;
+        
+        // _todz = hhdate::zoned_time<std::chrono::microseconds>(
+        //     hhdate::locate_zone(zone_name),
+        //     lt + diff
+        // );
+        
+        _is_null = false;
+    }
+    
+    time_tz::time_tz(const hhdate::time_zone* zone, int64_t pgticks)
+        // : _todz(
+        //     zone,
+        //     hhdate::local_time<std::chrono::microseconds>(
+        //         std::chrono::microseconds(pgticks)
+        //     )
+        // ),
+        // _is_null(false)
+    {
+        // auto now = hhdate::zoned_time<std::chrono::microseconds>(
+        //     hhdate::locate_zone("UTC"),
+        //     std::chrono::system_clock::now()
+        // );
+        // auto now_d = hhdate::floor<hhdate::days>(now);
+        // auto self_time = hhdate::zoned_time<std::chrono::microseconds>(
+        //     zone,
+        //     hhdate::local_time<std::chrono::microseconds>(
+        //         std::chrono::microseconds(pgticks)
+        //     )
+        // );
+        // auto self_time_d = hhdate::floor<hhdate::days>(self_time);
+        // _todz = self_time + (now_d - self_time_d);
+
+        auto now = hhdate::zoned_time<std::chrono::microseconds>{
+            hhdate::current_zone(),
+            std::chrono::time_point_cast<std::chrono::microseconds>(
+                std::chrono::system_clock::now()
+            )
+        };
+        auto now_d = hhdate::floor<hhdate::days>(now.get_local_time());
+        auto self_time = hhdate::zoned_time<std::chrono::microseconds>(
+            zone,
+            hhdate::local_time<std::chrono::microseconds>(
+                std::chrono::microseconds(pgticks)
+            )
+        );
+        auto self_time_d = hhdate::floor<hhdate::days>(
+            self_time.get_local_time()
+        );
+        auto diff_d = now_d - self_time_d;
+        
+        _todz = hhdate::zoned_time<std::chrono::microseconds>(
+            zone,
+            hhdate::local_time<std::chrono::microseconds>(
+                self_time.get_sys_time().time_since_epoch() + diff_d
+            )
+        );
+
+        
+        _is_null = false;
+    }
+    
+    
     time_tz::time_tz(int64_t pgticks)
         //: _tod(std::chrono::microseconds(pgticks))
     {
@@ -384,27 +494,27 @@ namespace pq_async {
         return hhdate::format("%T%z", this->_todz);
     }
     
-    time_tz time_tz::as_zone(const char* zone_name) const
-    {
-        if(_is_null)
-            return time_tz::null();
-        
-        hhdate::local_time<std::chrono::microseconds> lts(
-            this->_todz.get_sys_time().time_since_epoch()
-        );
-        hhdate::zoned_time<std::chrono::microseconds> ts =
-            hhdate::make_zoned(zone_name, lts);
-        return time_tz(ts);
-    }
+    // time_tz time_tz::as_zone(const char* zone_name) const
+    // {
+    //     if(_is_null)
+    //         return time_tz::null();
+    //     
+    //     hhdate::local_time<std::chrono::microseconds> lts(
+    //         this->_todz.get_sys_time().time_since_epoch()
+    //     );
+    //     hhdate::zoned_time<std::chrono::microseconds> ts =
+    //         hhdate::make_zoned(zone_name, lts);
+    //     return time_tz(ts);
+    // }
 
-    time_tz time_tz::make_zoned(const char* zone_name) const
-    {
-        if(_is_null)
-            return time_tz::null();
-        
-        auto ts = hhdate::make_zoned(zone_name, this->_todz);
-        return time_tz(ts);
-    }
+    // time_tz time_tz::make_zoned(const char* zone_name) const
+    // {
+    //     if(_is_null)
+    //         return time_tz::null();
+    //     
+    //     auto ts = hhdate::make_zoned(zone_name, this->_todz);
+    //     return time_tz(ts);
+    // }
     
     time_tz time_tz::parse(const std::string& s)
     {

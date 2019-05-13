@@ -283,7 +283,8 @@ public:
     
     template< typename Dur >
     explicit timestamp_tz(const hhdate::zoned_time<Dur>& ts)
-        : _tsz(ts)
+        : _tsz(ts),
+        _is_null(false)
     {
     }
     
@@ -413,27 +414,27 @@ public:
     time_tz();
     time_tz(int64_t pgticks);
     
-    time_tz(const char* zone_name, int64_t pgticks)
-        : _todz(
-            hhdate::locate_zone(zone_name),
-            hhdate::local_time<std::chrono::microseconds>(
-                std::chrono::microseconds(pgticks)
-            )
-        ),
-        _is_null(false)
-    {
-    }
+    time_tz(const char* zone_name, int64_t pgticks);
+    //     : _todz(
+    //         hhdate::locate_zone(zone_name),
+    //         hhdate::local_time<std::chrono::microseconds>(
+    //             std::chrono::microseconds(pgticks)
+    //         )
+    //     ),
+    //     _is_null(false)
+    // {
+    // }
     
-    time_tz(const hhdate::time_zone* zone, int64_t pgticks)
-        : _todz(
-            zone,
-            hhdate::local_time<std::chrono::microseconds>(
-                std::chrono::microseconds(pgticks)
-            )
-        ),
-        _is_null(false)
-    {
-    }
+    time_tz(const hhdate::time_zone* zone, int64_t pgticks);
+    //     : _todz(
+    //         zone,
+    //         hhdate::local_time<std::chrono::microseconds>(
+    //             std::chrono::microseconds(pgticks)
+    //         )
+    //     ),
+    //     _is_null(false)
+    // {
+    // }
     
     template< typename Dur >
     explicit time_tz(const hhdate::zoned_time<Dur>& ts)
@@ -480,8 +481,32 @@ public:
         );
     }
     
-    time_tz as_zone(const char* zone_name) const;
-    time_tz make_zoned(const char* zone_name) const;
+    // time_tz as_zone(const char* zone_name) const;
+    // time_tz make_zoned(const char* zone_name) const;
+    
+    template<typename ZoneT>
+    time_tz as_zone(ZoneT zone) const
+    {
+        if(_is_null)
+            return time_tz::null();
+        
+        hhdate::local_time<std::chrono::microseconds> lts(
+            this->_todz.get_sys_time().time_since_epoch()
+        );
+        hhdate::zoned_time<std::chrono::microseconds> ts =
+            hhdate::make_zoned(zone, lts);
+        return time_tz(ts);
+    }
+    
+    template<typename ZoneT>
+    time_tz make_zoned(ZoneT zone) const
+    {
+        if(_is_null)
+            return time_tz::null();
+        
+        auto ts = hhdate::make_zoned(zone, this->_todz);
+        return time_tz(ts);
+    }
     
     static time_tz parse(const std::string& s);
     

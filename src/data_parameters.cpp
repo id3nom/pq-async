@@ -258,7 +258,7 @@ pq_async::time_tz pgval_to_time_tz(char* val, int len, int fmt)
     // std::cout << z << std::endl;
     
     tval += POSTGRES_EPOCH_USEC;
-
+    
     return pq_async::time_tz(hhdate::locate_zone("UTC"), tval);
 }
 

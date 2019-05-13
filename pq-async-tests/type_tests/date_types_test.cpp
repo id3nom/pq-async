@@ -597,23 +597,6 @@ TEST_F(date_types_test, time_zone_info)
 TEST_F(date_types_test, time_tz_from_bin)
 {
     try{
-        /*
-        std::cout << "tz names:" << std::endl;
-        auto& tzdb = hhdate::get_tzdb();
-        auto now = hhdate::sys_days{hhdate::year(2018)/10/06} + 
-            std::chrono::hours(15) + std::chrono::minutes(0);
-        for(auto& z : tzdb.zones){
-            auto tzinfo = z.get_info(now);
-            std::cout 
-                << "name: " << z.name() 
-                << ", abbrev: " << tzinfo.abbrev
-                << ", offset: " << tzinfo.offset.count()
-                << "\n";
-        }
-        */
-        
-        //auto z = hhdate::current_zone();
-        
         auto ts0 =
             db->query_value<pq_async::time_tz>(
                 "select '00:00:00.000000 UTC'::"
@@ -626,7 +609,7 @@ TEST_F(date_types_test, time_tz_from_bin)
         std::cout << "ts0 iso_string: " << ts0.iso_string() << std::endl;
         std::cout << "ts0b iso_string:" << ts0b.iso_string() << std::endl;
         ASSERT_THAT(ts0.iso_string(), testing::Eq(ts0b.iso_string()));
-            
+        
         auto tsmin =
             db->query_value<pq_async::time_tz>(
                 "select '00:00:00.000000 AEST'::"
@@ -642,6 +625,27 @@ TEST_F(date_types_test, time_tz_from_bin)
         auto zi = z->get_info(
             (hhdate::sys_time<std::chrono::minutes>)(timestamp_tz())
         );
+        std::cout << "current zone name: " << z->name()
+            << "\n--------------------------------" << std::endl;
+        std::cout << "zone info" << 
+            ", abbrev: " << zi.abbrev <<
+            ", offset: " << 
+                pq_async::duration::from_seconds(zi.offset.count()) <<
+            ", begin: " << 
+                hhdate::format(
+                    "%Y-%m-%d %T", 
+                    hhdate::sys_time<std::chrono::microseconds>(
+                        zi.begin.time_since_epoch()
+                    )
+                ) <<
+            ", end: " <<
+                hhdate::format(
+                    "%Y-%m-%d %T", 
+                    hhdate::sys_time<std::chrono::microseconds>(
+                        zi.end.time_since_epoch()
+                    )
+                ) <<
+            std::endl;
         
         int32_t zi_h = zi.offset.count() / 3600;
         int32_t zi_m = (zi.offset.count() % 3600) / 60;
@@ -672,7 +676,12 @@ TEST_F(date_types_test, time_tz_from_bin)
         
         std::string ts0f = ss.str();
         
-        ts0 = ts0.make_zoned(z->name().c_str());
+        //ts0 = ts0.make_zoned(z->name().c_str());
+        
+        ts0 = ts0.make_zoned(z);
+        hhdate::zoned_time<std::chrono::microseconds> tzc = ts0;
+        std::cout << tzc << std::endl;
+        
         auto tsmin1 = tsmin.make_zoned("Australia/Melbourne");
         //auto tsmin1 = tsmin.make_zoned("Pacific/Auckland");
         auto tsmax1 = tsmin.make_zoned("HST");

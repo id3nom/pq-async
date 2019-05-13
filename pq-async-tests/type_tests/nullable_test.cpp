@@ -70,13 +70,15 @@ public:
             flds_def +=  flds[i] + " NULL,";
             flds[i] = flds[i].substr(0, flds[i].find(" "));
         }
-        db->execute(
-            ("create table null_" + type_name + "_test("
-                "id serial NOT NULL," +
-                flds_def +
-                "CONSTRAINT null_" + type_name + "_test_pkey PRIMARY KEY (id)"
-            ");").c_str()
-        );
+        if(drop_table)
+            db->execute(
+                ("create table null_" + type_name + "_test("
+                    "id serial NOT NULL," +
+                    flds_def +
+                    "CONSTRAINT null_" + type_name +
+                    "_test_pkey PRIMARY KEY (id)"
+                ");").c_str()
+            );
         
         std::string r(fmt::format(
             "insert into null_{}_test (",
