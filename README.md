@@ -9,7 +9,7 @@ The project is in it's alpha phase and bugs can still be present,
 It havn't been tested on any other distro than Debian Stretch.
 
 So if you want to use that lib do it at your own risk as long that you
-respect the GNU LGPL v2.1 license.
+respect the MIT license.
 
 ## Configuration
 
@@ -29,7 +29,6 @@ libboost-thread-dev libboost-locale-dev
 
 - CMake 3.0.0 and up.
 - A compiler supporting, at least, c++14.
-- [The boost::multi_array library](https://www.boost.org/doc/libs/1_62_0/libs/multi_array/doc/user.html).
 - The date library from 
 Howard Hinnant @ https://github.com/HowardHinnant/date 
 
