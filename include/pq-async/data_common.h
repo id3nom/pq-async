@@ -194,6 +194,12 @@ enum class data_type
             typename md::select_last<PARAMS...>::type \
         >::type \
     >::value && \
+    !std::is_same< \
+        nullptr_t, \
+        typename std::remove_pointer< \
+            typename md::select_last<PARAMS...>::type \
+        >::type \
+    >::value && \
     !std::is_array< \
         typename std::remove_pointer< \
             typename md::select_last<PARAMS...>::type \
@@ -232,6 +238,12 @@ enum class data_type
 #define PQ_ASYNC_INVALID_DB_CALLBACK(_R) typename std::enable_if< \
     std::is_same< \
         _R, \
+        typename std::remove_pointer< \
+            typename md::select_last<PARAMS...>::type \
+        >::type \
+    >::value || \
+    std::is_same< \
+        nullptr_t, \
         typename std::remove_pointer< \
             typename md::select_last<PARAMS...>::type \
         >::type \

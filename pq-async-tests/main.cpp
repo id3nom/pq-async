@@ -51,7 +51,8 @@ int main(int argc, char** argv)
             po::value<int>()->default_value(5),
             "Max pool size"
         )
-		("verbosity,v",
+        ("gtest_list_tests", "List avaiable tests")
+        ("verbosity,v",
             po::value(&verbosity_values)->implicit_value(""),
             "defined verbosity level"
         )
@@ -61,6 +62,7 @@ int main(int argc, char** argv)
     po::store(
         po::command_line_parser(argc, argv)
         .options(desc)
+        .allow_unregistered()
         .run(),
         vm
     );

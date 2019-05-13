@@ -30,6 +30,7 @@ set(test_sources
     type_tests/enum_types_test.cpp
     type_tests/geo_types_test.cpp
     type_tests/net_types_test.cpp
+    type_tests/nullable_test.cpp
     type_tests/num_types_test.cpp
     type_tests/range_types_test.cpp
     type_tests/sys_types_test.cpp

@@ -828,6 +828,7 @@ PQ_ASYNC_NULL_TYPE(pq_async::macaddr,       MACADDROID    , MACADDRARRAYOID    )
 PQ_ASYNC_NULL_TYPE(pq_async::macaddr8,      MACADDR8OID   , MACADDR8ARRAYOID   )
 PQ_ASYNC_NULL_TYPE(pq_async::point,         POINTOID      , POINTARRAYOID      )
 PQ_ASYNC_NULL_TYPE(pq_async::lseg,          LSEGOID       , LSEGARRAYOID       )
+PQ_ASYNC_NULL_TYPE(pq_async::line,          LINEOID       , LINEARRAYOID       )
 PQ_ASYNC_NULL_TYPE(pq_async::box,           BOXOID        , BOXARRAYOID        )
 PQ_ASYNC_NULL_TYPE(pq_async::path,          PATHOID       , PATHARRAYOID       )
 PQ_ASYNC_NULL_TYPE(pq_async::polygon,       POLYGONOID    , POLYGONARRAYOID    )
@@ -839,6 +840,13 @@ PQ_ASYNC_NULL_TYPE(pq_async::tsrange,       TSRANGEOID    , TSRANGEARRAYOID    )
 PQ_ASYNC_NULL_TYPE(pq_async::tstzrange,     TSTZRANGEOID  , TSTZRANGEARRAYOID  )
 PQ_ASYNC_NULL_TYPE(pq_async::daterange,     DATERANGEOID  , DATERANGEARRAYOID  )
 
+
+pq_async::parameter* new_parameter(pq_async::parameter* value)
+{
+    if(value)
+        return value;
+    return new_null_parameter(0);
+}
 
 
 pq_async::parameter* new_parameter(const std::string& value)
