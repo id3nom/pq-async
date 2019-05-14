@@ -240,9 +240,11 @@ pq_async::time_tz pgval_to_time_tz(char* val, int len, int fmt)
     if(!val)
         return pq_async::time_tz::null();
     
-    if(len == -1)
-        return time_tz(hhdate::locate_zone("UTC"), 0);
-
+    if(len == -1){
+        //pq_async::time_tz ttz;
+        return time_tz::null();
+        //return time_tz(hhdate::locate_zone("UTC"), 0);
+    }
     if(!fmt)
         throw pq_async::exception(
             "text result format not supported for time with time zone!"
@@ -257,9 +259,25 @@ pq_async::time_tz pgval_to_time_tz(char* val, int len, int fmt)
     // std::string z((char*)&zn, 4);
     // std::cout << z << std::endl;
     
-    tval += POSTGRES_EPOCH_USEC;
+    time_tz ttz;
+    auto z = hhdate::locate_zone("UTC");
+    int64_t day_epoch = std::chrono::duration_cast<std::chrono::microseconds>(
+        hhdate::floor<hhdate::days>(
+            std::chrono::system_clock::now()
+        ).time_since_epoch()
+    ).count();
     
-    return pq_async::time_tz(hhdate::locate_zone("UTC"), tval);
+    ttz._is_null = false;
+    ttz._todz = hhdate::zoned_time<std::chrono::microseconds>(
+        z,
+        hhdate::sys_time<std::chrono::microseconds>(
+            std::chrono::microseconds(tval + day_epoch)
+        )
+    );
+    
+    return ttz;
+    //tval += POSTGRES_EPOCH_USEC;
+    //return pq_async::time_tz(hhdate::locate_zone("UTC"), tval);
 }
 
 pq_async::timestamp pgval_to_timestamp(char* val, int len, int fmt)
@@ -932,8 +950,16 @@ pq_async::parameter* new_parameter(const pq_async::time_tz& value)
 {
     if(value.is_null())
         return new_null_parameter(TIMETZOID);
-
-    int64_t val = value.pgticks() - POSTGRES_EPOCH_USEC;
+    
+    int64_t tod_epoch = value._todz.get_sys_time().time_since_epoch().count();
+    auto tod_d = hhdate::floor<hhdate::days>(value._todz.get_sys_time());
+    int64_t tod_d_epoch = 
+        std::chrono::duration_cast<std::chrono::microseconds>(
+            tod_d.time_since_epoch()
+        ).count();
+    int64_t val = tod_epoch - tod_d_epoch;
+    //int64_t val = value.pgticks();// - POSTGRES_EPOCH_USEC;
+    
     int32_t len = sizeof(int64_t) + sizeof(int32_t);
     char* out_val = new char[len];
     pq_async::swap8(&val, (int64_t*)out_val, true);
@@ -1922,7 +1948,10 @@ int32_t val_from_pgparam<int32_t>(int oid, char* val, int len, int format)
         case TIMEOID:
             return (int32_t)pgval_to_time(val, len, format).pgticks();
         case TIMETZOID:
-            return (int32_t)pgval_to_time_tz(val, len, format).pgticks();
+            return (int32_t)(
+                    (hhdate::sys_time<std::chrono::milliseconds>)
+                    pgval_to_time_tz(val, len, format)
+                ).time_since_epoch().count();
         case TIMESTAMPOID:
             return (int32_t)pgval_to_timestamp(val, len, format).pgticks();
         case TIMESTAMPTZOID:
@@ -1967,7 +1996,10 @@ int64_t val_from_pgparam<int64_t>(int oid, char* val, int len, int format)
         case TIMEOID:
             return pgval_to_time(val, len, format).pgticks();
         case TIMETZOID:
-            return pgval_to_time_tz(val, len, format).pgticks();
+            return (
+                    (hhdate::sys_time<std::chrono::milliseconds>)
+                    pgval_to_time_tz(val, len, format)
+                ).time_since_epoch().count();
         case TIMESTAMPOID:
             return pgval_to_timestamp(val, len, format).pgticks();
         case TIMESTAMPTZOID:

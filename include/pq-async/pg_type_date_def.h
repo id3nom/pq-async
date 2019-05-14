@@ -34,6 +34,7 @@ SOFTWARE.
 namespace hhdate = date;
 namespace pq_async{
 
+class parameter;
 class interval;
 class date;
 class timestamp;
@@ -92,7 +93,7 @@ public:
             ymd += hhdate::months{m};
         
         // if(!ymd.ok())
-        // 	ymd = ymd.year()/ymd.month()/ymd.day();
+        // ymd = ymd.year()/ymd.month()/ymd.day();
         return hhdate::sys_days{ymd} + tod;
     }
     
@@ -410,37 +411,24 @@ class time_tz
     friend class time;
     friend std::ostream& operator<<(std::ostream& os, const time_tz& v);
     friend std::istream& operator>> (std::istream& is, time_tz& v);
+    
+    friend pq_async::time_tz pgval_to_time_tz(char* val, int len, int fmt);
+    friend pq_async::parameter* new_parameter(const pq_async::time_tz& value);
 public:
     time_tz();
-    time_tz(int64_t pgticks);
     
-    time_tz(const char* zone_name, int64_t pgticks);
-    //     : _todz(
-    //         hhdate::locate_zone(zone_name),
-    //         hhdate::local_time<std::chrono::microseconds>(
-    //             std::chrono::microseconds(pgticks)
-    //         )
-    //     ),
-    //     _is_null(false)
-    // {
-    // }
-    
-    time_tz(const hhdate::time_zone* zone, int64_t pgticks);
-    //     : _todz(
-    //         zone,
-    //         hhdate::local_time<std::chrono::microseconds>(
-    //             std::chrono::microseconds(pgticks)
-    //         )
-    //     ),
-    //     _is_null(false)
-    // {
-    // }
-    
-    template< typename Dur >
-    explicit time_tz(const hhdate::zoned_time<Dur>& ts)
+    time_tz(const hhdate::zoned_time<std::chrono::microseconds>& ts)
         : _todz(ts),
         _is_null(false)
     {
+    }
+    
+    time_tz& operator=(const hhdate::zoned_time<std::chrono::microseconds>& ts)
+    {
+        _todz = ts;
+        _is_null = false;
+        
+        return *this;
     }
     
     explicit time_tz(const time& ts);
@@ -456,11 +444,6 @@ public:
     const hhdate::time_zone* zone() const
     {
         return _todz.get_time_zone();
-    }
-    
-    int64_t pgticks() const
-    {
-        return _todz.get_sys_time().time_since_epoch().count();
     }
     
     std::string iso_string() const;
@@ -480,9 +463,6 @@ public:
             hhdate::floor<Dur>(this->_todz.get_sys_time())
         );
     }
-    
-    // time_tz as_zone(const char* zone_name) const;
-    // time_tz make_zoned(const char* zone_name) const;
     
     template<typename ZoneT>
     time_tz as_zone(ZoneT zone) const
@@ -508,12 +488,32 @@ public:
         return time_tz(ts);
     }
     
+    
     static time_tz parse(const std::string& s);
     
 private:
     hhdate::zoned_time<std::chrono::microseconds> _todz;
     bool _is_null;
 };
+
+template<typename Duration>
+pq_async::time_tz to_time_tz(const hhdate::zoned_time<Duration>& zt)
+{
+    return hhdate::zoned_time<std::chrono::microseconds>(
+        zt.get_time_zone(),
+        hhdate::floor<std::chrono::microseconds>(zt.get_sys_time())
+    );
+}
+
+template<typename Duration>
+hhdate::zoned_time<Duration> to_zoned_time(const pq_async::time_tz& ttz)
+{
+    return hhdate::zoned_time<Duration>(
+        ttz.zone(),
+        (hhdate::sys_time<Duration>)ttz
+    );
+}
+
 
 std::ostream& operator<<(std::ostream& os, const interval& v);
 std::istream& operator>> (std::istream& is, interval& v);

@@ -602,6 +602,8 @@ TEST_F(date_types_test, time_tz_from_bin)
                 "select '00:00:00.000000 UTC'::"
                 "time with time zone"
             );
+        std::cout << "ts0 iso_string: " << ts0.iso_string() << std::endl;
+
         auto ts0b = ts0;
         ts0 = db->query_value<pq_async::time_tz>(
             "select $1", ts0b
@@ -610,16 +612,16 @@ TEST_F(date_types_test, time_tz_from_bin)
         std::cout << "ts0b iso_string:" << ts0b.iso_string() << std::endl;
         ASSERT_THAT(ts0.iso_string(), testing::Eq(ts0b.iso_string()));
         
-        auto tsmin =
-            db->query_value<pq_async::time_tz>(
-                "select '00:00:00.000000 AEST'::"
-                "time with time zone"
-            );
-        auto tsmax =
-            db->query_value<pq_async::time_tz>(
-                "select '00:00:00.000000 HST'::"
-                "time with time zone"
-            );
+        // auto tsmin =
+        //     db->query_value<pq_async::time_tz>(
+        //         "select '00:00:00.000000 AEST'::"
+        //         "time with time zone"
+        //     );
+        // auto tsmax =
+        //     db->query_value<pq_async::time_tz>(
+        //         "select '00:00:00.000000 HST'::"
+        //         "time with time zone"
+        //     );
         
         auto z = hhdate::current_zone();
         auto zi = z->get_info(
@@ -682,27 +684,65 @@ TEST_F(date_types_test, time_tz_from_bin)
         hhdate::zoned_time<std::chrono::microseconds> tzc = ts0;
         std::cout << tzc << std::endl;
         
-        auto tsmin1 = tsmin.make_zoned("Australia/Melbourne");
-        //auto tsmin1 = tsmin.make_zoned("Pacific/Auckland");
-        auto tsmax1 = tsmin.make_zoned("HST");
+        // auto tsmin1 = tsmin.make_zoned("Australia/Melbourne");
+        // //auto tsmin1 = tsmin.make_zoned("Pacific/Auckland");
+        // auto tsmax1 = tsmin.make_zoned("HST");
         
         std::cout << "ts0 iso_string:" << ts0.iso_string() << std::endl;
         std::cout << "ts0f:          " << ts0f << std::endl;
 
-        std::cout << "tsmin iso_string:" << tsmin.iso_string() << std::endl;
-        std::cout << "tsmin-AEST iso_string:" << 
-            tsmin1.iso_string() << std::endl;
-        std::cout << "tsmax iso_string:" << tsmax.iso_string() << std::endl;
-        std::cout << "tsmax-HST iso_string:" << 
-            tsmax1.iso_string() << std::endl;
+        // std::cout << "tsmin iso_string:" << tsmin.iso_string() << std::endl;
+        // std::cout << "tsmin-AEST iso_string:" << 
+        //     tsmin1.iso_string() << std::endl;
+        // std::cout << "tsmax iso_string:" << tsmax.iso_string() << std::endl;
+        // std::cout << "tsmax-HST iso_string:" << 
+        //     tsmax1.iso_string() << std::endl;
         
-        //19:00:00.000000-0500 -18000
-        //ASSERT_THAT(ts0.iso_string(), testing::Eq("22:01:00.123456"));
         ASSERT_THAT(ts0.iso_string(), testing::Eq(ts0f));
-        ASSERT_THAT(tsmin.iso_string(), testing::Eq("00:00:00.000000+0000"));
-        ASSERT_THAT(tsmin1.iso_string(), testing::Eq("11:00:00.000000+1100"));
-        ASSERT_THAT(tsmax.iso_string(), testing::Eq("00:00:00.000000+0000"));
-        ASSERT_THAT(tsmax1.iso_string(), testing::Eq("14:00:00.000000-1000"));
+        
+        // casting from time_tz to zoned_time, back and forth
+        hhdate::zoned_time<std::chrono::microseconds> zt = ts0;
+        ASSERT_THAT(
+            ts0.iso_string(),
+            testing::Eq(hhdate::format("%T%z", zt))
+        );
+        pq_async::time_tz ttz = zt;
+        ASSERT_THAT(
+            ttz.iso_string(),
+            testing::Eq(hhdate::format("%T%z", zt))
+        );
+        ASSERT_THAT(
+            ts0.iso_string(),
+            testing::Eq(ttz.iso_string())
+        );
+        
+        auto zt1 = hhdate::zoned_time<std::chrono::hours>(
+            hhdate::locate_zone("UTC"),
+            hhdate::floor<std::chrono::hours>(
+                std::chrono::system_clock::now()
+            )
+        );
+        auto ttz1 = pq_async::to_time_tz(zt1);
+        ASSERT_THAT(
+            hhdate::format("%T%z", 
+                to_zoned_time<std::chrono::hours>(ttz1)
+            ),
+            testing::Eq(hhdate::format("%T%z", zt1))
+        );
+        
+        
+        // ASSERT_THAT(
+        //     tsmin.iso_string(), testing::Eq("00:00:00.000000+0000")
+        // );
+        // ASSERT_THAT(
+        //     tsmin1.iso_string(), testing::Eq("11:00:00.000000+1100")
+        // );
+        // ASSERT_THAT(
+        //     tsmax.iso_string(), testing::Eq("00:00:00.000000+0000")
+        // );
+        // ASSERT_THAT(
+        //     tsmax1.iso_string(), testing::Eq("14:00:00.000000-1000")
+        // );
         
     }catch(const std::exception& err){
         std::cout << "Error: " << err.what() << std::endl;
