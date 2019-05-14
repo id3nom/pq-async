@@ -220,6 +220,74 @@ TEST_F(nullable_test, nullable_datetime_types)
             nullptr
         );
         
+        auto eq = md::event_queue::get_default();
+        
+        db->exec_queries(
+            "DO $BODY$ "
+            "BEGIN "
+            "IF NOT EXISTS (SELECT 1 FROM pg_type "
+            "WHERE typname = 'narrstates') THEN "
+            "CREATE TYPE narrstates as ENUM "
+            "('new', 'in progress', 'completed');"
+            "END IF;"
+            "END $BODY$;"
+        );
+        
+        db->execute(
+            "drop table if exists null_array_test"
+        );
+        db->execute(
+            "CREATE TABLE null_array_test("
+            "    id serial NOT NULL,"
+                
+            "    title text NOT NULL,"
+                
+            "    lineups int[] NOT NULL,"
+            "    channels int[] NOT NULL,"
+                
+            "    state narrstates NOT NULL,"
+                
+            "    start_date timestamp with time zone NULL,"
+            "    end_date timestamp with time zone NULL,"
+                
+            "    created timestamp NOT NULL DEFAULT now(),"
+            "    modified timestamp NOT NULL DEFAULT now(),"
+                
+            "    CONSTRAINT null_array_test_pkey PRIMARY KEY (id)"
+            ")WITH(OIDS=false);"
+        );
+        
+        std::string title("test");
+        auto start_date = pq_async::timestamp_tz::null();
+        auto end_date = pq_async::timestamp_tz::null();
+        
+        db->execute(
+            "insert into null_array_test "
+            "(title, lineups, channels, state, start_date, end_date) values "
+            "($1, '{0,1,2}', '{3,4,5}', 'new', $2, $3) returning id",
+            title, start_date, end_date,
+            [](auto err, int /*nb*/){
+                if(err){
+                    throw MD_ERR(err.c_str());
+                }
+            }
+        );
+        
+        db->query_value<int>(
+            "insert into null_array_test "
+            "(title, lineups, channels, state, start_date, end_date) values "
+            "($1, '{0,1,2}', '{3,4,5}', 'new', $2, $3) returning id",
+            title, start_date, end_date,
+            [](auto err, int new_id){
+                if(err){
+                    throw MD_ERR(err.c_str());
+                }
+                std::cout << new_id << std::endl;
+            }
+        );
+        
+        eq->run();
+        
     }catch(const std::exception& err){
         std::cout << "Error: " << err.what() << std::endl;
         FAIL();

@@ -52,9 +52,19 @@ public:
         std::cout << "Current time zone: " << cz->name() << std::endl;
         
         std::cout << "Initializing the log setting" << std::endl;
-        pq_async::default_logger()->set_level(
+        // md::log::default_logger()->set_level(
+        //     (md::log::log_level)pq_async_log_level
+        // );
+        auto out_snk = std::make_shared<md::log::sinks::console_sink>(
+            true
+        );
+        out_snk->set_level((md::log::log_level)pq_async_log_level);
+        md::log::sp_logger pqlogger =
+            std::make_shared<md::log::logger>("/", out_snk);
+        pqlogger->set_level(
             (md::log::log_level)pq_async_log_level
         );
+        md::log::default_logger() = pqlogger;
         
         _ev_base = event_base_new();
         md::event_queue::reset(_ev_base);
