@@ -38,6 +38,7 @@ addons:
       - libcurl4-gnutls-dev
       - libboost-dev
       - libboost-program-options-dev
+      - libevent-dev
       - uuid-dev
       - git
 
