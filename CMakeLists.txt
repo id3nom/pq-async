@@ -158,6 +158,9 @@ option(PQ_ASYNC_THREAD_SAFE "Enable thread safety." ON)
 include(FindPostgreSQL)
 Find_Package(PostgreSQL REQUIRED)
 
+message(STATUS "** PostgreSQL Include: ${PostgreSQL_INCLUDE_DIR}")
+message(STATUS "** PostgreSQL Type Include: ${PostgreSQL_TYPE_INCLUDE_DIR}")
+
 # add the binary tree to the search path for include files
 include_directories("${PROJECT_BINARY_DIR}"
     "${CMAKE_CURRENT_BINARY_DIR}"
@@ -171,6 +174,7 @@ include_directories("${PROJECT_BINARY_DIR}"
     ${PostgreSQL_INCLUDE_DIRS}
 )
 #link_directories(${Boost_LIBRARY_DIRS})
+
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 file(GLOB PQ_ASYNC_HEADERS "${PROJECT_SOURCE_DIR}/include/pq-async/*.h")
