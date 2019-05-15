@@ -827,28 +827,11 @@ public:
     void push_back(const T& value, const PARAMS& ...args)
     {
         this->cleanup();
-        _p.emplace_back(pq_async::new_parameter(value));
+        pq_async::parameter* param = pq_async::new_parameter(value);
+        _p.emplace_back(param);
         push_back<SIZE -1>(args...);
     }
     
-    // /*!
-    //  * \brief creates and push_back parameter object in the parameters object
-    //  * will be called recursively until all provided parameters have been 
-    //  * processed
-    //  * \tparam PARAMS Type of parameters pack
-    //  * \param value current processed value
-    //  * \param args parameters pack
-    //  */
-    // template<int SIZE, typename... PARAMS,
-    //     typename std::enable_if<(SIZE > 0), int32_t>::type = 0
-    // >
-    // void push_back(pq_async::parameter* value, const PARAMS& ...args)
-    // {
-    //     this->cleanup();
-    //     _p.emplace_back(value);
-    //     push_back<SIZE -1>(args...);
-    // }
-
     /*!
      * \brief creates and push_back parameter object in the parameters object
      * will be called recursively until all provided parameters have been 
@@ -863,14 +846,15 @@ public:
     void push_back(nullptr_t value, const PARAMS& ...args)
     {
         this->cleanup();
-        _p.emplace_back(
-            /*
-            from pgsql doc, if paramType is zero, 
-            the server infers a data type for the parameter symbol in 
-            the same way it would do for an untyped literal string
-            */
-            new_null_parameter(0)
-        );
+        
+        /*
+        from pgsql doc, if paramType is zero, 
+        the server infers a data type for the parameter symbol in 
+        the same way it would do for an untyped literal string
+        */
+        pq_async::parameter* param = new_null_parameter(0);
+        _p.emplace_back(param);
+        
         push_back<SIZE -1>(args...);
     }
 
@@ -927,11 +911,14 @@ private:
     {
         for(size_t i = 0; i < b._p.size(); ++i){
             parameter* p = b._p[i];
-            char* val = new char[p->get_length()];
-            std::copy(
-                p->get_value(), p->get_value() +p->get_length(),
-                val
-            );
+            char* val = nullptr;
+            if(p->get_value()){
+                val = new char[p->get_length()];
+                std::copy(
+                    p->get_value(), p->get_value() +p->get_length(),
+                    val
+                );
+            }
             _p.push_back(
                 new parameter(
                     p->get_oid(),
