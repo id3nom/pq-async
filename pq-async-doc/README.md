@@ -190,7 +190,7 @@ while(auto row = reader->next()){
     // do row stuff ...
 }
 
-// if you need to explicitly close the "data_reader" 
+// if you need to explicitly close the "data_reader_t" 
 // (even if it close itself on destruction) you can call "close()"
 reader->close();
 
@@ -251,7 +251,7 @@ auto r = ps->query_single(-1);
 auto t = ps->query(-1);
 auto dr = ps->query_reader(-1);
 
-auto params = new pq_async::parameters(-1);
+auto params = new pq_async::parameters_t(-1);
 auto n = ps->execute(-1);
 auto i = ps->query_value<int32_t>(params);
 auto r = ps->query_single(params);
@@ -364,7 +364,7 @@ db->query_value<int32_t>(sql, "some text value",
 // if multiple records are returned from PostgreSQL, only the first one is used
 std::string sql("select * form tbl_name where col_str_b = $1 limit 1");
 db->query_single(sql, "some text value",
-[](const md::callback::cb_error& err, sp_data_row row){
+[](const md::callback::cb_error& err, data_row row){
     if(err){
         //...
     }
@@ -374,7 +374,7 @@ db->query_single(sql, "some text value",
 // to fetch a table
 std::string sql("select * form tbl_name where id > $1");
 db->query(sql, 3,
-[](const md::callback::cb_error& err, sp_data_table tbl){
+[](const md::callback::cb_error& err, data_table tbl){
     if(err){
         //...
     }
@@ -384,7 +384,7 @@ db->query(sql, 3,
 // to create a data reader
 std::string sql("select * form tbl_name where id > $1");
 db->query_reader(sql, 3,
-[](const md::callback::cb_error& err, sp_data_reader reader){
+[](const md::callback::cb_error& err, data_reader reader){
     if(err){
         //...
     }
@@ -401,13 +401,13 @@ db->query_reader(sql, 3,
 // to create a data reader
 std::string sql("select * form tbl_name where id > $1");
 db->query_reader(sql, 3,
-[](const md::callback::cb_error& err, sp_data_reader reader){
+[](const md::callback::cb_error& err, data_reader reader){
     if(err){
         //...
     }
     // use the reader...
     reader->next([scb, reader]
-    (const md::callback::cb_error& err, sp_data_row r){	// this callback will be called
+    (const md::callback::cb_error& err, data_row r){	// this callback will be called
         if(err){							// until there is no more row to
             scb(err);						// be processed
             return;
@@ -418,7 +418,7 @@ db->query_reader(sql, 3,
             return;
         }
         
-        // if you need to explicitly close the "data_reader" 
+        // if you need to explicitly close the "data_reader_t" 
         // (even if it close itself on destruction) you can call "close()"
         reader->close(); 	// NOTE that after this call the callback 
                             // will be called one more time with an empty row.
@@ -515,7 +515,7 @@ db->release_savepoint("my savepoint name", [](const md::callback::cb_error& err)
 
 ## Table
 
-The pq_async::data_table class is the representation of multiple records.
+The pq_async::data_table_t class is the representation of multiple records.
 
 ~~~{.cpp}
 
@@ -525,7 +525,7 @@ The pq_async::data_table class is the representation of multiple records.
 
 ## Row
 
-The pq_async::data_row class is the representation of a record.
+The pq_async::data_row_t class is the representation of a record.
 
 ~~~{.cpp}
 // given the following query to fetch a single row

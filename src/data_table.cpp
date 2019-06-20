@@ -22,47 +22,47 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "data_table.h"
+#include "data_table_t.h"
 
 namespace pq_async{
 
-data_table::data_table()
+data_table_t::data_table_t()
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
-    _cols.reset(new data_columns_container());
+    _cols.reset(new data_columns_container_t());
 }
 
-data_table::~data_table()
+data_table_t::~data_table_t()
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 }
 
 
-pq_async::sp_data_value pq_async::data_table::get_value(
+pq_async::data_value pq_async::data_table_t::get_value(
     uint32_t row_idx, uint32_t col_id) const
 {
     return get_row_safe(row_idx)->get_value(col_id);
 }
 
-pq_async::sp_data_value pq_async::data_table::get_value(
+pq_async::data_value pq_async::data_table_t::get_value(
     uint32_t row_idx, const char* col_name) const
 {
     return get_row_safe(row_idx)->get_value(col_name);
 }
 
-void pq_async::data_table::to_json(pq_async::json& rows) const
+void pq_async::data_table_t::to_json(pq_async::json& rows) const
 {
     int count = this->size();
 
     for(int i = 0; i < count; ++i){
-        sp_data_row row = (*this)[i];
+        data_row row = (*this)[i];
         pq_async::json row_obj = pq_async::json::object();
         row->to_json(row_obj);
         rows.push_back(row_obj);
     }
 }
 
-void pq_async::data_table::to_json_string(
+void pq_async::data_table_t::to_json_string(
     std::string& str, const unsigned int current_indent) const
 {
     pq_async::json rows = pq_async::json::array();

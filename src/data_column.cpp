@@ -22,17 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "data_column.h"
+#include "data_column_t.h"
 
 namespace pq_async{
 
-data_column::data_column(int oid, int index, const std::string& name, int fmt)
+data_column_t::data_column_t(int oid, int index, const std::string& name, int fmt)
     :_oid(oid), _index(index), _name(md::lower_case_copy(name)), _fmt(fmt)
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 }
     
-data_column::~data_column()
+data_column_t::~data_column_t()
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 }

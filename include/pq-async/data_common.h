@@ -34,34 +34,36 @@ namespace pq_async{
 
 #define DEFAULT_CONNECTION_POOL_MAX_CONN 20
 
-class parameters;
-class data_value;
-class data_column;
-class data_columns_container;
-class data_row;
-class data_table;
-class data_reader;
-class data_large_object;
-class data_prepared;
+class parameters_t;
+class data_value_t;
+class data_column_t;
+class data_columns_container_t;
+class data_row_t;
+class data_table_t;
+class data_reader_t;
+class data_large_object_t;
+class data_prepared_t;
 
 template< typename DATA_T >
-class strand;
-class database;
+class strand_t;
+class database_t;
 
-typedef std::shared_ptr< pq_async::parameters > sp_parameters;
-typedef std::shared_ptr< pq_async::data_table > sp_data_table;
-typedef std::shared_ptr< pq_async::data_row > sp_data_row;
-typedef std::shared_ptr< pq_async::data_columns_container > sp_data_columns_container;
-typedef std::shared_ptr< pq_async::data_column > sp_data_column;
-typedef std::shared_ptr< pq_async::data_value > sp_data_value;
-typedef std::shared_ptr< pq_async::data_large_object > sp_data_large_object;
-typedef std::shared_ptr< pq_async::data_reader > sp_data_reader;
-typedef std::shared_ptr< pq_async::data_prepared > sp_data_prepared;
+typedef std::shared_ptr< pq_async::parameters_t > parameters;
+typedef std::shared_ptr< pq_async::data_table_t > data_table;
+typedef std::shared_ptr< pq_async::data_row_t > data_row;
+typedef std::shared_ptr<
+    pq_async::data_columns_container_t 
+> data_columns_container;
+typedef std::shared_ptr< pq_async::data_column_t > data_column;
+typedef std::shared_ptr< pq_async::data_value_t > data_value;
+typedef std::shared_ptr< pq_async::data_large_object_t > data_large_object;
+typedef std::shared_ptr< pq_async::data_reader_t > data_reader;
+typedef std::shared_ptr< pq_async::data_prepared_t > data_prepared;
 
 
 template< typename DATA_T = int >
-using sp_strand = typename std::shared_ptr< pq_async::strand<DATA_T> >;
-typedef std::shared_ptr< pq_async::database > sp_database;
+using strand = typename std::shared_ptr< pq_async::strand_t<DATA_T> >;
+typedef std::shared_ptr< pq_async::database_t > database;
 
 ///////////////////////////
 // callbacks definitions //
@@ -69,9 +71,9 @@ typedef std::shared_ptr< pq_async::database > sp_database;
 
 typedef std::function<
     void(
-        sp_data_reader reader,
+        data_reader reader,
         const md::callback::cb_error& err,
-        sp_data_row row
+        data_row row
     )
 > query_next_cb;
 

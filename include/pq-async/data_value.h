@@ -37,21 +37,21 @@ SOFTWARE.
     }
 
 #include "data_common.h"
-#include "data_column.h"
+#include "data_column_t.h"
 
 namespace pq_async{
 
-class data_value;
-typedef std::shared_ptr< pq_async::data_value > sp_data_value;
+class data_value_t;
+typedef std::shared_ptr< pq_async::data_value_t > data_value;
 
-class data_value
+class data_value_t
 {
 public:
-    data_value(sp_data_column col, char* value, int length);
+    data_value_t(data_column col, char* value, int length);
     
-    virtual ~data_value();
+    virtual ~data_value_t();
     
-    sp_data_column column(){ return _col;}
+    data_column column(){ return _col;}
     
     bool is_null(){ return _value == NULL;}
     
@@ -207,7 +207,7 @@ public:
     }
 
 private:
-    sp_data_column _col;
+    data_column _col;
     char* _value;
     int _length;
 

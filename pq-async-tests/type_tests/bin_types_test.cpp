@@ -67,7 +67,7 @@ TEST_F(bin_types_test, bin_test_bin)
         //SELECT E'\\xDEADBEEF';
         
         /*
-        parameters p("abc", 1, 2.3, std::array<int, 2>());
+        parameters_t p("abc", 1, 2.3, std::array<int, 2>());
         for(int i = 0; i < p.size(); ++i)
             std::cout << *(p.types() + i) << std::endl;
         */

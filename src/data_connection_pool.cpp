@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 #include "data_connection_pool.h"
-#include "database.h"
+#include "database_t.h"
 
 namespace pq_async{
 
@@ -105,7 +105,7 @@ void pq_async::connection::release()
     return;
 }
 
-md::sp_event_strand<int> connection::strand()
+md::sp_event_strand<int> connection::strand_t()
 {
     if(!this->_owner)
         return md::sp_event_strand<int>();
@@ -128,7 +128,7 @@ bool pq_async::connection::is_dead()
 
 
 connection_task::connection_task(
-    md::event_queue* owner, sp_database db, sp_connection_lock lock,
+    md::event_queue* owner, database db, sp_connection_lock lock,
     const md::callback::value_cb<PGresult*>& cb)
     : event_task_base(owner), 
     _cmd_type(command_type::none),
@@ -142,7 +142,7 @@ connection_task::connection_task(
 }
 
 connection_task::connection_task(
-    md::event_queue* owner, sp_database db, connection* conn,
+    md::event_queue* owner, database db, connection* conn,
     const md::callback::value_cb<sp_connection_lock>& lock_cb)
     : event_task_base(owner), 
     _cmd_type(command_type::none),
@@ -156,7 +156,7 @@ connection_task::connection_task(
 }
 
 connection_task::connection_task(
-    md::event_queue* owner, sp_database db, sp_connection_lock lock)
+    md::event_queue* owner, database db, sp_connection_lock lock)
     : event_task_base(owner), 
     _cmd_type(command_type::none),
     _completed(false), _db(db),
@@ -169,7 +169,7 @@ connection_task::connection_task(
 }
 
 connection_task::connection_task(
-    md::event_queue* owner, sp_database db, connection* conn)
+    md::event_queue* owner, database db, connection* conn)
     : event_task_base(owner), 
     _cmd_type(command_type::none),
     _completed(false), _db(db),
@@ -238,7 +238,7 @@ void pq_async::connection_task::_connect()
 }
 
 reader_connection_task::reader_connection_task(
-    md::event_queue* owner, sp_database db, sp_connection_lock lock)
+    md::event_queue* owner, database db, sp_connection_lock lock)
     : connection_task(owner, db, lock)
 {
 }
@@ -355,7 +355,7 @@ int32_t pq_async::connection_pool::_get_opened_connection_count(
 
 
 pq_async::connection* pq_async::connection_pool::_get_connection(
-    database* owner, const std::string& connection_string, int32_t timeout_ms)
+    database_t* owner, const std::string& connection_string, int32_t timeout_ms)
 {
     #ifdef PQ_ASYNC_THREAD_SAFE
     std::unique_lock<std::recursive_mutex> lock(conn_pool_mutex);

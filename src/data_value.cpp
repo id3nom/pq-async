@@ -22,17 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "data_value.h"
+#include "data_value_t.h"
 
 namespace pq_async{
 
-data_value::data_value(sp_data_column col, char* value, int length)
+data_value_t::data_value_t(data_column col, char* value, int length)
     :_col(col), _value(value), _length(length), _ele_oid(-1), _dim(-1)
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 }
     
-data_value::~data_value()
+data_value_t::~data_value_t()
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
     delete[] _value;

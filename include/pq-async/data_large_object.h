@@ -32,7 +32,7 @@ SOFTWARE.
 #include "log.h"
 
 #include "data_connection_pool.h"
-#include "database.h"
+#include "database_t.h"
 
 extern "C" {
 #include INCLUDE_FILE(LIBPQ_POSTGRESQL_TYPE_INCLUDE_DIR,libpq/libpq-fs.h)
@@ -53,11 +53,11 @@ enum class lo_whence
     seek_end = SEEK_END,
 };
 
-class data_large_object
+class data_large_object_t
 {
-    friend class pq_async::database;
+    friend class pq_async::database_t;
     
-    data_large_object(const sp_database& db, const pq_async::oid& oid)
+    data_large_object_t(const database& db, const pq_async::oid& oid)
         : _db(db), _oid(oid), _opened_read(false), _opened_write(false), _fd(-1)
     {
     }
@@ -89,7 +89,7 @@ public:
     void unlink();
     
 private:
-    sp_database _db;
+    database _db;
     pq_async::oid _oid;
     bool _opened_read;
     bool _opened_write;

@@ -73,7 +73,7 @@ TEST_F(data_reader_test, data_reader_sync_test)
         
         auto reader = db->query_reader("select * from data_reader_test");
         
-        while(sp_data_row r = reader->next()){
+        while(data_row r = reader->next()){
             std::string v = *(*r)["value"];
             std::cout
                 << "id: " << r->as_int64("id")
@@ -101,7 +101,7 @@ TEST_F(data_reader_test, data_reader_sync_close_test)
         
         auto reader = db->query_reader("select * from data_reader_test");
         
-        while(sp_data_row r = reader->next()){
+        while(data_row r = reader->next()){
             std::string v = *(*r)["value"];
             std::cout
                 << "id: " << r->as_int64("id")
@@ -142,14 +142,14 @@ TEST_F(data_reader_test, data_reader_async_test)
             },
             [&](md::callback::async_cb scb){
                 db->query_reader("select * from data_reader_test",
-                [scb](const md::callback::cb_error& err, sp_data_reader reader){
+                [scb](const md::callback::cb_error& err, data_reader reader){
                     if(err){
                         scb(err);
                         return;
                     }
                     
                     reader->next([scb, reader]
-                    (const md::callback::cb_error& err, sp_data_row r){
+                    (const md::callback::cb_error& err, data_row r){
                         if(err){
                             scb(err);
                             return;
@@ -208,14 +208,14 @@ TEST_F(data_reader_test, data_reader_async_close_test)
             },
             [&](md::callback::async_cb scb){
                 db->query_reader("select * from data_reader_test",
-                [scb](const md::callback::cb_error& err, sp_data_reader reader){
+                [scb](const md::callback::cb_error& err, data_reader reader){
                     if(err){
                         scb(err);
                         return;
                     }
                     
                     reader->next([scb, reader]
-                    (const md::callback::cb_error& err, sp_data_row r){
+                    (const md::callback::cb_error& err, data_row r){
                         if(err){
                             scb(err);
                             return;

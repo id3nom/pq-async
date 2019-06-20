@@ -111,7 +111,7 @@ TEST_F(queue_test, queue_db_strand_test_b)
             },
             [&](md::callback::async_cb scb){
                 db->query("select * from queue_test",
-                [scb](const md::callback::cb_error& err, sp_data_table tbl){
+                [scb](const md::callback::cb_error& err, data_table tbl){
                     if(err){
                         scb(err);
                         return;

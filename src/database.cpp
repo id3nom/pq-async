@@ -17,33 +17,33 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "database.h"
-#include "data_large_object.h"
-#include "data_prepared.h"
+#include "database_t.h"
+#include "data_large_object_t.h"
+#include "data_prepared_t.h"
 
 namespace pq_async{
 
-database::database(
-    md::sp_event_strand<int> strand,
+database_t::database_t(
+    md::sp_event_strand<int> strand_t,
     const std::string& connection_string,
     md::log::sp_logger log = nullptr)
     :_connection_string(connection_string),
     _conn(NULL),
-    _strand(strand),
+    _strand(strand_t),
     _lock(),
     _log(log ? log : pq_async::default_logger())
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
-    strand->enable_activate_on_requeue(false);
+    strand_t->enable_activate_on_requeue(false);
 }
 
-database::~database()
+database_t::~database_t()
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
     this->close();
 }
 
-void database::exec_queries(const std::string& sql, const md::callback::async_cb& cb)
+void database_t::exec_queries(const std::string& sql, const md::callback::async_cb& cb)
 {
     std::vector< std::string > queries;
     split_queries(sql, queries);
@@ -51,7 +51,7 @@ void database::exec_queries(const std::string& sql, const md::callback::async_cb
     throw pq_async::exception("not implemented!");
 }
 
-void database::exec_queries(const std::string& sql)
+void database_t::exec_queries(const std::string& sql)
 {
     this->wait_for_sync();
     
@@ -124,7 +124,7 @@ void database::exec_queries(const std::string& sql)
         this->commit();
 }
 
-void database::split_queries(
+void database_t::split_queries(
     const std::string& sql, std::vector< std::string >& queries)
 {
     std::string cur_qry;
@@ -254,7 +254,7 @@ void database::split_queries(
 
 
 
-int database::_process_execute_result(PGresult* res)
+int database_t::_process_execute_result(PGresult* res)
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
     
@@ -290,7 +290,7 @@ int database::_process_execute_result(PGresult* res)
 }
 
 
-sp_data_table database::_process_query_result(PGresult* res)
+data_table database_t::_process_query_result(PGresult* res)
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
     
@@ -310,7 +310,7 @@ sp_data_table database::_process_query_result(PGresult* res)
         throw pq_async::exception(errMsg);
     }
     
-    sp_data_table table(new pq_async::data_table());
+    data_table table(new pq_async::data_table_t());
     
     int fieldCount = PQnfields(res);
     for(int i = 0; i < fieldCount; ++i){
@@ -318,7 +318,7 @@ sp_data_table database::_process_query_result(PGresult* res)
         std::string name(PQfname(res, i));
         int fmt = PQfformat(res, i);
         
-        sp_data_column col(new data_column(oid, i, name, fmt));
+        data_column col(new data_column_t(oid, i, name, fmt));
         
         table->get_columns()->emplace_back(col);
     }
@@ -326,7 +326,7 @@ sp_data_table database::_process_query_result(PGresult* res)
     int row_count = PQntuples(res);
     table->reserve(row_count);
     for(int i = 0; i < row_count; ++i){
-        sp_data_row row(new data_row(table->get_columns(), res, i));
+        data_row row(new data_row_t(table->get_columns(), res, i));
         table->emplace_back(row);
     }
 
@@ -336,7 +336,7 @@ sp_data_table database::_process_query_result(PGresult* res)
 }
 
 
-sp_data_row database::_process_query_single_result(PGresult* res)
+data_row database_t::_process_query_single_result(PGresult* res)
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
     if(!_conn){
@@ -355,14 +355,14 @@ sp_data_row database::_process_query_single_result(PGresult* res)
         throw pq_async::exception(errMsg);
     }
 
-    sp_data_table table(new pq_async::data_table());
+    data_table table(new pq_async::data_table_t());
          
     int fieldCount = PQnfields(res);
     for(int i = 0; i < fieldCount; ++i){
         int oid = PQftype(res, i);
         std::string name(PQfname(res, i));
         int fmt = PQfformat(res, i);
-        sp_data_column col(new data_column(oid, i, name, fmt));
+        data_column col(new data_column_t(oid, i, name, fmt));
         
         table->get_columns()->emplace_back(col);
     }
@@ -370,7 +370,7 @@ sp_data_row database::_process_query_single_result(PGresult* res)
     int row_count = PQntuples(res);
     table->reserve(row_count);
     for(int i = 0; i < row_count; ++i){
-        sp_data_row row(new data_row(table->get_columns(), res, i));
+        data_row row(new data_row_t(table->get_columns(), res, i));
         table->emplace_back(row);
 
         PQclear(res);
@@ -379,10 +379,10 @@ sp_data_row database::_process_query_single_result(PGresult* res)
 
     PQclear(res);
 
-    return sp_data_row();
+    return data_row();
 }
 
-sp_data_prepared database::_process_send_prepare_result(
+data_prepared database_t::_process_send_prepare_result(
     const std::string& name, bool auto_deallocate,
     sp_connection_lock lock, PGresult* res)
 {
@@ -401,19 +401,19 @@ sp_data_prepared database::_process_send_prepare_result(
     }
     
     PQclear(res);
-    return sp_data_prepared(
-        new data_prepared(
+    return data_prepared(
+        new data_prepared_t(
             this->shared_from_this(), name, auto_deallocate, lock
         )
     );
 }
 
-sp_data_prepared database::_new_prepared(
+data_prepared database_t::_new_prepared(
     const char* name, bool auto_deallocate,
     sp_connection_lock lock)
 {
-    return sp_data_prepared(
-        new data_prepared(
+    return data_prepared(
+        new data_prepared_t(
             this->shared_from_this(), name, auto_deallocate,
             lock
         )
@@ -421,7 +421,7 @@ sp_data_prepared database::_new_prepared(
 }
 
 
-sp_data_large_object database::create_lo()
+data_large_object database_t::create_lo()
 {
     open_connection();
     connection_lock conn_lock(_conn);
@@ -430,10 +430,10 @@ sp_data_large_object database::create_lo()
     return get_lo(lo_oid);
 }
 
-sp_data_large_object database::get_lo(const pq_async::oid& lo_oid)
+data_large_object database_t::get_lo(const pq_async::oid& lo_oid)
 {
-    return sp_data_large_object(
-        new data_large_object(
+    return data_large_object(
+        new data_large_object_t(
             this->shared_from_this(), lo_oid
         )
     );

@@ -26,7 +26,7 @@ SOFTWARE.
 #define _libpq_async_h
 
 #include "data_connection_pool.h"
-#include "database.h"
-#include "data_prepared.h"
+#include "database_t.h"
+#include "data_prepared_t.h"
 
 #endif //_libpq_async_h

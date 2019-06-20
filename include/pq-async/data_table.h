@@ -37,25 +37,25 @@ SOFTWARE.
 
 
 #include "data_common.h"
-#include "data_row.h"
+#include "data_row_t.h"
 
 namespace pq_async{
 
-class data_table
-    : public std::vector<sp_data_row>
+class data_table_t
+    : public std::vector<data_row>
 {
-    friend class data_reader;
+    friend class data_reader_t;
 public:
-    data_table();
+    data_table_t();
 
-    virtual ~data_table();
+    virtual ~data_table_t();
 
     void dispose()
     {
 
     }
 
-    sp_data_columns_container get_columns() const
+    data_columns_container get_columns() const
     {
         return _cols;
     }
@@ -68,9 +68,9 @@ public:
     }
 
 
-    sp_data_value get_value(uint32_t row_idx, uint32_t col_id) const;
-    sp_data_value get_value(uint32_t row_idx, const char* col_name) const;
-    sp_data_value get_value(uint32_t row_idx, const std::string& col_name) const
+    data_value get_value(uint32_t row_idx, uint32_t col_id) const;
+    data_value get_value(uint32_t row_idx, const char* col_name) const;
+    data_value get_value(uint32_t row_idx, const std::string& col_name) const
     {
         return get_value(row_idx, col_name.c_str());
     }
@@ -140,17 +140,17 @@ public:
     
     //////////////////////////////
     
-    sp_data_value operator()(uint32_t i, const char* col_name) const 
+    data_value operator()(uint32_t i, const char* col_name) const 
     {
         return get_value(i, col_name);
     }
     
-    const data_row* get_row_ptr(uint32_t i) const
+    const data_row_t* get_row_ptr(uint32_t i) const
     {
         return (*this)[i].get();
     }
 
-    sp_data_row get_row_safe(uint32_t i) const
+    data_row get_row_safe(uint32_t i) const
     {
         return (*this)[i];
     }
@@ -162,8 +162,8 @@ public:
     ) const;
 
 private:
-    sp_data_columns_container _cols;
-    //std::vector< sp_data_row > _rows;
+    data_columns_container _cols;
+    //std::vector< data_row > _rows;
 
 };
 

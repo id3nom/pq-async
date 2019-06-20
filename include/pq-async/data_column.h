@@ -30,15 +30,15 @@ SOFTWARE.
 
 namespace pq_async{
 
-class data_column;
-typedef std::shared_ptr< pq_async::data_column > sp_data_column;
+class data_column_t;
+typedef std::shared_ptr< pq_async::data_column_t > data_column;
 
-class data_column
+class data_column_t
 {
 public:
-    data_column(int oid, int index, const std::string& name, int fmt);
+    data_column_t(int oid, int index, const std::string& name, int fmt);
     
-    virtual ~data_column();
+    virtual ~data_column_t();
 
     int get_oid() const { return _oid;}
     int get_index() const { return _index;}

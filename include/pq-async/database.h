@@ -29,8 +29,8 @@ SOFTWARE.
 #include "log.h"
 
 #include "data_connection_pool.h"
-#include "data_table.h"
-#include "data_reader.h"
+#include "data_table_t.h"
+#include "data_reader_t.h"
 
 #include "utils.h"
 
@@ -44,7 +44,7 @@ namespace pq_async{
 
 
 #define _PQ_ASYNC_SEND_QRY_BODY_PARAMS(__val, __process_fn, __def_val) \
-    parameters p; \
+    parameters_t p; \
     p.push_back<sizeof...(PARAMS) -1>(args...); \
      \
     md::callback::value_cb<__val> cb; \
@@ -140,24 +140,24 @@ namespace pq_async{
  * \brief 
  * 
  */
-class database
-    : public std::enable_shared_from_this<database>
+class database_t
+    : public std::enable_shared_from_this<database_t>
 {
     friend class connection;
     friend class connection_task;
     friend class connection_pool;
-    friend class data_large_object;
-    friend class data_prepared;
+    friend class data_large_object_t;
+    friend class data_prepared_t;
 
-    database(
-        md::sp_event_strand<int> strand, 
+    database_t(
+        md::sp_event_strand<int> strand_t, 
         const std::string& connection_string,
         md::log::sp_logger log
     );
     
 public:
     
-    virtual ~database();
+    virtual ~database_t();
     
     
     md::sp_event_strand<int> get_strand(){ return _strand;}
@@ -289,7 +289,7 @@ public:
     }
     
     /*!
-     * \brief returns true if the database is currently working.
+     * \brief returns true if the database_t is currently working.
      * 
      * \return true 
      * \return false 
@@ -632,7 +632,7 @@ public:
      * \param acb completion void(const md::callback::cb_error&, int) callback
      */
     template<typename T, PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, int)>
-    void execute(const char* sql, const parameters& p, const T& acb)
+    void execute(const char* sql, const parameters_t& p, const T& acb)
     {
         _PQ_ASYNC_SEND_QRY_BODY_T(int, _process_execute_result, -1);
     }
@@ -650,7 +650,7 @@ public:
     template<typename... PARAMS, PQ_ASYNC_INVALID_DB_CALLBACK(int)>
     int32_t execute(const char* sql, const PARAMS&... args)
     {
-        parameters p(args...);
+        parameters_t p(args...);
         _PQ_ASYNC_SEND_QRY_BODY_SYNC(_process_execute_result);
     }
     /*!
@@ -662,7 +662,7 @@ public:
      */
     int32_t execute(const char* sql)
     {
-        parameters p;
+        parameters_t p;
         _PQ_ASYNC_SEND_QRY_BODY_SYNC(_process_execute_result);
     }
     /*!
@@ -673,7 +673,7 @@ public:
      * \param p query parameters
      * \return int32_t the number of record processed
      */
-    int32_t execute(const char* sql, const parameters& p)
+    int32_t execute(const char* sql, const parameters_t& p)
     {
         _PQ_ASYNC_SEND_QRY_BODY_SYNC(_process_execute_result);
     }
@@ -681,153 +681,153 @@ public:
     
     /*!
      * \brief asynchrounously process a query
-     * and returns a pq_async::data_table as the result
+     * and returns a pq_async::data_table_t as the result
      * 
      * \tparam PARAMS 
-     * \tparam PQ_ASYNC_VALID_DB_CALLBACK(sp_data_table) 
+     * \tparam PQ_ASYNC_VALID_DB_CALLBACK(data_table) 
      * \param sql the SQL query to process
      * \param args query parameters, the last parameter is 
-     * the completion void(const md::callback::cb_error&, sp_data_table) callback
+     * the completion void(const md::callback::cb_error&, data_table) callback
      */
-    template<typename... PARAMS, PQ_ASYNC_VALID_DB_CALLBACK(sp_data_table)>
+    template<typename... PARAMS, PQ_ASYNC_VALID_DB_CALLBACK(data_table)>
     void query(const char* sql, const PARAMS&... args)
     {
         _PQ_ASYNC_SEND_QRY_BODY_PARAMS(
-            sp_data_table, _process_query_result, sp_data_table()
+            data_table, _process_query_result, data_table()
         );
     }
     /*!
      * \brief asynchrounously process a query
-     * and returns a pq_async::data_table as the result
+     * and returns a pq_async::data_table_t as the result
      * 
      * \tparam T 
-     * \tparam PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_table) 
+     * \tparam PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, data_table) 
      * \param sql the SQL query to process
      * \param p query parameters
-     * \param acb completion void(const md::callback::cb_error&, sp_data_table) callback
+     * \param acb completion void(const md::callback::cb_error&, data_table) callback
      */
-    template<typename T, PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_table)>
-    void query(const char* sql, const parameters& p, const T& acb)
+    template<typename T, PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, data_table)>
+    void query(const char* sql, const parameters_t& p, const T& acb)
     {
         _PQ_ASYNC_SEND_QRY_BODY_T(
-            sp_data_table, _process_query_result, sp_data_table()
+            data_table, _process_query_result, data_table()
         );
     }
     
     /*!
      * \brief synchrounously process a query
-     * and returns a pq_async::data_table as the result
+     * and returns a pq_async::data_table_t as the result
      * 
      * \tparam PARAMS 
-     * \tparam PQ_ASYNC_INVALID_DB_CALLBACK(sp_data_table) 
+     * \tparam PQ_ASYNC_INVALID_DB_CALLBACK(data_table) 
      * \param sql the SQL query to process
      * \param args query parameters
-     * \return sp_data_table 
+     * \return data_table 
      */
-    template<typename... PARAMS, PQ_ASYNC_INVALID_DB_CALLBACK(sp_data_table)>
-    sp_data_table query(const char* sql, const PARAMS&... args)
+    template<typename... PARAMS, PQ_ASYNC_INVALID_DB_CALLBACK(data_table)>
+    data_table query(const char* sql, const PARAMS&... args)
     {
-        parameters p(args...);
+        parameters_t p(args...);
         _PQ_ASYNC_SEND_QRY_BODY_SYNC(_process_query_result);
     }
     /*!
      * \brief synchrounously process a query
-     * and returns a pq_async::data_table as the result
+     * and returns a pq_async::data_table_t as the result
      * 
      * \param sql the SQL query to process
-     * \return sp_data_table 
+     * \return data_table 
      */
-    sp_data_table query(const char* sql)
+    data_table query(const char* sql)
     {
-        parameters p;
+        parameters_t p;
         _PQ_ASYNC_SEND_QRY_BODY_SYNC(_process_query_result);
     }
     /*!
      * \brief synchrounously process a query
-     * and returns a pq_async::data_table as the result
+     * and returns a pq_async::data_table_t as the result
      * 
      * \param sql the SQL query to process
      * \param p query parameters
-     * \return sp_data_table 
+     * \return data_table 
      */
-    sp_data_table query(const char* sql, const parameters& p)
+    data_table query(const char* sql, const parameters_t& p)
     {
         _PQ_ASYNC_SEND_QRY_BODY_SYNC(_process_query_result);
     }
     
     /*!
      * \brief asynchrounously process a query
-     * and returns a pq_async::data_row as the result
+     * and returns a pq_async::data_row_t as the result
      * 
      * \tparam PARAMS 
-     * \tparam PQ_ASYNC_VALID_DB_CALLBACK(sp_data_row) 
+     * \tparam PQ_ASYNC_VALID_DB_CALLBACK(data_row) 
      * \param sql the SQL query to process
      * \param args query parameters, the last parameter is
-     * the completion void(const md::callback::cb_error&, sp_data_row) callback
+     * the completion void(const md::callback::cb_error&, data_row) callback
      */
-    template<typename... PARAMS, PQ_ASYNC_VALID_DB_CALLBACK(sp_data_row)>
+    template<typename... PARAMS, PQ_ASYNC_VALID_DB_CALLBACK(data_row)>
     void query_single(const char* sql, const PARAMS&... args)
     {
         _PQ_ASYNC_SEND_QRY_BODY_PARAMS(
-            sp_data_row, _process_query_single_result, sp_data_row()
+            data_row, _process_query_single_result, data_row()
         );
     }
     /*!
      * \brief asynchrounously process a query
-     * and returns a pq_async::data_row as the result
+     * and returns a pq_async::data_row_t as the result
      * 
      * \tparam T 
-     * \tparam PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_row) 
+     * \tparam PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, data_row) 
      * \param sql the SQL query to process
      * \param p query parameters
-     * \param acb the completion void(const md::callback::cb_error&, sp_data_row) callback
+     * \param acb the completion void(const md::callback::cb_error&, data_row) callback
      */
-    template<typename T, PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_row)>
-    void query_single(const char* sql, const parameters& p, const T& acb)
+    template<typename T, PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, data_row)>
+    void query_single(const char* sql, const parameters_t& p, const T& acb)
     {
         _PQ_ASYNC_SEND_QRY_BODY_T(
-            sp_data_row, _process_query_single_result, sp_data_row()
+            data_row, _process_query_single_result, data_row()
         );
     }
     
     
     /*!
      * \brief synchrounously process a query
-     * and returns a pq_async::data_row as the result
+     * and returns a pq_async::data_row_t as the result
      * 
      * \tparam PARAMS 
-     * \tparam PQ_ASYNC_INVALID_DB_CALLBACK(sp_data_row) 
+     * \tparam PQ_ASYNC_INVALID_DB_CALLBACK(data_row) 
      * \param sql the SQL query to process
      * \param args query parameters
-     * \return sp_data_row 
+     * \return data_row 
      */
-    template<typename... PARAMS, PQ_ASYNC_INVALID_DB_CALLBACK(sp_data_row)>
-    sp_data_row query_single(const char* sql, const PARAMS&... args)
+    template<typename... PARAMS, PQ_ASYNC_INVALID_DB_CALLBACK(data_row)>
+    data_row query_single(const char* sql, const PARAMS&... args)
     {
-        parameters p(args...);
+        parameters_t p(args...);
         _PQ_ASYNC_SEND_QRY_BODY_SYNC(_process_query_single_result);
     }
     /*!
      * \brief synchrounously process a query
-     * and returns a pq_async::data_row as the result
+     * and returns a pq_async::data_row_t as the result
      * 
      * \param sql 
-     * \return sp_data_row 
+     * \return data_row 
      */
-    sp_data_row query_single(const char* sql)
+    data_row query_single(const char* sql)
     {
-        parameters p;
+        parameters_t p;
         _PQ_ASYNC_SEND_QRY_BODY_SYNC(_process_query_single_result);
     }
     /*!
      * \brief synchrounously process a query
-     * and returns a pq_async::data_row as the result
+     * and returns a pq_async::data_row_t as the result
      * 
      * \param sql the SQL query to process
      * \param p query parameters
-     * \return sp_data_row 
+     * \return data_row 
      */
-    sp_data_row query_single(const char* sql, const parameters& p)
+    data_row query_single(const char* sql, const parameters_t& p)
     {
         _PQ_ASYNC_SEND_QRY_BODY_SYNC(_process_query_single_result);
     }
@@ -865,7 +865,7 @@ public:
         typename R, typename T,
         PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, R)
     >
-    void query_value(const char* sql, const parameters& p, const T& acb)
+    void query_value(const char* sql, const parameters_t& p, const T& acb)
     {
         _PQ_ASYNC_SEND_QRY_BODY_T(
             R, _process_query_value_result<R>, R()
@@ -886,7 +886,7 @@ public:
     template<typename R, typename... PARAMS, PQ_ASYNC_INVALID_DB_CALLBACK(R)>
     R query_value(const char* sql, const PARAMS&... args)
     {
-        parameters p(args...);
+        parameters_t p(args...);
         _PQ_ASYNC_SEND_QRY_BODY_SYNC(_process_query_value_result<R>);
     }
     /*!
@@ -900,7 +900,7 @@ public:
     template<typename R>
     R query_value(const char* sql)
     {
-        parameters p;
+        parameters_t p;
         _PQ_ASYNC_SEND_QRY_BODY_SYNC(_process_query_value_result<R>);
     }
     /*!
@@ -913,7 +913,7 @@ public:
      * \return R 
      */
     template<typename R>
-    R query_value(const char* sql, const parameters& p)
+    R query_value(const char* sql, const parameters_t& p)
     {
         _PQ_ASYNC_SEND_QRY_BODY_SYNC(_process_query_value_result<R>);
     }
@@ -922,24 +922,24 @@ public:
     
     /*!
      * \brief asynchrounously process a query
-     * and returns a pq_async::data_reader as the result
+     * and returns a pq_async::data_reader_t as the result
      * 
      * \tparam PARAMS 
-     * \tparam PQ_ASYNC_VALID_DB_CALLBACK(sp_data_reader) 
+     * \tparam PQ_ASYNC_VALID_DB_CALLBACK(data_reader) 
      * \param sql the SQL query to process
      * \param args query parameters, the last parameter is the query callback
-     * pq_async::value_cb<sp_data_reader>
+     * pq_async::value_cb<data_reader>
      */
-    template<typename... PARAMS, PQ_ASYNC_VALID_DB_CALLBACK(sp_data_reader)>
+    template<typename... PARAMS, PQ_ASYNC_VALID_DB_CALLBACK(data_reader)>
     void query_reader(const char* sql, const PARAMS&... args)
     {
-        parameters p;
+        parameters_t p;
         p.push_back<sizeof...(PARAMS) -1>(args...);
         
-        md::callback::value_cb<sp_data_reader> cb;
+        md::callback::value_cb<data_reader> cb;
         md::callback::assign_value_cb<
-            md::callback::value_cb<sp_data_reader>,
-            sp_data_reader
+            md::callback::value_cb<data_reader>,
+            data_reader
         >(
             cb, md::get_last(args...)
         );
@@ -950,7 +950,7 @@ public:
             cb]
         (const md::callback::cb_error& err, sp_connection_lock lock){
             if(err){
-                cb(err, sp_data_reader());
+                cb(err, data_reader());
                 return;
             }
             
@@ -958,31 +958,31 @@ public:
                 auto ct = std::make_shared<reader_connection_task>(
                     self->_strand.get(), self, lock
                 );
-                cb(nullptr, std::shared_ptr<data_reader>(new data_reader(ct)));
+                cb(nullptr, std::shared_ptr<data_reader_t>(new data_reader_t(ct)));
                 ct->send_query(_sql.c_str(), _p);
                 self->_strand->push_back(ct);
                 
             }catch(const std::exception& err){
-                cb(md::callback::cb_error(err), sp_data_reader());
+                cb(md::callback::cb_error(err), data_reader());
             }
         });
     }
     /*!
      * \brief asynchrounously process a query
-     * and returns a pq_async::data_reader as the result
+     * and returns a pq_async::data_reader_t as the result
      * 
      * \tparam T 
-     * \tparam PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_reader) 
+     * \tparam PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, data_reader) 
      * \param sql the SQL query to process
      * \param p query parameters
-     * \param acb completion void(const md::callback::cb_error&, sp_data_reader) callback
+     * \param acb completion void(const md::callback::cb_error&, data_reader) callback
      */
-    template<typename T, PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, sp_data_reader)>
-    void query_reader(const char* sql, const parameters& p, const T& acb)
+    template<typename T, PQ_ASYNC_VALID_DB_VAL_CALLBACK(T, data_reader)>
+    void query_reader(const char* sql, const parameters_t& p, const T& acb)
     {
-        md::callback::value_cb<sp_data_reader> cb;
+        md::callback::value_cb<data_reader> cb;
         md::callback::assign_value_cb<
-            md::callback::value_cb<sp_data_reader>, sp_data_reader
+            md::callback::value_cb<data_reader>, data_reader
         >(cb, acb);
         
         this->open_connection(
@@ -991,7 +991,7 @@ public:
             cb]
         (const md::callback::cb_error& err, sp_connection_lock lock){
             if(err){
-                cb(err, sp_data_reader());
+                cb(err, data_reader());
                 return;
             }
             
@@ -999,65 +999,65 @@ public:
                 auto ct = std::make_shared<reader_connection_task>(
                     self->_strand.get(), self, lock
                 );
-                cb(nullptr, std::shared_ptr<data_reader>(new data_reader(ct)));
+                cb(nullptr, std::shared_ptr<data_reader_t>(new data_reader_t(ct)));
                 ct->send_query(_sql.c_str(), _p);
                 self->_strand->push_back(ct);
                 
             }catch(const std::exception& err){
-                cb(md::callback::cb_error(err), sp_data_reader());
+                cb(md::callback::cb_error(err), data_reader());
             }
         });
     }
     
     /*!
      * \brief synchrounously process a query
-     * and returns a pq_async::data_reader as the result
+     * and returns a pq_async::data_reader_t as the result
      * 
      * \tparam PARAMS 
-     * \tparam PQ_ASYNC_INVALID_DB_CALLBACK(sp_data_reader) 
+     * \tparam PQ_ASYNC_INVALID_DB_CALLBACK(data_reader) 
      * \param sql the SQL query to process
      * \param args query parameters
-     * \return sp_data_reader 
+     * \return data_reader 
      */
-    template<typename... PARAMS, PQ_ASYNC_INVALID_DB_CALLBACK(sp_data_reader)>
-    sp_data_reader query_reader(const char* sql, const PARAMS&... args)
+    template<typename... PARAMS, PQ_ASYNC_INVALID_DB_CALLBACK(data_reader)>
+    data_reader query_reader(const char* sql, const PARAMS&... args)
     {
         this->wait_for_sync();
         auto lock = open_connection();
-        parameters p(args...);
+        parameters_t p(args...);
         auto ct = std::make_shared<reader_connection_task>(
             this->_strand.get(), this->shared_from_this(), lock
         );
         ct->send_query(sql, p);
-        return std::shared_ptr<data_reader>(new data_reader(ct));
+        return std::shared_ptr<data_reader_t>(new data_reader_t(ct));
     }
     /*!
      * \brief synchrounously process a query
-     * and returns a pq_async::data_reader as the result
+     * and returns a pq_async::data_reader_t as the result
      * 
      * \param sql the SQL query to process
-     * \return sp_data_reader 
+     * \return data_reader 
      */
-    sp_data_reader query_reader(const char* sql)
+    data_reader query_reader(const char* sql)
     {
         this->wait_for_sync();
         auto lock = open_connection();
-        parameters p;
+        parameters_t p;
         auto ct = std::make_shared<reader_connection_task>(
             this->_strand.get(), this->shared_from_this(), lock
         );
         ct->send_query(sql, p);
-        return std::shared_ptr<data_reader>(new data_reader(ct));
+        return std::shared_ptr<data_reader_t>(new data_reader_t(ct));
     }
     /*!
      * \brief synchrounously process a query
-     * and returns a pq_async::data_reader as the result
+     * and returns a pq_async::data_reader_t as the result
      * 
      * \param sql the SQL query to process
      * \param p query parameters
-     * \return sp_data_reader 
+     * \return data_reader 
      */
-    sp_data_reader query_reader(const char* sql, const parameters& p)
+    data_reader query_reader(const char* sql, const parameters_t& p)
     {
         this->wait_for_sync();
         auto lock = open_connection();
@@ -1065,7 +1065,7 @@ public:
             this->_strand.get(), this->shared_from_this(), lock
         );
         ct->send_query(sql, p);
-        return std::shared_ptr<data_reader>(new data_reader(ct));
+        return std::shared_ptr<data_reader_t>(new data_reader_t(ct));
     }
 
     
@@ -1090,16 +1090,16 @@ public:
     /*!
      * \brief Create a large object
      * 
-     * \return sp_data_large_object 
+     * \return data_large_object 
      */
-    sp_data_large_object create_lo();
+    data_large_object create_lo();
     /*!
      * \brief Get the lo object
      * 
      * \param lo_oid 
-     * \return sp_data_large_object 
+     * \return data_large_object 
      */
-    sp_data_large_object get_lo(const pq_async::oid& lo_oid);
+    data_large_object get_lo(const pq_async::oid& lo_oid);
     
     
     
@@ -1110,14 +1110,14 @@ public:
     
     /*!
      * \brief synchronously creates a new prepared statement 
-     * and returns a data_prepared object
+     * and returns a data_prepared_t object
      * 
      * \param name the prepared statement name
      * \param sql the prepared statement query
      * \param auto_deallocate if the prepared statement shoul be delete on
-     * \return sp_data_prepared 
+     * \return data_prepared 
      */
-    sp_data_prepared prepare(
+    data_prepared prepare(
         const char* name, const char* sql, bool auto_deallocate)
     {
         return prepare(name, sql, false, std::vector<data_type>{});
@@ -1125,18 +1125,18 @@ public:
     
     /*!
      * \brief synchronously creates a new prepared statement 
-     * and returns a data_prepared object
+     * and returns a data_prepared_t object
      * 
      * \tparam PARAMS 
-     * \tparam PQ_ASYNC_INVALID_DB_CALLBACK(sp_data_prepared) 
+     * \tparam PQ_ASYNC_INVALID_DB_CALLBACK(data_prepared) 
      * \param name the prepared statement name
      * \param sql the prepared statement query
      * \param auto_deallocate if the prepared statement shoul be delete on
      * \param args list of query parameter's data_type
-     * \return sp_data_prepared 
+     * \return data_prepared 
      */
-    template<typename... PARAMS, PQ_ASYNC_INVALID_DB_CALLBACK(sp_data_prepared)>
-    sp_data_prepared prepare(
+    template<typename... PARAMS, PQ_ASYNC_INVALID_DB_CALLBACK(data_prepared)>
+    data_prepared prepare(
         const char* name, const char* sql, bool auto_deallocate,
         const PARAMS&... args)
     {
@@ -1147,19 +1147,19 @@ public:
     
     /*!
      * \brief synchronously creates a new prepared statement 
-     * and returns a data_prepared object
+     * and returns a data_prepared_t object
      * 
      * \tparam Container 
      * \tparam Args 
      * \param name the prepared statement name
      * \param sql the prepared statement query
      * \param auto_deallocate if the prepared statement shoul be delete on
-     * data_prepared object destruction
+     * data_prepared_t object destruction
      * \param types list of query parameter's data_type
-     * \return sp_data_prepared 
+     * \return data_prepared 
      */
     template<template<typename ...> typename Container, typename ... Args>
-    sp_data_prepared prepare(
+    data_prepared prepare(
         const char* name, const char* sql, bool auto_deallocate,
         const Container<pq_async::data_type, Args...>& types)
     {
@@ -1189,11 +1189,11 @@ public:
      * \param name the prepared statement name
      * \param sql the prepared statement query
      * \param auto_deallocate if the prepared statement shoul be delete on
-     * \param acb completion void(const md::callback::cb_error&, sp_data_prepared) callback
+     * \param acb completion void(const md::callback::cb_error&, data_prepared) callback
      */
     void prepare(
         const char* name, const char* sql, bool auto_deallocate,
-        md::callback::value_cb<sp_data_prepared> acb)
+        md::callback::value_cb<data_prepared> acb)
     {
         prepare(
             name, sql, auto_deallocate, std::vector<data_type>{}, acb
@@ -1204,14 +1204,14 @@ public:
      * \brief asynchronously creates a new prepared statement 
      * 
      * \tparam PARAMS 
-     * \tparam PQ_ASYNC_VALID_DB_CALLBACK(sp_data_prepared) 
+     * \tparam PQ_ASYNC_VALID_DB_CALLBACK(data_prepared) 
      * \param name the prepared statement name
      * \param sql the prepared statement query
      * \param auto_deallocate if the prepared statement shoul be delete on
      * \param args list of query parameter's data_type, the last argument is
-     * the completion void(const md::callback::cb_error&, sp_data_prepared) callback
+     * the completion void(const md::callback::cb_error&, data_prepared) callback
      */
-    template<typename... PARAMS, PQ_ASYNC_VALID_DB_CALLBACK(sp_data_prepared)>
+    template<typename... PARAMS, PQ_ASYNC_VALID_DB_CALLBACK(data_prepared)>
     void prepare(
         const char* name, const char* sql, bool auto_deallocate,
         const PARAMS&... args)
@@ -1219,10 +1219,10 @@ public:
         std::vector<data_type> t;
         _build_prepared<sizeof...(PARAMS) -1>(t, args...);
         
-        md::callback::value_cb<sp_data_prepared> cb;
+        md::callback::value_cb<data_prepared> cb;
         md::callback::assign_value_cb<
-            md::callback::value_cb<sp_data_prepared>,
-            sp_data_prepared
+            md::callback::value_cb<data_prepared>,
+            data_prepared
         >(
             cb, md::get_last(args...)
         );
@@ -1237,12 +1237,12 @@ public:
      * \param sql the prepared statement query
      * \param auto_deallocate if the prepared statement shoul be delete on
      * \param types list of query parameter's data_type
-     * \param cb completion void(const md::callback::cb_error&, sp_data_prepared) callback
+     * \param cb completion void(const md::callback::cb_error&, data_prepared) callback
      */
     void prepare(
         const char* name, const char* sql, bool auto_deallocate,
         const std::vector<data_type>& types,
-        md::callback::value_cb<sp_data_prepared> cb)
+        md::callback::value_cb<data_prepared> cb)
     {
         this->open_connection(
         [self=this->shared_from_this(),
@@ -1250,7 +1250,7 @@ public:
             auto_deallocate, types, cb]
         (const md::callback::cb_error& err, sp_connection_lock lock){
             if(err){
-                cb(err, sp_data_prepared());
+                cb(err, data_prepared());
                 return;
             }
             
@@ -1260,7 +1260,7 @@ public:
                 [self, lock, _name, auto_deallocate, cb]
                 (const md::callback::cb_error& err, PGresult* r)-> void {
                     if(err){
-                        cb(err, sp_data_prepared());
+                        cb(err, data_prepared());
                         return;
                     }
                     
@@ -1272,14 +1272,14 @@ public:
                             )
                         );
                     }catch(const std::exception& err){
-                        cb(md::callback::cb_error(err), sp_data_prepared());
+                        cb(md::callback::cb_error(err), data_prepared());
                     }
                 });
                 ct->send_prepare(_name.c_str(), _sql.c_str(), types);
                 self->_strand->push_back(ct);
                 
             }catch(const std::exception& err){
-                cb(md::callback::cb_error(err), sp_data_prepared());
+                cb(md::callback::cb_error(err), data_prepared());
             }
         });
     }
@@ -1358,18 +1358,18 @@ public:
     
     
     /*!
-     * \brief creates a new database instance using a new strand from 
+     * \brief creates a new database_t instance using a new strand_t from 
      * the default event_queue
      * 
      * \param connection_string the connection string used for that instance
-     * \return sp_database 
+     * \return database 
      */
-    static sp_database open(
+    static database open(
         const std::string& connection_string,
         md::log::sp_logger log = nullptr)
     {
-        sp_database dbso(
-            new database(
+        database dbso(
+            new database_t(
                 md::event_queue::get_default()->new_strand<int>(),
                 connection_string,
                 log
@@ -1379,19 +1379,19 @@ public:
     }
     
     /*!
-     * \brief creates a new database instance usign the specified event_strand
+     * \brief creates a new database_t instance usign the specified event_strand
      * 
-     * \param strand the pq_async::event_strand to use
+     * \param strand_t the pq_async::event_strand to use
      * \param connection_string the connection string used for that instance
-     * \return sp_database 
+     * \return database 
      */
-    static sp_database open(
-        md::sp_event_strand<int> strand, 
+    static database open(
+        md::sp_event_strand<int> strand_t, 
         const std::string& connection_string,
         md::log::sp_logger log = nullptr)
     {
-        sp_database dbso(
-            new database(strand, connection_string, log)
+        database dbso(
+            new database_t(strand_t, connection_string, log)
         );
         return dbso;
     }
@@ -1403,7 +1403,7 @@ public:
     
     
 private:
-    sp_data_prepared _new_prepared(
+    data_prepared _new_prepared(
         const char* name, bool auto_deallocate,
         sp_connection_lock lock
     );
@@ -1447,9 +1447,9 @@ private:
     }
     
     int _process_execute_result(PGresult* res);
-    sp_data_table _process_query_result(PGresult* res);
-    sp_data_row _process_query_single_result(PGresult* res);
-    sp_data_prepared _process_send_prepare_result(
+    data_table _process_query_result(PGresult* res);
+    data_row _process_query_single_result(PGresult* res);
+    data_prepared _process_send_prepare_result(
         const std::string& name, bool auto_deallocate,
         sp_connection_lock lock, PGresult* res
     );

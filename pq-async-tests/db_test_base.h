@@ -36,13 +36,13 @@ namespace pq_async{ namespace tests{
         : public testing::Test
     {
     public:
-        pq_async::sp_database db;
+        pq_async::database db;
         
         std::string connection_string(){ return pq_async_connection_string;}
         
         void SetUp() override
         {
-            db = pq_async::database::open(pq_async_connection_string);
+            db = pq_async::database_t::open(pq_async_connection_string);
         }
         
         void TearDown() override {

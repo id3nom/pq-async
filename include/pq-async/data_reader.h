@@ -26,31 +26,31 @@ SOFTWARE.
 #define _libpq_async_data_reader_h
 
 #include "data_common.h"
-#include "data_table.h"
+#include "data_table_t.h"
 #include "data_connection_pool.h"
 
 namespace pq_async{
 
-class data_reader 
-    : public std::enable_shared_from_this<data_reader>
+class data_reader_t 
+    : public std::enable_shared_from_this<data_reader_t>
 {
-    friend class database;
-    friend class data_prepared;
+    friend class database_t;
+    friend class data_prepared_t;
     
-    data_reader(sp_connection_task ct)
+    data_reader_t(sp_connection_task ct)
         : _ct(ct), _table(), _closed(false)
     {
     }
     
 public:
     
-    ~data_reader()
+    ~data_reader_t()
     {
         close();
         _ct.reset();
     }
     
-    sp_database db(){ return _ct->db();}
+    database db(){ return _ct->db();}
     
     bool closed(){ return _closed;}
     
@@ -58,7 +58,7 @@ public:
         typename T,
         typename std::enable_if<
             !std::is_same<
-                sp_data_row,
+                data_row,
                 typename std::remove_pointer<
                     T
                 >::type
@@ -81,7 +81,7 @@ public:
                     T
                 >::type,
                 const md::callback::cb_error&,
-                sp_data_row
+                data_row
             >::value ||
             std::is_invocable_r<
                 void,
@@ -94,15 +94,15 @@ public:
                 typename std::remove_pointer<
                     T
                 >::type,
-                sp_data_row
+                data_row
             >::value)
         , int32_t>::type = -1
     >
     void next(T tcb)
     {
-        md::callback::value_cb<sp_data_row> cb;
+        md::callback::value_cb<data_row> cb;
         md::callback::assign_value_cb<
-            md::callback::value_cb<sp_data_row>, sp_data_row
+            md::callback::value_cb<data_row>, data_row
         >(
             cb, tcb
         );
@@ -112,7 +112,7 @@ public:
             const md::callback::cb_error& err, PGresult* res
         )-> void {
             if(err){
-                cb(err, sp_data_row());
+                cb(err, data_row());
                 self->_ct->_cb = nullptr;
                 return;
             }
@@ -121,7 +121,7 @@ public:
                 if(!res){
                     self->_closed = true;
                     self->close();
-                    cb(nullptr, sp_data_row());
+                    cb(nullptr, data_row());
                     self->_ct->_cb = nullptr;
                     return;
                 }
@@ -142,8 +142,8 @@ public:
                 }
                 
                 if(PQntuples(res)){
-                    sp_data_row row(
-                        new data_row(self->_table->get_columns(), res, 0)
+                    data_row row(
+                        new data_row_t(self->_table->get_columns(), res, 0)
                     );
                     self->_table->emplace_back(row);
                 }
@@ -153,13 +153,13 @@ public:
                 if(self->_table->size() > 0)
                     cb(md::callback::cb_error(err), (*self->_table)[0]);
             }catch(const std::exception& err){
-                cb(md::callback::cb_error(err), sp_data_row());
+                cb(md::callback::cb_error(err), data_row());
                 self->_ct->_cb = nullptr;
             }
         };
     }
     
-    sp_data_row next()
+    data_row next()
     {
         if(_closed)
             throw pq_async::exception("The reader is closed!");
@@ -169,7 +169,7 @@ public:
             this->_closed = true;
             this->close();
             
-            return sp_data_row();
+            return data_row();
         }
         
         init_table(res);
@@ -186,7 +186,7 @@ public:
         }
         
         if(PQntuples(res)){
-            sp_data_row row(new data_row(_table->get_columns(), res, 0));
+            data_row row(new data_row_t(_table->get_columns(), res, 0));
             _table->emplace_back(row);
         }
         PQclear(res);
@@ -200,7 +200,7 @@ public:
         };
         _closed = true;
         
-        return sp_data_row();
+        return data_row();
     }
     
     void close()
@@ -244,7 +244,7 @@ private:
             throw pq_async::exception(errMsg);
         }
 
-        _table = sp_data_table(new pq_async::data_table());
+        _table = data_table(new pq_async::data_table_t());
 
         int fieldCount = PQnfields(res);
         for(int i = 0; i < fieldCount; ++i){
@@ -252,8 +252,8 @@ private:
             std::string name(PQfname(res, i));
             int fmt = PQfformat(res, i);
 
-            sp_data_column col(
-                new data_column(oid, i, name, fmt)
+            data_column col(
+                new data_column_t(oid, i, name, fmt)
             );
             
             _table->get_columns()->emplace_back(col);
@@ -261,7 +261,7 @@ private:
     }
     
     sp_connection_task _ct;
-    sp_data_table _table;
+    data_table _table;
     bool _closed;
 };
 

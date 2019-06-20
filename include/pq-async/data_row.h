@@ -32,51 +32,51 @@
 
 
 #include "data_common.h"
-#include "data_value.h"
-#include "data_column.h"
-#include "data_columns_container.h"
+#include "data_value_t.h"
+#include "data_column_t.h"
+#include "data_columns_container_t.h"
 
 namespace pq_async{
 
-class data_row
+class data_row_t
 {
 private:
     void initialize(PGresult* row_result, int row_id);
 
 public:
-    data_row(sp_data_columns_container cols, PGresult* row_result, int row_id);
+    data_row_t(data_columns_container cols, PGresult* row_result, int row_id);
 
-    virtual ~data_row();
+    virtual ~data_row_t();
 
-    sp_data_value get_value(uint32_t i) const;
-    sp_data_value get_value(const char* col_name) const;
-    sp_data_value get_value(const std::string& col_name) const
+    data_value get_value(uint32_t i) const;
+    data_value get_value(const char* col_name) const;
+    data_value get_value(const std::string& col_name) const
     {
         return get_value(col_name.c_str());
     }
 
-    sp_data_value operator [](uint32_t i) const
+    data_value operator [](uint32_t i) const
     {
         return get_value(i);
     }
-    sp_data_value operator [](const char* col_name) const
+    data_value operator [](const char* col_name) const
     {
         return get_value(col_name);
     }
-    sp_data_value operator [](const std::string& col_name) const
+    data_value operator [](const std::string& col_name) const
     {
         return get_value(col_name.c_str());
     }
     
-    sp_data_value operator ()(uint32_t i) const
+    data_value operator ()(uint32_t i) const
     {
         return get_value(i);
     }
-    sp_data_value operator ()(const char* col_name) const
+    data_value operator ()(const char* col_name) const
     {
         return get_value(col_name);
     }
-    sp_data_value operator ()(const std::string& col_name) const
+    data_value operator ()(const std::string& col_name) const
     {
         return get_value(col_name.c_str());
     }
@@ -87,7 +87,7 @@ public:
         std::string& str, const unsigned int current_indent = 0
     ) const;
     
-    sp_data_columns_container columns(){ return _cols;}
+    data_columns_container columns(){ return _cols;}
     
     /////  values
     bool is_null(int i) const
@@ -204,10 +204,10 @@ public:
 private:
     //static int32_t val_count;
 
-    //std::shared_ptr< data_table > _table;
-    //sp_data_table _table;
-    sp_data_columns_container _cols;
-    std::vector< sp_data_value > _values;
+    //std::shared_ptr< data_table_t > _table;
+    //data_table _table;
+    data_columns_container _cols;
+    std::vector< data_value > _values;
 };
 
 #undef LIBPQ_ASYNC_ROW_ADD_GETTER

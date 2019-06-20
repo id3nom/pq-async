@@ -22,12 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "data_row.h"
+#include "data_row_t.h"
 
 namespace pq_async{
 
-data_row::data_row(
-    sp_data_columns_container cols, 
+data_row_t::data_row_t(
+    data_columns_container cols, 
     PGresult* row_result, int row_id)
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
@@ -36,21 +36,21 @@ data_row::data_row(
     initialize(row_result, row_id);
 }
 
-data_row::~data_row()
+data_row_t::~data_row_t()
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 }
 
 
-void data_row::initialize(PGresult* row_result, int row_id)
+void data_row_t::initialize(PGresult* row_result, int row_id)
 {
     for(size_t i = 0; i < _cols->size(); ++i){
-        sp_data_column col = _cols->get_col(i);
+        data_column col = _cols->get_col(i);
         
         int isNull = PQgetisnull(row_result, row_id, i);
         
         if(isNull)
-            _values.emplace_back(sp_data_value(new data_value(col, NULL, 0)));
+            _values.emplace_back(data_value(new data_value_t(col, NULL, 0)));
         else{
             char* pgValues = PQgetvalue(row_result, row_id, i);
             int len = PQgetlength(row_result, row_id, i);
@@ -58,12 +58,12 @@ void data_row::initialize(PGresult* row_result, int row_id)
             char* values = new char[len];
             memcpy(values, pgValues, len);
 
-            _values.emplace_back(sp_data_value(new data_value(col, values, len)));
+            _values.emplace_back(data_value(new data_value_t(col, values, len)));
         }
     }
 }
 
-sp_data_value data_row::get_value(uint32_t i) const
+data_value data_row_t::get_value(uint32_t i) const
 {
     if(i >= _cols->size())
         throw pq_async::exception("Invalid index.");
@@ -71,7 +71,7 @@ sp_data_value data_row::get_value(uint32_t i) const
     return _values[i];
 }
 
-sp_data_value data_row::get_value(
+data_value data_row_t::get_value(
     const char* col_name) const
 {
     int index = _cols->get_col_index(col_name);
@@ -114,7 +114,7 @@ case __arr_oid: \
     _PQ_ASYNC_ARRAY_TO_JSON(__arr_type, __arr_cast) \
     break;
 
-void data_row::to_json(pq_async::json& row_obj) const
+void data_row_t::to_json(pq_async::json& row_obj) const
 {
     for(unsigned int i = 0; i < _values.size(); ++i){
         const char* name = _values[i]->column()->get_cname();
@@ -294,7 +294,7 @@ void data_row::to_json(pq_async::json& row_obj) const
 }
 
 
-void data_row::to_json_string(
+void data_row_t::to_json_string(
     std::string& str, const unsigned int current_indent) const
 {
     pq_async::json row = pq_async::json::object();

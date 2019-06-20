@@ -45,7 +45,7 @@ int main(int argc, char** argv)
             po::value<std::string>()->default_value(
                 "dbname=libpq_async_tests"
             ),
-            "Tests database connection string"
+            "Tests database_t connection string"
         )
         ("pool-size",
             po::value<int>()->default_value(5),

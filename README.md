@@ -73,9 +73,9 @@ db->execute("insert into my_table (name) values ('my name')",
 pq_async::event_queue::get_default()->run();
 
 // use database::query function to get multiple records result
-sp_data_table tbl = db->query("my sql statement");
+data_table tbl = db->query("my sql statement");
 // use database::query_single function to get a single record result
-sp_data_row row = db->query_single("my sql statement");
+data_row row = db->query_single("my sql statement");
 // use database::query_value function to get a single value result
 std::string name = db->query_value<std::string>("my sql statement");
 // use database::query_reader function to get a reader value result

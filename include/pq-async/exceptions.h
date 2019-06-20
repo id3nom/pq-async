@@ -34,9 +34,9 @@ SOFTWARE.
 ///////////////////
 
 #define PQ_ASYNC_ERR_NO_SYNC \
-"unable to call sync function when database is open in async mode!"
+"unable to call sync function when database_t is open in async mode!"
 #define PQ_ASYNC_ERR_NO_ASYNC \
-"unable to call async function when database is open in sync mode!"
+"unable to call async function when database_t is open in sync mode!"
 
 #define PQ_ASYNC_ERR_NO_TEXT_FMT \
 "Text format is not supported!"

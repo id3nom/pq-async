@@ -35,7 +35,7 @@ typedef std::shared_ptr<pq_async::connection_lock> sp_connection_lock;
 
 class connection_task;
 class connection_pool;
-class database;
+class database_t;
 
 typedef std::shared_ptr< pq_async::connection_task > sp_connection_task;
 
@@ -44,7 +44,7 @@ class connection
 {
     friend class connection_pool;
     friend class connection_lock;
-    friend class database;
+    friend class database_t;
     
 private:
     connection(connection_pool* pool, std::string connection_string
@@ -79,7 +79,7 @@ public:
     bool lock();
     void release();
     
-    md::sp_event_strand<int> strand();
+    md::sp_event_strand<int> strand_t();
     
     void touch()
     {
@@ -290,7 +290,7 @@ private:
     PGconn* _conn;
     int _sock_fd;
     
-    database* _owner;
+    database_t* _owner;
     
     std::chrono::system_clock::time_point _last_modification_date;
 };
@@ -336,7 +336,7 @@ class connection_task
     : public md::event_task_base, 
     public std::enable_shared_from_this< connection_task >
 {
-    friend data_reader;
+    friend data_reader_t;
 protected:
     enum class command_type
     {
@@ -351,19 +351,19 @@ protected:
     
 public:
     connection_task(
-        md::event_queue* owner, sp_database db, sp_connection_lock lock,
+        md::event_queue* owner, database db, sp_connection_lock lock,
         const md::callback::value_cb<PGresult*>& cb
     );
     
     connection_task(
-        md::event_queue* owner, sp_database db, connection* conn,
+        md::event_queue* owner, database db, connection* conn,
         const md::callback::value_cb<sp_connection_lock>& cb
     );
     
     connection_task(
-        md::event_queue* owner, sp_database db, sp_connection_lock lock
+        md::event_queue* owner, database db, sp_connection_lock lock
     );
-    connection_task(md::event_queue* owner, sp_database db, connection* conn);
+    connection_task(md::event_queue* owner, database db, connection* conn);
     
     ~connection_task()
     {
@@ -372,7 +372,7 @@ public:
         _ev = nullptr;
     }
     
-    sp_database db(){ return _db;}
+    database db(){ return _db;}
     
     void connect(const std::string& connection_string, int32_t timeout_ms)
     {
@@ -390,7 +390,7 @@ public:
         this->_owner->activate();
     }
 
-    void send_query(const char* sql, const parameters& p,
+    void send_query(const char* sql, const parameters_t& p,
         int format = PG_BIN_FORMAT)
     {
         _cmd_type = command_type::query;
@@ -400,7 +400,7 @@ public:
         this->_owner->activate();
     }
     
-    void send_query(const char* sql, parameters& p, int format = PG_BIN_FORMAT)
+    void send_query(const char* sql, parameters_t& p, int format = PG_BIN_FORMAT)
     {
         _cmd_type = command_type::query;
         _sql = sql;
@@ -420,7 +420,7 @@ public:
     }
     
     void send_query_prepared(
-        const char* name, parameters& p, int format = PG_BIN_FORMAT)
+        const char* name, parameters_t& p, int format = PG_BIN_FORMAT)
     {
         _cmd_type = command_type::query_prepared;
         _name = name;
@@ -429,7 +429,7 @@ public:
         this->_owner->activate();
     }
     void send_query_prepared(
-        const char* name, const parameters& p, int format = PG_BIN_FORMAT)
+        const char* name, const parameters_t& p, int format = PG_BIN_FORMAT)
     {
         _cmd_type = command_type::query_prepared;
         _name = name;
@@ -543,7 +543,7 @@ public:
         if(_completed)
             return md::event_requeue_pos::none;
         
-        // must reactivate because database strand do not reactivate
+        // must reactivate because database_t strand_t do not reactivate
         // on requeue, and no event is created for connect task
         if(_cmd_type == command_type::connect)
             this->_owner->activate();
@@ -672,12 +672,12 @@ protected:
     
     std::string _name;
     std::string _sql;
-    parameters _p;
+    parameters_t _p;
     std::vector<data_type> _t;
     int64_t _format;
     
     bool _completed;
-    sp_database _db;
+    database _db;
 
     connection* _conn;
     md::callback::value_cb<sp_connection_lock> _lock_cb;
@@ -693,7 +693,7 @@ class reader_connection_task
 {
 public:
     reader_connection_task(
-        md::event_queue* owner, sp_database db, sp_connection_lock lock
+        md::event_queue* owner, database db, sp_connection_lock lock
     );
     
     virtual PGresult* run_now()
@@ -798,7 +798,7 @@ private:
     }
 
     connection* _get_connection(
-        database* owner, const std::string& connection_string,
+        database_t* owner, const std::string& connection_string,
         int32_t timeout_ms
     );
     int32_t _get_opened_connection_count(const std::string& connection_string);
@@ -823,7 +823,7 @@ public:
     
     static int get_max_conn(){ return instance()->_max_conn;}
     static connection* get_connection(
-        pq_async::database* owner, const std::string& connection_string,
+        pq_async::database_t* owner, const std::string& connection_string,
         int32_t timeout_ms = 5000
         )
     {

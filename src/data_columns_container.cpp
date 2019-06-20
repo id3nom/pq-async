@@ -22,26 +22,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "data_columns_container.h"
+#include "data_columns_container_t.h"
 
 namespace pq_async{
 
-data_columns_container::data_columns_container()
+data_columns_container_t::data_columns_container_t()
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 }
 
-data_columns_container::~data_columns_container()
+data_columns_container_t::~data_columns_container_t()
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
 }
 
-pq_async::sp_data_column pq_async::data_columns_container::get_col(int idx)
+pq_async::data_column pq_async::data_columns_container_t::get_col(int idx)
 {
     return (*this)[idx];
 }
 
-pq_async::sp_data_column pq_async::data_columns_container::get_col(
+pq_async::data_column pq_async::data_columns_container_t::get_col(
     const char* col_name)
 {
     return this->get_col(this->get_col_index(col_name));

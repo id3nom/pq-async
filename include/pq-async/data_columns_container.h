@@ -27,24 +27,24 @@ SOFTWARE.
 
 
 #include "data_common.h"
-#include "data_column.h"
+#include "data_column_t.h"
 
 namespace pq_async{
 
-class data_columns_container;
-typedef std::shared_ptr< pq_async::data_columns_container > 
-    sp_data_columns_container;
+class data_columns_container_t;
+typedef std::shared_ptr< pq_async::data_columns_container_t > 
+    data_columns_container;
 
-class data_columns_container
-    : public std::vector<sp_data_column>
+class data_columns_container_t
+    : public std::vector<data_column>
 {
 public:
 
-    data_columns_container();
-    virtual ~data_columns_container();
+    data_columns_container_t();
+    virtual ~data_columns_container_t();
 
-    sp_data_column get_col(int idx);
-    sp_data_column get_col(const char* col_name);
+    data_column get_col(int idx);
+    data_column get_col(const char* col_name);
     
     int32_t get_col_index(const char* col_name) const
     {

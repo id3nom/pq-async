@@ -22,11 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "data_large_object.h"
+#include "data_large_object_t.h"
 
 namespace pq_async {
     
-void data_large_object::open(lo_mode m)
+void data_large_object_t::open(lo_mode m)
 {
     if(this->opened())
         throw exception("Alreaddy opened!");
@@ -51,7 +51,7 @@ void data_large_object::open(lo_mode m)
     _opened_write = ((int)m & (int)lo_mode::write) != 0;
 }
 
-int32_t data_large_object::read(char* buf, int32_t len)
+int32_t data_large_object_t::read(char* buf, int32_t len)
 {
     if(!this->opened())
         throw exception("Unable to read when large object is closed!");
@@ -65,7 +65,7 @@ int32_t data_large_object::read(char* buf, int32_t len)
     return r;
 }
 
-int32_t data_large_object::write(const char* buf, int32_t len)
+int32_t data_large_object_t::write(const char* buf, int32_t len)
 {
     if(!this->opened())
         throw exception("Unable to write when large object is closed!");
@@ -79,7 +79,7 @@ int32_t data_large_object::write(const char* buf, int32_t len)
     return r;
 }
 
-int64_t data_large_object::tell()
+int64_t data_large_object_t::tell()
 {
     if(!this->opened())
         throw exception("Unable to tell when large object is closed!");
@@ -93,7 +93,7 @@ int64_t data_large_object::tell()
     return r;
 }
 
-int64_t data_large_object::seek(
+int64_t data_large_object_t::seek(
     int64_t offset, lo_whence w)
 {
     if(!this->opened())
@@ -108,7 +108,7 @@ int64_t data_large_object::seek(
     return r;
 }
 
-void data_large_object::resize(int64_t new_size)
+void data_large_object_t::resize(int64_t new_size)
 {
     if(!this->opened())
         throw exception("Unable to resize when large object is closed!");
@@ -121,7 +121,7 @@ void data_large_object::resize(int64_t new_size)
     }
 }
 
-void data_large_object::close()
+void data_large_object_t::close()
 {
     if(!this->opened())
         return;
@@ -139,7 +139,7 @@ void data_large_object::close()
     _db->commit();
 }
 
-void data_large_object::unlink()
+void data_large_object_t::unlink()
 {
     if(this->opened())
         throw exception("Large object must be closed to be delete!");

@@ -659,27 +659,27 @@ PQ_ASYNC_ARRAY_SPEC(pq_async::daterange, daterange);
  * \brief Parameter container
  * 
  */
-class parameters
+class parameters_t
 {
 public:
     /*!
-     * \brief Construct a new parameters object
+     * \brief Construct a new parameters_t object
      * 
      */
-    parameters()
+    parameters_t()
         : _p_types(nullptr), _p_values(nullptr),
         _p_lengths(nullptr), _p_formats(nullptr)
     {
     }
     
     /*!
-     * \brief Construct a new parameters object
+     * \brief Construct a new parameters_t object
      * 
      * \tparam PARAMS 
      * \param args 
      */
     template<typename... PARAMS >
-    parameters(const PARAMS&... args)
+    parameters_t(const PARAMS&... args)
         : _p_types(nullptr), _p_values(nullptr),
         _p_lengths(nullptr), _p_formats(nullptr)
     {
@@ -687,33 +687,33 @@ public:
     }
     
     /*!
-     * \brief Copy construct a new parameters object
+     * \brief Copy construct a new parameters_t object
      * 
      * \param b 
      */
-    parameters(const parameters& b)
+    parameters_t(const parameters_t& b)
         : _p_types(nullptr), _p_values(nullptr),
         _p_lengths(nullptr), _p_formats(nullptr)
     {
         copy_from(b);
     }
     /*!
-     * \brief Copy assign a parameters object
+     * \brief Copy assign a parameters_t object
      * 
      * \param b 
-     * \return parameters& 
+     * \return parameters_t& 
      */
-    parameters& operator=(const parameters& b)
+    parameters_t& operator=(const parameters_t& b)
     {
         copy_from(b);
         return *this;
     }
     /*!
-     * \brief Move construct a new parameters object
+     * \brief Move construct a new parameters_t object
      * 
      * \param b 
      */
-    parameters(parameters&& b)
+    parameters_t(parameters_t&& b)
         : _p_types(std::move(b._p_types)),
         _p_values(std::move(b._p_values)),
         _p_lengths(std::move(b._p_lengths)),
@@ -725,9 +725,9 @@ public:
      * \brief Move assign a parameters object
      * 
      * \param b 
-     * \return parameters& 
+     * \return parameters_t& 
      */
-    parameters& operator=(parameters&& b)
+    parameters_t& operator=(parameters_t&& b)
     {
         _p = std::move(b._p);
         _p_types = std::move(b._p_types);
@@ -739,10 +739,10 @@ public:
     }
     
     /*!
-     * \brief Destroy the parameters object
+     * \brief Destroy the parameters_t object
      * 
      */
-    ~parameters()
+    ~parameters_t()
     {
         this->cleanup(true);
     }
@@ -907,7 +907,7 @@ public:
     }
     
 private:
-    void copy_from(const parameters& b)
+    void copy_from(const parameters_t& b)
     {
         for(size_t i = 0; i < b._p.size(); ++i){
             parameter* p = b._p[i];

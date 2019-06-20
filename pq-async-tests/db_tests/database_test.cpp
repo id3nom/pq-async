@@ -66,11 +66,11 @@ TEST_F(database_test, max_connection_sync_test)
         // max con minus the used connection in the the db_test_base
         //size_t max_con = pq_async::connection_pool::get_max_conn() -1;
         size_t nb_con = pq_async::connection_pool::get_max_conn() +20;
-        sp_database dbs[nb_con + 1];
+        database dbs[nb_con + 1];
         dbs[nb_con] = this->db;
         
         for(size_t i = 0; i < nb_con; ++i)
-            dbs[i] = pq_async::database::open(pq_async_connection_string);
+            dbs[i] = pq_async::database_t::open(pq_async_connection_string);
         ++nb_con;
         
         for(size_t i = 0; i < nb_con; ++i){
@@ -98,7 +98,7 @@ TEST_F(database_test, max_connection_async_test)
 {
     try{
         size_t nb_con = pq_async::connection_pool::get_max_conn()*2;
-        sp_database dbs[nb_con];
+        database dbs[nb_con];
         dbs[0] = this->db;
         dbs[0]->get_strand()->data(0);
         
@@ -107,7 +107,7 @@ TEST_F(database_test, max_connection_async_test)
             << ", db count: " << nb_con << std::endl;
         
         for(size_t i = 1; i < nb_con; ++i){
-            dbs[i] = pq_async::database::open(pq_async_connection_string);
+            dbs[i] = pq_async::database_t::open(pq_async_connection_string);
             dbs[i]->get_strand()->data(i);
         }
         for(size_t i = 0; i < nb_con; ++i){
@@ -133,7 +133,7 @@ TEST_F(database_test, max_connection_async_test)
             pq_async::default_logger()->debug("starting select {}", i);
             ldb->query(
                 "select * from database_test",
-                [i](const md::callback::cb_error& err, sp_data_table tbl){
+                [i](const md::callback::cb_error& err, data_table tbl){
                     if(err){
                         std::cout << "select " << i 
                             << " err: " << err << std::endl;
@@ -149,7 +149,7 @@ TEST_F(database_test, max_connection_async_test)
         
         db->query(
             "select * from database_test",
-        [nb_con](const md::callback::cb_error& err, sp_data_table tbl){
+        [nb_con](const md::callback::cb_error& err, data_table tbl){
                 if(err){
                     std::cout << "err: " << err << std::endl;
                     FAIL();
@@ -172,7 +172,7 @@ TEST_F(database_test, max_connection_async2_test)
 {
     try{
         size_t nb_con = pq_async::connection_pool::get_max_conn()*2;
-        sp_database dbs[nb_con];
+        database dbs[nb_con];
         dbs[0] = this->db;
         dbs[0]->get_strand()->data(0);
         
@@ -181,14 +181,14 @@ TEST_F(database_test, max_connection_async2_test)
             << ", db count: " << nb_con << std::endl;
         
         for(size_t i = 1; i < nb_con; ++i){
-            dbs[i] = pq_async::database::open(pq_async_connection_string);
+            dbs[i] = pq_async::database_t::open(pq_async_connection_string);
             dbs[i]->get_strand()->data(i);
         }
         
         auto eq = md::event_queue::get_default();
         
         eq->each(dbs, dbs+nb_con,
-        [eq](const sp_database& ldb, md::callback::async_cb ecb)->void{
+        [eq](const database& ldb, md::callback::async_cb ecb)->void{
             eq->series({
                 [ldb](md::callback::async_cb scb){
                     int i = ldb->get_strand()->data();
@@ -213,7 +213,7 @@ TEST_F(database_test, max_connection_async2_test)
                     int i = ldb->get_strand()->data();
                     ldb->query(
                         "select * from database_test",
-                        [scb, i](const md::callback::cb_error& err, sp_data_table tbl){
+                        [scb, i](const md::callback::cb_error& err, data_table tbl){
                             if(err){
                                 std::cout << "select " << i 
                                     << " err: " << err << std::endl;
@@ -237,7 +237,7 @@ TEST_F(database_test, max_connection_async2_test)
         
         db->query(
             "select * from database_test",
-        [nb_con](const md::callback::cb_error& err, sp_data_table tbl){
+        [nb_con](const md::callback::cb_error& err, data_table tbl){
                 if(err){
                     std::cout << "err: " << err << std::endl;
                     FAIL();
