@@ -51,6 +51,10 @@ void database_t::exec_queries(const std::string& sql, const md::callback::async_
     throw pq_async::exception("not implemented!");
 }
 
+//https://stackoverflow.com/questions/53930596/how-can-i-insert-multi-entry-array-using-libpg-copy-from-stdin-method-in-pos
+
+//https://www.postgresql.org/docs/current/libpq-copy.html
+
 void database_t::exec_queries(const std::string& sql)
 {
     this->wait_for_sync();
