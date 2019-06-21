@@ -29,7 +29,7 @@ database_t::database_t(
     md::log::logger log = nullptr)
     :_connection_string(connection_string),
     _conn(NULL),
-    _strand(strand_t),
+    _strand(strand),
     _lock(),
     _log(log ? log : pq_async::default_logger())
 {
