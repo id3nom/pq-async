@@ -150,9 +150,9 @@ class database_t
     friend class data_prepared_t;
 
     database_t(
-        md::sp_event_strand<int> strand_t, 
+        md::event_strand<int> strand, 
         const std::string& connection_string,
-        md::log::sp_logger log
+        md::log::logger log
     );
     
 public:
@@ -160,9 +160,9 @@ public:
     virtual ~database_t();
     
     
-    md::sp_event_strand<int> get_strand(){ return _strand;}
+    md::event_strand<int> get_strand(){ return _strand;}
     
-    md::log::sp_logger log(){ return _log;}
+    md::log::logger log(){ return _log;}
     
     /*!
      * \brief synchronously try to acquire and open a connection
@@ -1366,11 +1366,11 @@ public:
      */
     static database open(
         const std::string& connection_string,
-        md::log::sp_logger log = nullptr)
+        md::log::logger log = nullptr)
     {
         database dbso(
             new database_t(
-                md::event_queue::get_default()->new_strand<int>(),
+                md::event_queue_t::get_default()->new_strand<int>(),
                 connection_string,
                 log
             )
@@ -1386,12 +1386,12 @@ public:
      * \return database 
      */
     static database open(
-        md::sp_event_strand<int> strand_t, 
+        md::event_strand<int> strand, 
         const std::string& connection_string,
-        md::log::sp_logger log = nullptr)
+        md::log::logger log = nullptr)
     {
         database dbso(
-            new database_t(strand_t, connection_string, log)
+            new database_t(strand, connection_string, log)
         );
         return dbso;
     }
@@ -1501,9 +1501,9 @@ private:
     std::string _connection_string;
     
     connection* _conn;
-    md::sp_event_strand<int> _strand;
+    md::event_strand<int> _strand;
     connection_lock _lock;
-    md::log::sp_logger _log;
+    md::log::logger _log;
 };
 
 

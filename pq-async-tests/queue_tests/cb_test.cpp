@@ -62,7 +62,7 @@ public:
 TEST_F(cb_test, auto_cb_test)
 {
     try{
-        auto eq = md::event_queue::get_default();
+        auto eq = md::event_queue_t::get_default();
         
         // insert some value
         pq_async::range<int32_t> r(0, 5);

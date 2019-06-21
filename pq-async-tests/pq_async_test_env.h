@@ -59,15 +59,15 @@ public:
             true
         );
         out_snk->set_level((md::log::log_level)pq_async_log_level);
-        md::log::sp_logger pqlogger =
-            std::make_shared<md::log::logger>("/", out_snk);
+        md::log::logger pqlogger =
+            std::make_shared<md::log::logger_t>("/", out_snk);
         pqlogger->set_level(
             (md::log::log_level)pq_async_log_level
         );
         md::log::default_logger() = pqlogger;
         
         _ev_base = event_base_new();
-        md::event_queue::reset(_ev_base);
+        md::event_queue_t::reset(_ev_base);
         std::cout << "Initializing the connection pool" << std::endl;
         pq_async::connection_pool::init(pq_async_max_pool_size, true, true);
     }
@@ -76,7 +76,7 @@ public:
     {
         std::cout << "Destroying the connection pool" << std::endl;
         pq_async::connection_pool::destroy();
-        md::event_queue::destroy_default();
+        md::event_queue_t::destroy_default();
         event_base_free(_ev_base);
         _ev_base = nullptr;
     }

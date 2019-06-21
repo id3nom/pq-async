@@ -220,7 +220,7 @@ TEST_F(nullable_test, nullable_datetime_types)
             nullptr
         );
         
-        auto eq = md::event_queue::get_default();
+        auto eq = md::event_queue_t::get_default();
         
         db->exec_queries(
             "DO $BODY$ "

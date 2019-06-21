@@ -79,7 +79,7 @@ public:
     bool lock();
     void release();
     
-    md::sp_event_strand<int> strand_t();
+    md::event_strand<int> strand();
     
     void touch()
     {
@@ -333,7 +333,7 @@ private:
 };
 
 class connection_task_t
-    : public md::event_task_base, 
+    : public md::event_task_base_t, 
     public std::enable_shared_from_this< connection_task_t >
 {
     friend data_reader_t;
@@ -351,19 +351,19 @@ protected:
     
 public:
     connection_task_t(
-        md::event_queue* owner, database db, connection_lock lock,
+        md::event_queue_t* owner, database db, connection_lock lock,
         const md::callback::value_cb<PGresult*>& cb
     );
     
     connection_task_t(
-        md::event_queue* owner, database db, connection* conn,
+        md::event_queue_t* owner, database db, connection* conn,
         const md::callback::value_cb<connection_lock>& cb
     );
     
     connection_task_t(
-        md::event_queue* owner, database db, connection_lock lock
+        md::event_queue_t* owner, database db, connection_lock lock
     );
-    connection_task_t(md::event_queue* owner, database db, connection* conn);
+    connection_task_t(md::event_queue_t* owner, database db, connection* conn);
     
     ~connection_task_t()
     {
@@ -568,7 +568,7 @@ protected:
             PQsocket(this->conn()),
             EV_READ | EV_PERSIST,
             [](int fd, short events, void* arg){
-                md::event_queue* eq = (md::event_queue*)arg;
+                md::event_queue_t* eq = (md::event_queue_t*)arg;
                 eq->activate();
             },
             this->_owner
@@ -693,7 +693,7 @@ class reader_connection_task
 {
 public:
     reader_connection_task(
-        md::event_queue* owner, database db, connection_lock lock
+        md::event_queue_t* owner, database db, connection_lock lock
     );
     
     virtual PGresult* run_now()

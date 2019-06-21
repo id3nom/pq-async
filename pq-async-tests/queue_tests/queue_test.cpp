@@ -82,7 +82,7 @@ TEST_F(queue_test, queue_db_strand_test)
         );
         std::cout << "PostgreSQL query will sleep 3 seconds" << std::endl;
         
-        md::event_queue::get_default()->run();
+        md::event_queue_t::get_default()->run();
         ASSERT_THAT(*value, testing::Eq(11));
         
     }catch(const std::exception& err){
@@ -94,7 +94,7 @@ TEST_F(queue_test, queue_db_strand_test)
 TEST_F(queue_test, queue_db_strand_test_b)
 {
     try{
-        auto eq = md::event_queue::get_default();
+        auto eq = md::event_queue_t::get_default();
         
         eq->series({
             [&](md::callback::async_cb scb){

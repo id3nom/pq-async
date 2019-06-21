@@ -145,7 +145,7 @@ TEST_F(database_test, max_connection_async_test)
             );
         }
         
-        md::event_queue::get_default()->run();
+        md::event_queue_t::get_default()->run();
         
         db->query(
             "select * from database_test",
@@ -159,7 +159,7 @@ TEST_F(database_test, max_connection_async_test)
             ASSERT_THAT(tbl->size(), testing::Eq(nb_con));
         });
 
-        md::event_queue::get_default()->run();
+        md::event_queue_t::get_default()->run();
         
     }catch(const std::exception& err){
         std::cout << "Error: " << err.what() << std::endl;
@@ -185,7 +185,7 @@ TEST_F(database_test, max_connection_async2_test)
             dbs[i]->get_strand()->data(i);
         }
         
-        auto eq = md::event_queue::get_default();
+        auto eq = md::event_queue_t::get_default();
         
         eq->each(dbs, dbs+nb_con,
         [eq](const database& ldb, md::callback::async_cb ecb)->void{

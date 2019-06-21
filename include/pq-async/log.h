@@ -62,9 +62,9 @@ SOFTWARE.
 
 namespace pq_async {
 
-inline md::log::sp_logger default_logger(md::log::sp_logger new_log = nullptr)
+inline md::log::logger default_logger(md::log::logger new_log = nullptr)
 {
-    static md::log::sp_logger _log = nullptr;
+    static md::log::logger _log = nullptr;
     if(new_log)
         _log = new_log;
     if(!_log)

@@ -24,9 +24,9 @@
 namespace pq_async{
 
 database_t::database_t(
-    md::sp_event_strand<int> strand_t,
+    md::event_strand<int> strand,
     const std::string& connection_string,
-    md::log::sp_logger log = nullptr)
+    md::log::logger log = nullptr)
     :_connection_string(connection_string),
     _conn(NULL),
     _strand(strand_t),
@@ -34,7 +34,7 @@ database_t::database_t(
     _log(log ? log : pq_async::default_logger())
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
-    strand_t->enable_activate_on_requeue(false);
+    strand->enable_activate_on_requeue(false);
 }
 
 database_t::~database_t()

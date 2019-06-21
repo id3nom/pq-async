@@ -105,10 +105,10 @@ void pq_async::connection::release()
     return;
 }
 
-md::sp_event_strand<int> connection::strand_t()
+md::event_strand<int> connection::strand()
 {
     if(!this->_owner)
-        return md::sp_event_strand<int>();
+        return md::event_strand<int>();
     
     return this->_owner->get_strand();
 }
@@ -128,9 +128,9 @@ bool pq_async::connection::is_dead()
 
 
 connection_task_t::connection_task_t(
-    md::event_queue* owner, database db, connection_lock lock,
+    md::event_queue_t* owner, database db, connection_lock lock,
     const md::callback::value_cb<PGresult*>& cb)
-    : event_task_base(owner), 
+    : event_task_base_t(owner), 
     _cmd_type(command_type::none),
     _completed(false), _db(db),
     
@@ -142,9 +142,9 @@ connection_task_t::connection_task_t(
 }
 
 connection_task_t::connection_task_t(
-    md::event_queue* owner, database db, connection* conn,
+    md::event_queue_t* owner, database db, connection* conn,
     const md::callback::value_cb<connection_lock>& lock_cb)
-    : event_task_base(owner), 
+    : event_task_base_t(owner), 
     _cmd_type(command_type::none),
     _completed(false), _db(db),
     
@@ -156,8 +156,8 @@ connection_task_t::connection_task_t(
 }
 
 connection_task_t::connection_task_t(
-    md::event_queue* owner, database db, connection_lock lock)
-    : event_task_base(owner), 
+    md::event_queue_t* owner, database db, connection_lock lock)
+    : event_task_base_t(owner), 
     _cmd_type(command_type::none),
     _completed(false), _db(db),
     
@@ -169,8 +169,8 @@ connection_task_t::connection_task_t(
 }
 
 connection_task_t::connection_task_t(
-    md::event_queue* owner, database db, connection* conn)
-    : event_task_base(owner), 
+    md::event_queue_t* owner, database db, connection* conn)
+    : event_task_base_t(owner), 
     _cmd_type(command_type::none),
     _completed(false), _db(db),
     
@@ -238,7 +238,7 @@ void pq_async::connection_task_t::_connect()
 }
 
 reader_connection_task::reader_connection_task(
-    md::event_queue* owner, database db, connection_lock lock)
+    md::event_queue_t* owner, database db, connection_lock lock)
     : connection_task_t(owner, db, lock)
 {
 }

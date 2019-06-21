@@ -124,7 +124,7 @@ TEST_F(data_reader_test, data_reader_sync_close_test)
 TEST_F(data_reader_test, data_reader_async_test)
 {
     try{
-        auto eq = md::event_queue::get_default();
+        auto eq = md::event_queue_t::get_default();
         
         eq->series({
             [&](md::callback::async_cb scb){
@@ -191,7 +191,7 @@ TEST_F(data_reader_test, data_reader_async_test)
 TEST_F(data_reader_test, data_reader_async_close_test)
 {
     try{
-        auto eq = md::event_queue::get_default();
+        auto eq = md::event_queue_t::get_default();
         
         eq->series({
             [&](md::callback::async_cb scb){
