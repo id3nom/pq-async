@@ -26,7 +26,7 @@ SOFTWARE.
 #define _libpq_async_data_reader_h
 
 #include "data_common.h"
-#include "data_table_t.h"
+#include "data_table.h"
 #include "data_connection_pool.h"
 
 namespace pq_async{
@@ -37,7 +37,7 @@ class data_reader_t
     friend class database_t;
     friend class data_prepared_t;
     
-    data_reader_t(sp_connection_task ct)
+    data_reader_t(connection_task ct)
         : _ct(ct), _table(), _closed(false)
     {
     }
@@ -260,7 +260,7 @@ private:
         }
     }
     
-    sp_connection_task _ct;
+    connection_task _ct;
     data_table _table;
     bool _closed;
 };

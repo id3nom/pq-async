@@ -29,8 +29,8 @@ SOFTWARE.
 #include "log.h"
 
 #include "data_connection_pool.h"
-#include "data_table_t.h"
-#include "data_reader_t.h"
+#include "data_table.h"
+#include "data_reader.h"
 
 #include "utils.h"
 
@@ -54,14 +54,14 @@ namespace pq_async{
     [self=this->shared_from_this(), \
         _sql = std::string(sql),_p = std::move(p), \
         cb] \
-    (const md::callback::cb_error& err, sp_connection_lock lock){ \
+    (const md::callback::cb_error& err, connection_lock lock){ \
         if(err){ \
             cb(err, __def_val); \
             return; \
         } \
          \
         try{ \
-            auto ct = std::make_shared<connection_task>( \
+            auto ct = std::make_shared<connection_task_t>( \
                 self->_strand.get(), self, lock, \
             [self, cb]( \
                 const md::callback::cb_error& err, PGresult* r \
@@ -96,14 +96,14 @@ namespace pq_async{
     [self=this->shared_from_this(), \
         _sql = std::string(sql),_p = std::move(p), \
         cb] \
-    (const md::callback::cb_error& err, sp_connection_lock lock){ \
+    (const md::callback::cb_error& err, connection_lock lock){ \
         if(err){ \
             cb(err, __def_val); \
             return; \
         } \
          \
         try{ \
-            auto ct = std::make_shared<connection_task>( \
+            auto ct = std::make_shared<connection_task_t>( \
                 self->_strand.get(), self, lock, \
             [self, cb]( \
                 const md::callback::cb_error& err, PGresult* r \
@@ -130,7 +130,7 @@ namespace pq_async{
 #define _PQ_ASYNC_SEND_QRY_BODY_SYNC(__process_fn) \
     this->wait_for_sync(); \
     auto lock = open_connection(); \
-    connection_task ct( \
+    connection_task_t ct( \
         this->_strand.get(), this->shared_from_this(), lock \
     ); \
     ct.send_query(sql, p); \
@@ -144,7 +144,7 @@ class database_t
     : public std::enable_shared_from_this<database_t>
 {
     friend class connection;
-    friend class connection_task;
+    friend class connection_task_t;
     friend class connection_pool;
     friend class data_large_object_t;
     friend class data_prepared_t;
@@ -168,9 +168,9 @@ public:
      * \brief synchronously try to acquire and open a connection
      * 
      * \param timeout_ms milliseconds to wait before failure, default to 5000
-     * \return sp_connection_lock 
+     * \return connection_lock 
      */
-    sp_connection_lock open_connection(
+    connection_lock open_connection(
         int32_t timeout_ms = PQ_ASYNC_DEFAULT_TIMEOUT_MS)
     {
         if(_lock)
@@ -193,7 +193,7 @@ public:
                 this, _connection_string, timeout_ms
             );
         
-        sp_connection_lock cl(new connection_lock(_conn));
+        connection_lock cl(new connection_lock_t(_conn));
         _conn->open_connection();
         
         #ifdef PQ_ASYNC_THREAD_SAFE
@@ -214,15 +214,15 @@ public:
      */
     template<
         typename CB,
-        PQ_ASYNC_VALID_DB_VAL_CALLBACK(CB, sp_connection_lock)
+        PQ_ASYNC_VALID_DB_VAL_CALLBACK(CB, connection_lock)
     >
     void open_connection(const CB& acb,
         int32_t timeout_ms = PQ_ASYNC_DEFAULT_TIMEOUT_MS)
     {
-        md::callback::value_cb<sp_connection_lock> cb;
+        md::callback::value_cb<connection_lock> cb;
         md::callback::assign_value_cb<
-            md::callback::value_cb<sp_connection_lock>,
-            sp_connection_lock
+            md::callback::value_cb<connection_lock>,
+            connection_lock
         >(
             cb, acb
         );
@@ -235,20 +235,20 @@ public:
         }
         
         try{
-            auto ct = std::make_shared<connection_task>(
+            auto ct = std::make_shared<connection_task_t>(
                 this->_strand.get(), this->shared_from_this(), this->_conn,
             [self=this->shared_from_this(), cb](
-                const md::callback::cb_error& err, sp_connection_lock lock
+                const md::callback::cb_error& err, connection_lock lock
             )-> void {
                 if(err){
-                    cb(err, sp_connection_lock());
+                    cb(err, connection_lock());
                     return;
                 }
                 
                 try{
                     cb(nullptr, lock);
                 }catch(const std::exception& err){
-                    cb(md::callback::cb_error(err), sp_connection_lock());
+                    cb(md::callback::cb_error(err), connection_lock());
                 }
             });
             PQ_ASYNC_DBG(_log,
@@ -260,7 +260,7 @@ public:
             this->_strand->push_back(ct);
             
         }catch(const std::exception& err){
-            cb(md::callback::cb_error(err), sp_connection_lock());
+            cb(md::callback::cb_error(err), connection_lock());
         }
     }
     
@@ -348,7 +348,7 @@ public:
 
         this->open_connection(
         [self=this->shared_from_this(), cb]
-        (const md::callback::cb_error& err, sp_connection_lock lock){
+        (const md::callback::cb_error& err, connection_lock lock){
             if(err){
                 cb(err);
                 return;
@@ -948,7 +948,7 @@ public:
         [self=this->shared_from_this(),
             _sql = std::string(sql),_p = std::move(p),
             cb]
-        (const md::callback::cb_error& err, sp_connection_lock lock){
+        (const md::callback::cb_error& err, connection_lock lock){
             if(err){
                 cb(err, data_reader());
                 return;
@@ -989,7 +989,7 @@ public:
         [self=this->shared_from_this(),
             _sql = std::string(sql),_p = std::move(p),
             cb]
-        (const md::callback::cb_error& err, sp_connection_lock lock){
+        (const md::callback::cb_error& err, connection_lock lock){
             if(err){
                 cb(err, data_reader());
                 return;
@@ -1165,7 +1165,7 @@ public:
     {
         wait_for_sync();
         auto lock = open_connection();
-        connection_task ct(
+        connection_task_t ct(
             this->_strand.get(), this->shared_from_this(), lock
         );
         
@@ -1248,14 +1248,14 @@ public:
         [self=this->shared_from_this(),
             _name = std::string(name), _sql = std::string(sql),
             auto_deallocate, types, cb]
-        (const md::callback::cb_error& err, sp_connection_lock lock){
+        (const md::callback::cb_error& err, connection_lock lock){
             if(err){
                 cb(err, data_prepared());
                 return;
             }
             
             try{
-                auto ct = std::make_shared<connection_task>(
+                auto ct = std::make_shared<connection_task_t>(
                     self->_strand.get(), self, lock,
                 [self, lock, _name, auto_deallocate, cb]
                 (const md::callback::cb_error& err, PGresult* r)-> void {
@@ -1323,7 +1323,7 @@ public:
         [self=this->shared_from_this(),
             _name = std::string(name),
             cb]
-        (const md::callback::cb_error& err, sp_connection_lock lock){
+        (const md::callback::cb_error& err, connection_lock lock){
             if(err){
                 cb(err);
                 return;
@@ -1405,7 +1405,7 @@ public:
 private:
     data_prepared _new_prepared(
         const char* name, bool auto_deallocate,
-        sp_connection_lock lock
+        connection_lock lock
     );
 
 
@@ -1451,7 +1451,7 @@ private:
     data_row _process_query_single_result(PGresult* res);
     data_prepared _process_send_prepare_result(
         const std::string& name, bool auto_deallocate,
-        sp_connection_lock lock, PGresult* res
+        connection_lock lock, PGresult* res
     );
     
     template<typename RETURN_T>
@@ -1502,7 +1502,7 @@ private:
     
     connection* _conn;
     md::sp_event_strand<int> _strand;
-    sp_connection_lock _lock;
+    connection_lock _lock;
     md::log::sp_logger _log;
 };
 

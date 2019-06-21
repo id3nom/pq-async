@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "data_columns_container_t.h"
+#include "data_columns_container.h"
 
 namespace pq_async{
 

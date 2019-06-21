@@ -32,7 +32,7 @@ SOFTWARE.
 #include "log.h"
 
 #include "data_connection_pool.h"
-#include "database_t.h"
+#include "database.h"
 
 extern "C" {
 #include INCLUDE_FILE(LIBPQ_POSTGRESQL_TYPE_INCLUDE_DIR,libpq/libpq-fs.h)

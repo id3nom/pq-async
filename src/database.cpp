@@ -17,9 +17,9 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-#include "database_t.h"
-#include "data_large_object_t.h"
-#include "data_prepared_t.h"
+#include "database.h"
+#include "data_large_object.h"
+#include "data_prepared.h"
 
 namespace pq_async{
 
@@ -61,7 +61,7 @@ void database_t::exec_queries(const std::string& sql)
         this->begin();
     }
     //open_connection();
-    //connection_lock conn_lock(_conn);
+    //connection_lock_t conn_lock(_conn);
     
     std::vector< std::string > queries;
     split_queries(sql, queries);
@@ -384,7 +384,7 @@ data_row database_t::_process_query_single_result(PGresult* res)
 
 data_prepared database_t::_process_send_prepare_result(
     const std::string& name, bool auto_deallocate,
-    sp_connection_lock lock, PGresult* res)
+    connection_lock lock, PGresult* res)
 {
     PQ_ASYNC_DEF_TRACE("ptr: {:p}", (void*)this);
     if(!_conn){
@@ -410,7 +410,7 @@ data_prepared database_t::_process_send_prepare_result(
 
 data_prepared database_t::_new_prepared(
     const char* name, bool auto_deallocate,
-    sp_connection_lock lock)
+    connection_lock lock)
 {
     return data_prepared(
         new data_prepared_t(
@@ -424,7 +424,7 @@ data_prepared database_t::_new_prepared(
 data_large_object database_t::create_lo()
 {
     open_connection();
-    connection_lock conn_lock(_conn);
+    connection_lock_t conn_lock(_conn);
     
     pq_async::oid lo_oid = lo_create(_conn->conn(), pq_async::oid());
     return get_lo(lo_oid);

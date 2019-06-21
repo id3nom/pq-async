@@ -27,7 +27,7 @@ SOFTWARE.
 
 
 #include "data_common.h"
-#include "data_column_t.h"
+#include "data_column.h"
 
 namespace pq_async{
 

@@ -32,9 +32,9 @@
 
 
 #include "data_common.h"
-#include "data_value_t.h"
-#include "data_column_t.h"
-#include "data_columns_container_t.h"
+#include "data_value.h"
+#include "data_column.h"
+#include "data_columns_container.h"
 
 namespace pq_async{
 

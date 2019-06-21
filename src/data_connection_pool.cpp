@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 #include "data_connection_pool.h"
-#include "database_t.h"
+#include "database.h"
 
 namespace pq_async{
 
@@ -127,8 +127,8 @@ bool pq_async::connection::is_dead()
 }
 
 
-connection_task::connection_task(
-    md::event_queue* owner, database db, sp_connection_lock lock,
+connection_task_t::connection_task_t(
+    md::event_queue* owner, database db, connection_lock lock,
     const md::callback::value_cb<PGresult*>& cb)
     : event_task_base(owner), 
     _cmd_type(command_type::none),
@@ -141,9 +141,9 @@ connection_task::connection_task(
 {
 }
 
-connection_task::connection_task(
+connection_task_t::connection_task_t(
     md::event_queue* owner, database db, connection* conn,
-    const md::callback::value_cb<sp_connection_lock>& lock_cb)
+    const md::callback::value_cb<connection_lock>& lock_cb)
     : event_task_base(owner), 
     _cmd_type(command_type::none),
     _completed(false), _db(db),
@@ -155,8 +155,8 @@ connection_task::connection_task(
 {
 }
 
-connection_task::connection_task(
-    md::event_queue* owner, database db, sp_connection_lock lock)
+connection_task_t::connection_task_t(
+    md::event_queue* owner, database db, connection_lock lock)
     : event_task_base(owner), 
     _cmd_type(command_type::none),
     _completed(false), _db(db),
@@ -168,7 +168,7 @@ connection_task::connection_task(
 {
 }
 
-connection_task::connection_task(
+connection_task_t::connection_task_t(
     md::event_queue* owner, database db, connection* conn)
     : event_task_base(owner), 
     _cmd_type(command_type::none),
@@ -181,7 +181,7 @@ connection_task::connection_task(
 {
 }
 
-void pq_async::connection_task::_connect()
+void pq_async::connection_task_t::_connect()
 {
     PQ_ASYNC_DBG(
         _db->_log,
@@ -195,7 +195,7 @@ void pq_async::connection_task::_connect()
             md::callback::cb_error(
             pq_async::exception(
                 "Connection request has time out!"
-            )), sp_connection_lock()
+            )), connection_lock()
         );
         return;
     }
@@ -225,7 +225,7 @@ void pq_async::connection_task::_connect()
         connection_pool::notify_all();
         #endif
         
-        sp_connection_lock cl(new connection_lock(_db->_conn));
+        connection_lock cl(new connection_lock_t(_db->_conn));
         _completed = true;
         _lock_cb(nullptr, cl);
     
@@ -233,18 +233,18 @@ void pq_async::connection_task::_connect()
         return;
     }catch(const std::exception& err){
         _completed = true;
-        _lock_cb(md::callback::cb_error(err), sp_connection_lock());
+        _lock_cb(md::callback::cb_error(err), connection_lock());
     }
 }
 
 reader_connection_task::reader_connection_task(
-    md::event_queue* owner, database db, sp_connection_lock lock)
-    : connection_task(owner, db, lock)
+    md::event_queue* owner, database db, connection_lock lock)
+    : connection_task_t(owner, db, lock)
 {
 }
 
 
-PGconn* connection_task::conn(){ return _db->_conn->conn();}
+PGconn* connection_task_t::conn(){ return _db->_conn->conn();}
 
 std::string pq_async::connection_pool::last_stolen_conn_id = "";
 pq_async::connection_pool *pq_async::connection_pool::s_instance = NULL;

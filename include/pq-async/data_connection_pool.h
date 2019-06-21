@@ -30,20 +30,20 @@ SOFTWARE.
 
 namespace pq_async{
 
-class connection_lock;
-typedef std::shared_ptr<pq_async::connection_lock> sp_connection_lock;
+class connection_lock_t;
+typedef std::shared_ptr<pq_async::connection_lock_t> connection_lock;
 
-class connection_task;
+class connection_task_t;
 class connection_pool;
 class database_t;
 
-typedef std::shared_ptr< pq_async::connection_task > sp_connection_task;
+typedef std::shared_ptr< pq_async::connection_task_t > connection_task;
 
 
 class connection
 {
     friend class connection_pool;
-    friend class connection_lock;
+    friend class connection_lock_t;
     friend class database_t;
     
 private:
@@ -295,10 +295,10 @@ private:
     std::chrono::system_clock::time_point _last_modification_date;
 };
 
-class connection_lock
+class connection_lock_t
 {
 public:
-    connection_lock(connection* conn):_conn(conn)
+    connection_lock_t(connection* conn):_conn(conn)
     {
         if(!_conn)
             return;
@@ -317,7 +317,7 @@ public:
         _conn->start_work();
     }
     
-    ~connection_lock()
+    ~connection_lock_t()
     {
         if(!_conn)
             return;
@@ -332,9 +332,9 @@ private:
 
 };
 
-class connection_task
+class connection_task_t
     : public md::event_task_base, 
-    public std::enable_shared_from_this< connection_task >
+    public std::enable_shared_from_this< connection_task_t >
 {
     friend data_reader_t;
 protected:
@@ -350,22 +350,22 @@ protected:
     };
     
 public:
-    connection_task(
-        md::event_queue* owner, database db, sp_connection_lock lock,
+    connection_task_t(
+        md::event_queue* owner, database db, connection_lock lock,
         const md::callback::value_cb<PGresult*>& cb
     );
     
-    connection_task(
+    connection_task_t(
         md::event_queue* owner, database db, connection* conn,
-        const md::callback::value_cb<sp_connection_lock>& cb
+        const md::callback::value_cb<connection_lock>& cb
     );
     
-    connection_task(
-        md::event_queue* owner, database db, sp_connection_lock lock
+    connection_task_t(
+        md::event_queue* owner, database db, connection_lock lock
     );
-    connection_task(md::event_queue* owner, database db, connection* conn);
+    connection_task_t(md::event_queue* owner, database db, connection* conn);
     
-    ~connection_task()
+    ~connection_task_t()
     {
         if(_ev)
             event_free(_ev);
@@ -680,20 +680,20 @@ protected:
     database _db;
 
     connection* _conn;
-    md::callback::value_cb<sp_connection_lock> _lock_cb;
+    md::callback::value_cb<connection_lock> _lock_cb;
 
-    sp_connection_lock _lock;
+    connection_lock _lock;
     md::callback::value_cb<PGresult*> _cb;
     
     event* _ev;
 };
 
 class reader_connection_task
-    : public connection_task
+    : public connection_task_t
 {
 public:
     reader_connection_task(
-        md::event_queue* owner, database db, sp_connection_lock lock
+        md::event_queue* owner, database db, connection_lock lock
     );
     
     virtual PGresult* run_now()
