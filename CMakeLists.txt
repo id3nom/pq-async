@@ -15,6 +15,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 #set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 set(WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
+option(PQ_ASYNC_BUILD_LIB "Build library" ON)
 option(PQ_ASYNC_BUILD_TESTS "Build tests" OFF)
 option(PQ_ASYNC_BUILD_DOC "Create and install the HTML based API documentation (requires Doxygen)" OFF)
 
@@ -149,6 +150,8 @@ configure_file (
     "${CMAKE_CURRENT_SOURCE_DIR}/include/pq-async/pq_async_config.h"
 )
 
+if(PQ_ASYNC_BUILD_LIB)
+
 set(PostgreSQL_ROOT "" CACHE PATH "Set the PostgreSQL_ROOT system variable to where PostgreSQL is found on the machine E.g C:/Program Files/PostgreSQL/VERSION")
 #set(PostgreSQL_TYPE_INCLUDE_DIR "/usr/include/postgresql/" CACHE PATH "sets the debian postgresql include dir to fix a bug in postgresl")
 
@@ -254,3 +257,5 @@ target_link_libraries(pq-async
 # 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 # 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})  # This is for Windows
 # install( DIRECTORY include/ DESTINATION include/ )
+
+endif(PQ_ASYNC_BUILD_LIB)
