@@ -25,7 +25,7 @@ namespace pq_async{
 
 database open(
     const std::string& connection_string,
-    md::log::logger log = nullptr)
+    md::log::logger log)
 {
     database dbso(
         new database_t(
@@ -40,7 +40,7 @@ database open(
 database open(
     md::event_strand<int> strand, 
     const std::string& connection_string,
-    md::log::logger log = nullptr)
+    md::log::logger log)
 {
     database dbso(
         new database_t(strand, connection_string, log)
@@ -68,7 +68,8 @@ database_t::~database_t()
     this->close();
 }
 
-void database_t::exec_queries(const std::string& sql, const md::callback::async_cb& cb)
+void database_t::exec_queries(
+    const std::string& sql, const md::callback::async_cb& cb)
 {
     std::vector< std::string > queries;
     split_queries(sql, queries);
@@ -80,17 +81,39 @@ void database_t::exec_queries(const std::string& sql, const md::callback::async_
 
 //https://www.postgresql.org/docs/current/libpq-copy.html
 
+class pg_socket_block
+{
+public:
+    pg_socket_block(PGconn* conn)
+        :_conn(conn),
+        _unblock(PQisnonblocking(conn) == 1)
+    {
+        if(_unblock)
+            PQsetnonblocking(_conn, 0);
+    }
+    
+    ~pg_socket_block()
+    {
+        if(_unblock)
+            PQsetnonblocking(_conn, 1);
+    }
+    
+private:
+    PGconn* _conn;
+    bool _unblock;
+};
+
 void database_t::exec_queries(const std::string& sql)
 {
     this->wait_for_sync();
+    // switch the connection to blocking mode until exec_queries is completed.
+    pg_socket_block conn_block(_conn->conn());
     
     bool local_trans = false;
     if(!this->in_transaction()){
         local_trans = true;
         this->begin();
     }
-    //open_connection();
-    //connection_lock_t conn_lock(_conn);
     
     std::vector< std::string > queries;
     split_queries(sql, queries);
@@ -101,6 +124,7 @@ void database_t::exec_queries(const std::string& sql)
         sql, md::join(queries, "\n\n--next-query--\n")
     );
     
+    bool in_copy_mode = false;
     for(const std::string& qry: queries){
         #if PQ_ASYNC_BUILD_DEBUG
         std::vector<std::string> qry_lines;
@@ -114,7 +138,7 @@ void database_t::exec_queries(const std::string& sql)
                 num += " ";
             num_qry += num + " " + qry_lines[i] + "\n";
         }
-            
+        
         PQ_ASYNC_DBG(
             _log,
             "Executing query:\n{}", num_qry
@@ -125,9 +149,55 @@ void database_t::exec_queries(const std::string& sql)
             "Executing query:\n{}", qry
         );
         #endif//PQ_ASYNC_BUILD_DEBUG
-        PGresult* res = PQexec(_conn->conn(), qry.c_str());
         
-        int result_status = PQresultStatus(res);
+        PGresult* res = nullptr;
+        int result_status = 0;
+        if(!in_copy_mode){
+            res = PQexec(_conn->conn(), qry.c_str());
+            result_status = PQresultStatus(res);
+            if((result_status & PGRES_COPY_IN) == PGRES_COPY_IN){
+                // verify if copy mode is required
+                std::string cp_qry = md::replace_substring_copy(
+                    qry, "\n", " "
+                );
+                if(
+                    boost::algorithm::istarts_with(cp_qry, "copy ") &&
+                    boost::algorithm::iends_with(cp_qry, " stdin")
+                )
+                    in_copy_mode = true;
+            }
+            
+        }else{
+            int copy_status = PQputCopyData(
+                _conn->conn(), qry.c_str(), qry.size()
+            );
+            if(copy_status == -1){
+                throw MD_ERR(
+                    "PQputCopyData failed!\n{}",
+                    PQerrorMessage(_conn->conn())
+                );
+            }
+            
+            copy_status = PQputCopyEnd(_conn->conn(), nullptr);
+            if(copy_status == -1){
+                throw MD_ERR(
+                    "PQputCopyEnd failed!\n{}",
+                    PQerrorMessage(_conn->conn())
+                );
+            }
+            res = PQgetResult(_conn->conn());
+            result_status = PQresultStatus(res);
+            in_copy_mode = false;
+        }
+        
+        if(in_copy_mode){
+            PQ_ASYNC_DBG(
+                _log,
+                "Switched to copy mode"
+            );
+            PQclear(res);
+            continue;
+        }
         
         if(result_status == PGRES_COMMAND_OK ||
             result_status == PGRES_TUPLES_OK
@@ -138,12 +208,12 @@ void database_t::exec_queries(const std::string& sql)
             result_status == PGRES_NONFATAL_ERROR
         ){
             PQclear(res);
-
+            
         } else {
             std::string errMsg = PQresStatus((ExecStatusType)result_status);
             errMsg += ": ";
             errMsg += std::string(PQerrorMessage(_conn->conn()));
-
+            
             PQclear(res);
             throw pq_async::exception(errMsg);
         }
@@ -164,11 +234,13 @@ void database_t::split_queries(
     bool in_dollar_quote = false;
     std::string dollar_quote_string;
     bool in_comment = false;
+    bool in_copy_mode = false;
     
     for(std::string::size_type i = 0; i < sql.size(); ++i) {
         cur_char = sql[i];
         next_char = i < sql.size() -1 ? sql[i+1] : '\0';
         
+        // it's the end
         if(i == sql.size() -1){
             if(cur_char != ';')
                 cur_qry += cur_char;
@@ -179,12 +251,14 @@ void database_t::split_queries(
             continue;
         }
         
+        // test for comment end
         if(in_comment){
             if(cur_char == '\n')
                 in_comment = false;
             continue;
         }
         
+        // test for end of single quote
         if(in_single_quote){
             if(cur_char == '\'' && next_char != '\''){
                 cur_qry += cur_char;
@@ -203,6 +277,7 @@ void database_t::split_queries(
             continue;
         }
         
+        // test for end of double quote
         if(in_double_quote){
             if(cur_char == '"' && next_char != '"'){
                 cur_qry += cur_char;
@@ -220,6 +295,7 @@ void database_t::split_queries(
             continue;
         }
         
+        // test for end of dollar quote
         if(in_dollar_quote){
             if(cur_char == '$' &&
                 dollar_quote_string == sql.substr(i, dollar_quote_string.size())
@@ -230,6 +306,24 @@ void database_t::split_queries(
                 continue;
             }
             
+            cur_qry += cur_char;
+            continue;
+        }
+        
+        // test for end of copy mode
+        if(in_copy_mode){
+            if((cur_char == '\n' || cur_char == '\r') && next_char == '\\'){
+                char third_char = i < sql.size() -2 ? sql[i+2] : '\0';
+                if(third_char == '.'){
+                    md::trim(cur_qry);
+                    //cur_qry += "\n\\.";
+                    i += 2;
+                    queries.push_back(cur_qry);
+                    cur_qry.clear();
+                    in_copy_mode = false;
+                    continue;
+                }
+            }
             cur_qry += cur_char;
             continue;
         }
@@ -271,9 +365,20 @@ void database_t::split_queries(
         // end of query
         if(cur_char == ';'){
             md::trim(cur_qry);
-            if(cur_qry.size() > 0)
+            if(cur_qry.size() > 0){
+                // verify if copy mode is required
+                std::string cp_qry = md::replace_substring_copy(
+                    cur_qry, "\n", " "
+                );
+                if(
+                    boost::algorithm::istarts_with(cp_qry, "copy ") &&
+                    boost::algorithm::iends_with(cp_qry, " stdin")
+                )
+                    in_copy_mode = true;
+                
                 queries.push_back(cur_qry);
-            cur_qry = "";
+            }
+            cur_qry.clear();
             continue;
         }
         

@@ -175,6 +175,16 @@ class database_t
     friend class connection_pool;
     friend class data_large_object_t;
     friend class data_prepared_t;
+    
+    friend database open(
+        const std::string& connection_string,
+        md::log::logger log
+    );
+    friend database open(
+        md::event_strand<int> strand, 
+        const std::string& connection_string,
+        md::log::logger log
+    );
 
     database_t(
         md::event_strand<int> strand, 
