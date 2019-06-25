@@ -23,6 +23,31 @@
 
 namespace pq_async{
 
+database open(
+    const std::string& connection_string,
+    md::log::logger log = nullptr)
+{
+    database dbso(
+        new database_t(
+            md::event_queue_t::get_default()->new_strand<int>(),
+            connection_string,
+            log
+        )
+    );
+    return dbso;
+}
+
+database open(
+    md::event_strand<int> strand, 
+    const std::string& connection_string,
+    md::log::logger log = nullptr)
+{
+    database dbso(
+        new database_t(strand, connection_string, log)
+    );
+    return dbso;
+}
+
 database_t::database_t(
     md::event_strand<int> strand,
     const std::string& connection_string,

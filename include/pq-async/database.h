@@ -136,6 +136,33 @@ namespace pq_async{
     ct.send_query(sql, p); \
     return __process_fn(ct.run_now());
 
+
+/*!
+    * \brief creates a new database_t instance using a new strand_t from 
+    * the default event_queue
+    * 
+    * \param connection_string the connection string used for that instance
+    * \return database 
+    */
+database open(
+    const std::string& connection_string,
+    md::log::logger log = nullptr
+);
+
+/*!
+    * \brief creates a new database_t instance usign the specified event_strand
+    * 
+    * \param strand_t the pq_async::event_strand to use
+    * \param connection_string the connection string used for that instance
+    * \return database 
+    */
+database open(
+    md::event_strand<int> strand, 
+    const std::string& connection_string,
+    md::log::logger log = nullptr
+);
+
+
 /*!
  * \brief 
  * 
@@ -1356,47 +1383,6 @@ public:
     }
     
     
-    
-    /*!
-     * \brief creates a new database_t instance using a new strand_t from 
-     * the default event_queue
-     * 
-     * \param connection_string the connection string used for that instance
-     * \return database 
-     */
-    static database open(
-        const std::string& connection_string,
-        md::log::logger log = nullptr)
-    {
-        database dbso(
-            new database_t(
-                md::event_queue_t::get_default()->new_strand<int>(),
-                connection_string,
-                log
-            )
-        );
-        return dbso;
-    }
-    
-    /*!
-     * \brief creates a new database_t instance usign the specified event_strand
-     * 
-     * \param strand_t the pq_async::event_strand to use
-     * \param connection_string the connection string used for that instance
-     * \return database 
-     */
-    static database open(
-        md::event_strand<int> strand, 
-        const std::string& connection_string,
-        md::log::logger log = nullptr)
-    {
-        database dbso(
-            new database_t(strand, connection_string, log)
-        );
-        return dbso;
-    }
-    
-    
     static void split_queries(
         const std::string& sql, std::vector< std::string >& queries
     );
@@ -1510,6 +1496,5 @@ private:
 #undef _PQ_ASYNC_SEND_QRY_BODY_PARAMS
 #undef _PQ_ASYNC_SEND_QRY_BODY_T
 #undef _PQ_ASYNC_SEND_QRY_BODY_SYNC
-
 } // ns: pq_async
 #endif //_libpq_async_database_h
