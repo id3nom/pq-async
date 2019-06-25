@@ -70,7 +70,7 @@ TEST_F(database_test, max_connection_sync_test)
         dbs[nb_con] = this->db;
         
         for(size_t i = 0; i < nb_con; ++i)
-            dbs[i] = pq_async::database_t::open(pq_async_connection_string);
+            dbs[i] = pq_async::open(pq_async_connection_string);
         ++nb_con;
         
         for(size_t i = 0; i < nb_con; ++i){
@@ -107,7 +107,7 @@ TEST_F(database_test, max_connection_async_test)
             << ", db count: " << nb_con << std::endl;
         
         for(size_t i = 1; i < nb_con; ++i){
-            dbs[i] = pq_async::database_t::open(pq_async_connection_string);
+            dbs[i] = pq_async::open(pq_async_connection_string);
             dbs[i]->get_strand()->data(i);
         }
         for(size_t i = 0; i < nb_con; ++i){
@@ -181,7 +181,7 @@ TEST_F(database_test, max_connection_async2_test)
             << ", db count: " << nb_con << std::endl;
         
         for(size_t i = 1; i < nb_con; ++i){
-            dbs[i] = pq_async::database_t::open(pq_async_connection_string);
+            dbs[i] = pq_async::open(pq_async_connection_string);
             dbs[i]->get_strand()->data(i);
         }
         

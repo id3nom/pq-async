@@ -42,7 +42,7 @@ namespace pq_async{ namespace tests{
         
         void SetUp() override
         {
-            db = pq_async::database_t::open(pq_async_connection_string);
+            db = pq_async::open(pq_async_connection_string);
         }
         
         void TearDown() override {
