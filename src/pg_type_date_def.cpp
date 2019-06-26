@@ -60,12 +60,20 @@ namespace pq_async {
         return ss.str();
     }
     
+    std::string interval::format(
+        const std::locale& loc, md::string_view fmt) const
+    {
+        return iso_string();
+    }
+    
     interval interval::parse(const std::string& s)
     {
         if(s == "NULL")
             return interval::null();
         return interval();
     }
+    
+    
     
     //////////
     // date //
@@ -88,6 +96,13 @@ namespace pq_async {
         
         return hhdate::format("%Y-%m-%d", this->_d);
     }
+
+    std::string date::format(
+        const std::locale& loc, md::string_view fmt) const
+    {
+        return hhdate::format(loc, fmt.to_string(), this->_d);
+    }
+    
     
     date date::parse(const std::string& s)
     {
@@ -132,6 +147,12 @@ namespace pq_async {
             return "NULL";
         
         return hhdate::format("%Y-%m-%d %T", this->_ts);
+    }
+    
+    std::string timestamp::format(
+        const std::locale& loc, md::string_view fmt) const
+    {
+        return hhdate::format(loc, fmt.to_string(), this->_ts);
     }
     
     timestamp_tz timestamp::as_zone(const char* zone_name) const
@@ -221,7 +242,13 @@ namespace pq_async {
         
         return hhdate::format("%Y-%m-%d %T%z", this->_tsz);
     }
-
+    
+    std::string timestamp_tz::format(
+        const std::locale& loc, md::string_view fmt) const
+    {
+        return hhdate::format(loc, fmt.to_string(), this->_tsz);
+    }
+    
     timestamp_tz timestamp_tz::as_zone(const char* zone_name) const
     {
         if(_is_null)
@@ -301,6 +328,12 @@ namespace pq_async {
         return hhdate::format("%T", this->_tod);
     }
     
+    std::string pq_async::time::format(
+        const std::locale& loc, md::string_view fmt) const
+    {
+        return hhdate::format(loc, fmt.to_string(), this->_tod);
+    }
+    
     time_tz pq_async::time::as_zone(const char* zone_name) const
     {
         if(_is_null)
@@ -369,6 +402,12 @@ namespace pq_async {
             return "NULL";
         
         return hhdate::format("%T%z", this->_todz);
+    }
+    
+    std::string time_tz::format(
+        const std::locale& loc, md::string_view fmt) const
+    {
+        return hhdate::format(loc, fmt.to_string(), this->_todz);
     }
     
     time_tz time_tz::parse(const std::string& s)

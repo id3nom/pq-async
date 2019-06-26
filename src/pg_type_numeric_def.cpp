@@ -351,6 +351,25 @@ namespace pq_async{
         return str;
     }
     
+    void numeric::decimal_parts_to(
+        bool& is_positive, std::string& whole_part, std::string& dec_part) const
+    {
+        std::string res = (std::string)(*this);
+        
+        bool is_positive = !boost::starts_with(res, "-");
+        size_t spos = res.find(".");
+        if(spos == std::string::npos){
+            whole_part = res;
+            dec_part.clear();
+        }else{
+            whole_part = res.substr(0, spos);
+            dec_part = res.substr(spos +1);
+        }
+        md::trim(whole_part);
+        md::trim(dec_part);
+    }
+    
+    
     bool numeric::is_nan() const
     {
         return sign == NUMERIC_NAN;
@@ -1309,9 +1328,9 @@ numericvar_to_double_no_overflow(const numeric *var)
     char	   *tmp;
     double		val;
     char	   *endptr;
-
+    
     tmp = get_str_from_var(var);
-
+    
     /* unlike float8in, we ignore ERANGE from strtod */
     val = strtod(tmp, &endptr);
     if (*endptr != '\0')
@@ -1321,9 +1340,9 @@ numericvar_to_double_no_overflow(const numeric *var)
             "invalid input syntax for type double precision"
         );
     }
-
+    
     free(tmp);
-
+    
     return val;
 }
 

@@ -108,6 +108,10 @@ public:
     ~numeric();
     
     operator std::string() const;
+    void decimal_parts_to(
+        bool& is_positive, std::string& whole_part, std::string& dec_part
+    ) const;
+    
     
     bool is_nan() const;
     

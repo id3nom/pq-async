@@ -99,6 +99,7 @@ public:
     
     std::string iso_string() const;
     operator std::string() const { return iso_string();}
+    std::string format(const std::locale& loc, md::string_view fmt) const;
     
     hhdate::time_of_day<std::chrono::microseconds> time_of_day() const
     {
@@ -172,6 +173,7 @@ public:
     
     std::string iso_string() const;
     operator std::string() const { return iso_string();}
+    std::string format(const std::locale& loc, md::string_view fmt) const;
     
     operator hhdate::year_month_day() const
     {
@@ -246,6 +248,7 @@ public:
     
     std::string iso_string() const;
     operator std::string() const { return iso_string();}
+    std::string format(const std::locale& loc, md::string_view fmt) const;
     
     template< typename Dur >
     operator hhdate::sys_time<Dur>() const
@@ -332,6 +335,7 @@ public:
     
     std::string iso_string() const;
     operator std::string() const { return iso_string();}
+    std::string format(const std::locale& loc, md::string_view fmt) const;
     
     template< typename Dur >
     operator hhdate::sys_time<Dur>() const
@@ -389,6 +393,7 @@ public:
     
     std::string iso_string() const;
     operator std::string() const { return iso_string();}
+    std::string format(const std::locale& loc, md::string_view fmt) const;
         
     template< typename Dur >
     operator hhdate::sys_time<Dur>() const
@@ -400,6 +405,7 @@ public:
     time_tz make_zoned(const char* zone_name) const;
     
     static time parse(const std::string& s);
+    
     
 private:
     hhdate::sys_time<std::chrono::microseconds> _tod;
@@ -448,6 +454,7 @@ public:
     
     std::string iso_string() const;
     operator std::string() const { return iso_string();}
+    std::string format(const std::locale& loc, md::string_view fmt) const;
     
     template< typename Dur >
     operator hhdate::sys_time<Dur>() const

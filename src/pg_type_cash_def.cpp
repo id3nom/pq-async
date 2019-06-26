@@ -24,10 +24,56 @@ SOFTWARE.
 
 #include "pg_type_cash_def.h"
 
+#include <locale>
 
 namespace pq_async{
 
 std::locale money::_default_locale = std::locale("");
+
+void money::decimal_parts_to(
+    bool& is_positive, std::string& whole_part, std::string& decim_part) const
+{
+    int64_t m = std::pow(10L, _frac_digits);
+    int64_t a = std::abs(_val) / m;
+    int64_t b = std::abs(_val) % m;
+    is_positive = _val >= 0;
+    whole_part = md::num_to_str(b, false);
+    decim_part = md::num_to_str(a, false);
+}
+
+void money::decimal_parts_to(
+    int64_t& a, int64_t& b) const
+{
+    int64_t m = std::pow(10L, _frac_digits);
+    int64_t a = _val / m;
+    int64_t b = std::abs(_val) % m;
+    if(_val < 0)
+        b *= -1;
+}
+
+void money::to_frac_digits(int64_t frac_digits)
+{
+    to_frac_digits(*this, frac_digits);
+}
+
+void money::to_frac_digits(const money& m, int64_t frac_digits)
+{
+    if(frac_digits == m._frac_digits)
+        return;
+    
+    if(frac_digits > m._frac_digits){
+        int64_t m = std::pow(10L, frac_digits - m._frac_digits);
+        m._val *= m;
+        m._frac_digits = frac_digits;
+        
+    }else{
+        int64_t m = std::pow(10L, m._frac_digits - frac_digits);
+        m._val /= m;
+        m._frac_digits = frac_digits;
+        
+    }
+}
+
 
 std::ostream& operator<<(std::ostream& os, const money& v)
 {

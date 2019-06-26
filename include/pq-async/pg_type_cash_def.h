@@ -36,89 +36,152 @@ class money {
 
 public:
     money()
-        : _val(0)
+        : _val(0),
+        _frac_digits(
+            std::use_facet<std::moneypunct<char>>(
+                money::get_locale()
+            ).frac_digits()
+        )
     {
     }
     
     money(const money& b)
     {
         _val = b._val;
+        _frac_digits = b._frac_digits;
     }
     
     money(const int64_t& b)
     {
         this->_val = val_from_num(b);
+        _frac_digits = std::use_facet<std::moneypunct<char>>(
+            money::get_locale()
+        ).frac_digits();
     }
     money(const int32_t& b)
     {
         this->_val = val_from_num(b);
+        _frac_digits = std::use_facet<std::moneypunct<char>>(
+            money::get_locale()
+        ).frac_digits();
     }
     money(const float& b)
     {
         this->_val = val_from_num(b);
+        _frac_digits = std::use_facet<std::moneypunct<char>>(
+            money::get_locale()
+        ).frac_digits();
     }
     money(const double& b)
     {
         this->_val = val_from_num(b);
+        _frac_digits = std::use_facet<std::moneypunct<char>>(
+            money::get_locale()
+        ).frac_digits();
+    }
+    
+    int64_t frac_digits() const
+    {
+        return _frac_digits;
     }
     
     bool operator ==(const money& b) const
     {
-        return _val == b._val;
+        return _val == b._val && _frac_digits == _frac_digits;
     }
-
+    
     bool operator !=(const money& b) const
     {
-        return _val != b._val;
+        return _val != b._val || _frac_digits != _frac_digits;
     }
-
+    
     bool operator <(const money& b) const
     {
-        return _val < b._val;
+        if(_frac_digits == b._frac_digits)
+            return _val < b._val;
+        int64_t aw, ad, bw, bd;
+        decimal_parts_to(aw, ad);
+        b.decimal_parts_to(bw, bd);
+        if(aw == bw)
+            return ad < bd;
+        return aw < bw;
     }
-
+    
     bool operator >(const money& b) const
     {
-        return _val > b._val;
+        if(_frac_digits == b._frac_digits)
+            return _val > b._val;
+        int64_t aw, ad, bw, bd;
+        decimal_parts_to(aw, ad);
+        b.decimal_parts_to(bw, bd);
+        if(aw == bw)
+            return ad > bd;
+        return aw > bw;
     }
 
     bool operator <=(const money& b) const
     {
-        return _val <= b._val;
+        if(_frac_digits == b._frac_digits)
+            return _val <= b._val;
+        int64_t aw, ad, bw, bd;
+        decimal_parts_to(aw, ad);
+        b.decimal_parts_to(bw, bd);
+        if(aw == bw)
+            return ad <= bd;
+        return aw <= bw;
     }
 
     bool operator >=(const money& b) const
     {
-        return _val >= b._val;
+        if(_frac_digits == b._frac_digits)
+            return _val >= b._val;
+        int64_t aw, ad, bw, bd;
+        decimal_parts_to(aw, ad);
+        b.decimal_parts_to(bw, bd);
+        if(aw == bw)
+            return ad >= bd;
+        return aw >= bw;
     }
     
     money& operator=(const money& b)
     {
         this->_val = b._val;
+        this->_frac_digits = b._frac_digits;
         return *this;
     }
     money& operator=(const int64_t& b)
     {
         this->_val = val_from_num(b);
+        _frac_digits = std::use_facet<std::moneypunct<char>>(
+            money::get_locale()
+        ).frac_digits();
         return *this;
     }
     money& operator=(const int32_t& b)
     {
         this->_val = val_from_num(b);
+        _frac_digits = std::use_facet<std::moneypunct<char>>(
+            money::get_locale()
+        ).frac_digits();
         return *this;
     }
     money& operator=(const float& b)
     {
         this->_val = val_from_num(b);
+        _frac_digits = std::use_facet<std::moneypunct<char>>(
+            money::get_locale()
+        ).frac_digits();
         return *this;
     }
     
     money& operator=(const double& b)
     {
         this->_val = val_from_num(b);
+        _frac_digits = std::use_facet<std::moneypunct<char>>(
+            money::get_locale()
+        ).frac_digits();
         return *this;
     }
-    
     
     money operator+(const money& b) const
     {
@@ -227,13 +290,21 @@ public:
     
     std::string to_string() const
     {
-        const std::locale l = money::getLocale();
+        const std::locale l = money::get_locale();
         const std::moneypunct<char>& mp = 
             std::use_facet<std::moneypunct<char> >(l);
         
         return to_string(mp.frac_digits());
     }
-
+    
+    void decimal_parts_to(
+        bool& is_positive, std::string& whole_part, std::string& decim_part
+    ) const;
+    void decimal_parts_to(int64_t& a, int64_t& b) const;
+    
+    void to_frac_digits(int64_t frac_digits);
+    static void to_frac_digits(const money& m, int64_t frac_digits);
+    
     std::string to_string(const std::locale& l) const
     {
         const std::moneypunct<char>& mp = 
@@ -253,11 +324,11 @@ public:
         return md::num_to_str(n, false) + "." + ds;
     }
     
-    static const std::locale& getLocale()
+    static const std::locale& get_locale()
     {
         return money::_default_locale;
     }
-    static void setLocale(std::locale loc)
+    static void set_locale(std::locale loc)
     {
         money::_default_locale = loc;
     }
@@ -268,7 +339,7 @@ public:
     }
     numeric to_numeric() const
     {
-        const std::locale l = money::getLocale();
+        const std::locale l = money::get_locale();
         const std::moneypunct<char>& mp = 
             std::use_facet<std::moneypunct<char> >(l);
         
@@ -293,7 +364,7 @@ public:
 
     static money from_numeric(const numeric& b)
     {
-        const std::locale l = money::getLocale();
+        const std::locale l = money::get_locale();
         const std::moneypunct<char>& mp = 
             std::use_facet<std::moneypunct<char> >(l);
         
@@ -338,7 +409,7 @@ public:
     template<typename T>
     T to_num() const
     {
-        const std::locale l = money::getLocale();
+        const std::locale l = money::get_locale();
         const std::moneypunct<char>& mp = 
             std::use_facet<std::moneypunct<char> >(l);
         
@@ -364,7 +435,7 @@ public:
     template<typename T>
     static money from_num(const T& b)
     {
-        const std::locale l = money::getLocale();
+        const std::locale l = money::get_locale();
         const std::moneypunct<char>& mp = 
             std::use_facet<std::moneypunct<char> >(l);
         
@@ -385,6 +456,7 @@ public:
     {
         money r;
         r._val = val_from_num<T>(b, frac_digits);
+        r._frac_digits = frac_digits;
         return r;
     }
     
@@ -392,7 +464,7 @@ private:
     
     static int64_t get_pow()
     {
-        const std::locale l = money::getLocale();
+        const std::locale l = money::get_locale();
         const std::moneypunct<char>& mp = 
             std::use_facet<std::moneypunct<char> >(l);
         return get_pow(mp.frac_digits());
@@ -411,7 +483,7 @@ private:
     template<typename T>
     static int64_t val_from_num(const T& b)
     {
-        const std::locale l = money::getLocale();
+        const std::locale l = money::get_locale();
         const std::moneypunct<char>& mp = 
             std::use_facet<std::moneypunct<char> >(l);
         
@@ -431,10 +503,12 @@ private:
     static int64_t val_from_num(const T& b, int frac_digits)
     {
         T m = std::pow((T)10, (T)frac_digits);
-        return (int64_t)(b * m);
+        return (int64_t)b * (int64_t)m;
     }
     
     int64_t _val;
+    int64_t _frac_digits;
+    
     static std::locale _default_locale;
 };
 
