@@ -29,5 +29,6 @@
 #include "pg_type_net_def.h"
 #include "pg_type_geo_def.h"
 #include "pg_type_range_def.h"
+#include "pg_type_duration_def.h"
 
 #endif //_pq_asyncpp_types_h

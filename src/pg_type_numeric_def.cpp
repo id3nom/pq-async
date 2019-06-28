@@ -356,7 +356,7 @@ namespace pq_async{
     {
         std::string res = (std::string)(*this);
         
-        bool is_positive = !boost::starts_with(res, "-");
+        is_positive = !boost::starts_with(res, "-");
         size_t spos = res.find(".");
         if(spos == std::string::npos){
             whole_part = res;

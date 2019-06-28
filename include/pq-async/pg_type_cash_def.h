@@ -87,12 +87,16 @@ public:
     
     bool operator ==(const money& b) const
     {
-        return _val == b._val && _frac_digits == _frac_digits;
+        money tm(*this);
+        tm.to_frac_digits(b._frac_digits);
+        return tm._val == b._val;
     }
     
     bool operator !=(const money& b) const
     {
-        return _val != b._val || _frac_digits != _frac_digits;
+        money tm(*this);
+        tm.to_frac_digits(b._frac_digits);
+        return tm._val != b._val;
     }
     
     bool operator <(const money& b) const
@@ -188,7 +192,7 @@ public:
         money r;
         r._val = this->_val;
         r._frac_digits = this->_frac_digits;
-        to_frac_digits(r, b._frac_digits);
+        r.to_frac_digits(b._frac_digits);
         r._val += b._val;
         return r;
     }
@@ -197,7 +201,7 @@ public:
         money r;
         r._val = this->_val;
         r._frac_digits = this->_frac_digits;
-        to_frac_digits(r, b._frac_digits);
+        r.to_frac_digits(b._frac_digits);
         r._val -= b._val;
         return r;
     }
@@ -206,7 +210,7 @@ public:
         money r;
         r._val = this->_val;
         r._frac_digits = this->_frac_digits;
-        to_frac_digits(r, b._frac_digits);
+        r.to_frac_digits(b._frac_digits);
         
         r._val *= b._val;
         r._val /= r.get_pow();
@@ -217,7 +221,7 @@ public:
         money r;
         r._val = this->_val;
         r._frac_digits = this->_frac_digits;
-        to_frac_digits(r, b._frac_digits);
+        r.to_frac_digits(b._frac_digits);
         
         r._val /= b._val;
         r._val *= r.get_pow();
@@ -228,7 +232,7 @@ public:
         money r;
         r._val = this->_val;
         r._frac_digits = this->_frac_digits;
-        to_frac_digits(r, b._frac_digits);
+        r.to_frac_digits(b._frac_digits);
 
         r._val %= b._val;
         return r;
@@ -337,7 +341,7 @@ public:
     void decimal_parts_to(int64_t& a, int64_t& b) const;
     
     void to_frac_digits(int64_t frac_digits);
-    static void to_frac_digits(const money& m, int64_t frac_digits);
+    static money to_frac_digits(const money& m, int64_t frac_digits);
     
     std::string to_string(const std::locale& l) const
     {
@@ -349,14 +353,12 @@ public:
     
     std::string to_string(int frac_digits) const
     {
-        int64_t tfd = _frac_digits;
-        to_frac_digits(*this, frac_digits);
+        money tm(*this);
+        tm.to_frac_digits(frac_digits);
         
         int64_t m = std::pow(10L, (int64_t)frac_digits);
-        int64_t n = _val / m;
+        int64_t n = tm._val / m;
         int64_t d = std::abs(_val % m);
-        
-        to_frac_digits(*this, tfd);
         
         std::string ds = md::num_to_str(d, false);
         if(ds.size() < (size_t)frac_digits)
@@ -471,11 +473,10 @@ public:
     template<typename T>
     T to_num(int frac_digits) const
     {
-        int64_t tfd = _frac_digits;
-        to_frac_digits(*this, frac_digits);
+        money tm(*this);
+        tm.to_frac_digits(frac_digits);
         T m = std::pow((T)10, (T)frac_digits);
-        T v = ((T)_val / m);
-        to_frac_digits(*this, tfd);
+        T v = ((T)tm._val / m);
         return v;
     }
     

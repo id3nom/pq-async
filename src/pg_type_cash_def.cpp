@@ -45,33 +45,35 @@ void money::decimal_parts_to(
     int64_t& a, int64_t& b) const
 {
     int64_t m = std::pow(10L, _frac_digits);
-    int64_t a = _val / m;
-    int64_t b = std::abs(_val) % m;
+    a = _val / m;
+    b = std::abs(_val) % m;
     if(_val < 0)
         b *= -1;
 }
 
 void money::to_frac_digits(int64_t frac_digits)
 {
-    to_frac_digits(*this, frac_digits);
-}
-
-void money::to_frac_digits(const money& m, int64_t frac_digits)
-{
-    if(frac_digits == m._frac_digits)
+    if(frac_digits == _frac_digits)
         return;
     
-    if(frac_digits > m._frac_digits){
-        int64_t m = std::pow(10L, frac_digits - m._frac_digits);
-        m._val *= m;
-        m._frac_digits = frac_digits;
+    if(frac_digits > _frac_digits){
+        int64_t m = std::pow(10L, frac_digits - _frac_digits);
+        _val *= m;
+        _frac_digits = frac_digits;
         
     }else{
-        int64_t m = std::pow(10L, m._frac_digits - frac_digits);
-        m._val /= m;
-        m._frac_digits = frac_digits;
+        int64_t m = std::pow(10L, _frac_digits - frac_digits);
+        _val /= m;
+        _frac_digits = frac_digits;
         
     }
+}
+
+money money::to_frac_digits(const money& m, int64_t frac_digits)
+{
+    money tm(m);
+    tm.to_frac_digits(frac_digits);
+    return tm;
 }
 
 
