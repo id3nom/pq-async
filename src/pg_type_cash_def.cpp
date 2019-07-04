@@ -37,8 +37,8 @@ void money::decimal_parts_to(
     int64_t a = std::abs(_val) / m;
     int64_t b = std::abs(_val) % m;
     is_positive = _val >= 0;
-    whole_part = md::num_to_str(b, false);
-    decim_part = md::num_to_str(a, false);
+    whole_part = md::num_to_str(a, false);
+    decim_part = md::num_to_str(b, false);
 }
 
 void money::decimal_parts_to(
