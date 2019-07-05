@@ -206,38 +206,38 @@ TEST_F(date_types_test, timestamp_tz_from_bin)
         
         ASSERT_THAT(
             ts0.iso_string(), 
-            testing::Eq("2017-09-27 00:08:07.123456+0000")
+            testing::Eq("2017-09-27T00:08:07.123456+0000")
         );
         ASSERT_THAT(
             tz0.iso_string(), 
-            testing::Eq("2017-09-26 19:08:07.123456-0500")
+            testing::Eq("2017-09-26T19:08:07.123456-0500")
         );
         
         ASSERT_THAT(
             ts1.iso_string(), 
-            testing::Eq("-0001-01-02 00:08:07.123456+0000")
+            testing::Eq("-0001-01-02T00:08:07.123456+0000")
         );
         ASSERT_THAT(
             tz1.iso_string(), 
-            testing::Eq("-0001-01-01 19:08:07.123456-0500")
+            testing::Eq("-0001-01-01T19:08:07.123456-0500")
         );
         
         ASSERT_THAT(
             ts2.iso_string(), 
-            testing::Eq("-0500-01-02 00:08:07.123456+0000")
+            testing::Eq("-0500-01-02T00:08:07.123456+0000")
         );
         ASSERT_THAT(
             tz2.iso_string(), 
-            testing::Eq("-0500-01-01 19:08:07.123456-0500")
+            testing::Eq("-0500-01-01T19:08:07.123456-0500")
         );
         
         ASSERT_THAT(
             ts3.iso_string(), 
-            testing::Eq("0001-01-01 00:08:07.123456+0000")
+            testing::Eq("0001-01-01T00:08:07.123456+0000")
         );
         ASSERT_THAT(
             tz3.iso_string(), 
-            testing::Eq("0000-12-31 19:08:07.123456-0500")
+            testing::Eq("0000-12-31T19:08:07.123456-0500")
         );
         
     }catch(const std::exception& err){
@@ -252,7 +252,7 @@ TEST_F(date_types_test, timestamp_tz_make_zoned)
     try{
         auto ts0 =
             db->query_value<pq_async::timestamp_tz>(
-                "select '2000-01-01 00:00:00.000000 UTC'::"
+                "select '2000-01-01T00:00:00.000000 UTC'::"
                 "timestamp with time zone"
             );
         
@@ -273,11 +273,11 @@ TEST_F(date_types_test, timestamp_tz_make_zoned)
         
         ASSERT_THAT(
             ts0.iso_string(), 
-            testing::Eq("2000-01-01 00:00:00.000000+0000")
+            testing::Eq("2000-01-01T00:00:00.000000+0000")
         );
         ASSERT_THAT(
             ts1.iso_string(), 
-            testing::Eq("1999-12-31 19:00:00.000000-0500")
+            testing::Eq("1999-12-31T19:00:00.000000-0500")
         );
         
         ASSERT_THAT(
@@ -319,11 +319,11 @@ TEST_F(date_types_test, timestamp_as_zone)
         
         ASSERT_THAT(
             ts0.iso_string(), 
-            testing::Eq("2000-01-01 00:00:00.000000")
+            testing::Eq("2000-01-01T00:00:00.000000")
         );
         ASSERT_THAT(
             ts1.iso_string(), 
-            testing::Eq("2000-01-01 00:00:00.000000-0500")
+            testing::Eq("2000-01-01T00:00:00.000000-0500")
         );
         
         ASSERT_THAT(
