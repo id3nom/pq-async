@@ -94,7 +94,7 @@ namespace pq_async {
         if(_is_null)
             return "NULL";
         
-        return hhdate::format("%Y-%m-%d", this->_d);
+        return hhdate::format("%F", this->_d);
     }
 
     std::string date::format(
@@ -146,7 +146,7 @@ namespace pq_async {
         if(_is_null)
             return "NULL";
         
-        return hhdate::format("%Y-%m-%d %T", this->_ts);
+        return hhdate::format("%FT%T", this->_ts);
     }
     
     std::string timestamp::format(
@@ -182,10 +182,14 @@ namespace pq_async {
     {
         if(s == "NULL")
             return timestamp::null();
-            
+        
         timestamp ts;
         std::istringstream is(s);
-        is >> hhdate::parse("%Y-%m-%d %T", ts._ts);
+        is >> hhdate::parse("%FT%T", ts._ts);
+        if(is.fail()){
+            is = std::istringstream(s);
+            is >> hhdate::parse("%F %T", ts._ts);
+        }
         return ts;
     }
 
@@ -240,7 +244,7 @@ namespace pq_async {
         if(_is_null)
             return "NULL";
         
-        return hhdate::format("%Y-%m-%d %T%z", this->_tsz);
+        return hhdate::format("%FT%T%z", this->_tsz);
     }
     
     std::string timestamp_tz::format(
@@ -278,8 +282,15 @@ namespace pq_async {
         
         timestamp_tz ts;
         hhdate::sys_time<std::chrono::microseconds> st;
+        //hhdate::zoned_time<std::chrono::microseconds> zt;
         std::istringstream is(s);
-        is >> hhdate::parse("%Y-%m-%d %T%z", st);
+        is >> hhdate::parse("%FT%T%z", st);
+        if(is.fail()){
+            is = std::istringstream(s);
+            is >> hhdate::parse("%F %T %Z", st);
+            if(is.fail())
+                throw MD_ERR("Failed to parse zoned time: '{}'", s);
+        }
         ts._tsz = st;
         return ts;
     }
