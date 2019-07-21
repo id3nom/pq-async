@@ -53,13 +53,12 @@ before_install:
 services:
   - postgresql
 
-#before_script:
-#  - psql -c 'create database libpq_async_tests;' -U postgres
-#  - psql -c 'create extension ltree;' -U postgres
+before_script:
+  - sudo systemctl start postgresql
+  - psql -c 'create database libpq_async_tests;' -U postgres
+  - psql -c 'create extension ltree;' -U postgres
 
 script:
-    - psql -c 'create database libpq_async_tests;' -U postgres
-    - psql -c 'create extension ltree;' -U postgres
     - mkdir -p build
     - cd build
     - cmake -DCMAKE_CXX_STANDARD=14 -DPQ_ASYNC_BUILD_TESTS=ON ..
