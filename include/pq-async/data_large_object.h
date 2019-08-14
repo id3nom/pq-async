@@ -34,9 +34,11 @@ SOFTWARE.
 #include "data_connection_pool.h"
 #include "database.h"
 
-extern "C" {
-#include INCLUDE_FILE(LIBPQ_POSTGRESQL_TYPE_INCLUDE_DIR,libpq/libpq-fs.h)
-}
+//extern "C" {
+//#include INCLUDE_FILE(LIBPQ_POSTGRESQL_TYPE_INCLUDE_DIR,libpq/libpq-fs.h)
+//}
+#define INV_WRITE       0x00020000
+#define INV_READ        0x00040000
 
 namespace pq_async{
 
