@@ -34,7 +34,8 @@ SOFTWARE.
 //#include <boost/multi_array.hpp>
 
 extern "C" {
-#include INCLUDE_FILE(LIBPQ_POSTGRESQL_INCLUDE_DIR,libpq-fe.h)
+//#include INCLUDE_FILE(LIBPQ_POSTGRESQL_INCLUDE_DIR,libpq-fe.h)
+#include <postgresql/libpq-fe.h>
 #include "../deps/pg_type_d.h"
 }
 
