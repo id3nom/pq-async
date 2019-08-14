@@ -36,7 +36,7 @@ endif(UNIX)
 message(STATUS "** CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 
 # boost dependencies
-set(Boost_ADDITIONAL_VERSIONS "1.62" "1.58" "1.58.0" "1.57" "1.57.0" "1.56" "1.56.0" "1.55" "1.55.0")
+#set(Boost_ADDITIONAL_VERSIONS "1.62" "1.58" "1.58.0" "1.57" "1.57.0" "1.56" "1.56.0" "1.55" "1.55.0")
 
 #set(Boost_ROOT "" CACHE PATH "Boost root dir")
 set(Boost_DEBUG  ON CACHE BOOL "Boost_DEBUG")
@@ -58,8 +58,19 @@ if(PQ_ASYNC_BUILD_TESTS)
         #chrono
         #locale
     )
-
+    
+    include("${CMAKE_ROOT}/Modules/FindBoost.cmake")
+    
     find_package(Boost COMPONENTS REQUIRED ${PQ_ASYNC_BOOST_COMPONENTS} )
+    
+    if(NOT Boost_LIBRARY_DIRS)
+    #     set(Boost_INCLUDE_DIR /usr/local/include)
+    #     set(Boost_LIBRARY_DIRS /usr/local/lib)
+    #     set(Boost_LIBRARIES Boost::filesystem;Boost::regex;Boost::program_options)
+    set(Boost_LIBRARIES Boost::system;Boost::program_options)
+    
+    endif()
+    
     message(STATUS "** BOOST Include: ${Boost_INCLUDE_DIR}")
     message(STATUS "** BOOST Libraries Dirs: ${Boost_LIBRARY_DIRS}")
     message(STATUS "** BOOST Libraries: ${Boost_LIBRARIES}")
