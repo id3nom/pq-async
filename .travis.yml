@@ -63,5 +63,5 @@ before_script:
 script:
     - mkdir -p build
     - cd build
-    - cmake -G 'Unix Makefiles' -DPostgreSQL_TYPE_INCLUDE_DIR='/usr/include' -DCMAKE_CXX_STANDARD=14 -DPQ_ASYNC_BUILD_TESTS=ON ..
+    - cmake -G 'Unix Makefiles' -DPostgreSQL_TYPE_INCLUDE_DIR='/usr/include' -DCMAKE_CXX_STANDARD=14 -DPQ_ASYNC_BUILD_TESTS=ON -DUSE_SYSTEM_TZ_DB=ON ..
     - MAKEFLAGS=-j4 make --trace && bin/pq-async_tests --db "dbname='libpq_async_tests' user='postgres'" --pool-size 4
