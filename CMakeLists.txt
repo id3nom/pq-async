@@ -7,6 +7,7 @@ project(pq-async VERSION 0.1.0 LANGUAGES CXX C)
 # define module path
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
 
+
 if(NOT PrecompiledHeader_CMake_INCLUDED)
     include(PrecompiledHeader)
 endif()
@@ -49,7 +50,7 @@ if(PQ_ASYNC_BUILD_TESTS)
         #filesystem
         #atomic
         #date_time
-        #system
+        system
         #iostreams
         #regex
         program_options
