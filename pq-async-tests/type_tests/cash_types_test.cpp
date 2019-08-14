@@ -77,7 +77,7 @@ TEST_F(cash_types_test, cash_test_bin)
         std::cout << "neg_format: " << mp.neg_format() << '\n';
         
         
-        pq_async::money::setLocale(std::locale("en_US.UTF-8"));
+        pq_async::money::set_locale(std::locale("en_US.UTF-8"));
         
         auto m = db->query_value<money>(
             "select '12.543'::money "
