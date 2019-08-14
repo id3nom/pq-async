@@ -41,6 +41,7 @@ addons:
       - postgresql-server-dev-all
       - libcurl4-gnutls-dev
       - libboost-dev
+      - libboost-system-dev
       - libboost-program-options-dev
       - libevent-dev
       - uuid-dev
