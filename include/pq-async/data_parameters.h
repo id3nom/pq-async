@@ -366,8 +366,6 @@ pq_async::daterange pgval_to_range<pq_async::daterange>(
 // ================================
 void get_array_oid_and_dim(char* val, int len, int fmt, int& oid, int& dim);
 
-
-
 template <typename T>
 md::jagged_vector<T> pgval_to_array(char* val, int len, int fmt)
 {
@@ -393,7 +391,7 @@ md::jagged_vector<T> pgval_to_array(char* val, int len, int fmt)
     //TODO: verify ele_oid vs T.
     
     // fetch dim size.
-    int32_t ele_count = 1;
+    int32_t ele_count = svr_dim_count > 0 ? 1 : 0;
     for(int32_t i = 0; i < svr_dim_count; ++i){
         int32_t dim_val = 0;
         pq_async::swap4((int32_t*)val, &dim_val, false);
@@ -572,7 +570,7 @@ pq_async::parameter* new_parameter_gen(
         vec_append(membuf2, (char*)&out_dim_ele_cnt, sizeof(out_dim_ele_cnt));
         
         // lbound.
-        int32_t l_bound = 0;
+        int32_t l_bound = 1;
         int32_t out_lbound = 0;
         pq_async::swap4(&l_bound, &out_lbound, true);
         vec_append(membuf2, (char*)&out_lbound, sizeof(out_lbound));
@@ -605,6 +603,12 @@ pq_async::parameter* new_parameter_gen(
     
     return new pq_async::parameter(arr_ele_oid, buf, size, 1);
 }
+
+template<>
+pq_async::parameter* new_parameter_gen<std::string>(
+    md::jagged_vector<std::string> value,
+    int32_t ele_oid, int32_t arr_ele_oid
+);
 
 #define PQ_ASYNC_ARRAY_SPEC(__type, __name) \
 typedef md::jagged_vector<__type> arr_ ## __name; \

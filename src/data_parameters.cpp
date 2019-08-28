@@ -887,6 +887,74 @@ pq_async::parameter* new_parameter(md::string_view value)
     return new_parameter(value.to_string());
 }
 
+template<>
+pq_async::parameter* new_parameter_gen<std::string>(
+    md::jagged_vector<std::string> value,
+    int32_t ele_oid, int32_t arr_ele_oid
+    )
+{
+    std::vector<char> membuf2;
+    
+    // dimension count.
+    int32_t dim_count = value.dim_size();//dim_count;
+    int32_t out_dim_count = 0;
+    pq_async::swap4(&dim_count, &out_dim_count, true);
+    vec_append(membuf2, (char*)&out_dim_count, sizeof(out_dim_count));
+    
+    // null flag.
+    int32_t null_flag = 0;
+    int32_t out_null_flag = 0;
+    pq_async::swap4(&null_flag, &out_null_flag, true);
+    vec_append(membuf2, (char*)&out_null_flag, sizeof(out_null_flag));
+    
+    int32_t out_ele_oid = 0;
+    pq_async::swap4(&ele_oid, &out_ele_oid, true);
+    vec_append(membuf2, (char*)&out_ele_oid, sizeof(out_ele_oid));
+    
+    // dimension sizes.
+    for(int32_t i = 0; i < dim_count; ++i){
+        // dim size.
+        int32_t dim_ele_cnt = value.size(i);
+        int32_t out_dim_ele_cnt = 0;
+        pq_async::swap4(&dim_ele_cnt, &out_dim_ele_cnt, true);
+        vec_append(membuf2, (char*)&out_dim_ele_cnt, sizeof(out_dim_ele_cnt));
+        
+        // lbound.
+        int32_t l_bound = 1;
+        int32_t out_lbound = 0;
+        pq_async::swap4(&l_bound, &out_lbound, true);
+        vec_append(membuf2, (char*)&out_lbound, sizeof(out_lbound));
+    }
+    
+    //T* it_val = value.data();
+    for(size_t i = 0; i < value.size(); ++i){
+        // pq_async::parameter* param = 
+        //     pq_async::new_parameter(*((const T*)it_val));
+        pq_async::parameter* param = 
+            pq_async::new_parameter(value[i]);
+        
+        char* val = (char*)param->get_value();
+        int32_t len = param->get_length() -1;
+        
+        int32_t out_len = 0;
+        pq_async::swap4(&len, &out_len, true);
+        vec_append(membuf2, (char*)&out_len, sizeof(int32_t));
+        vec_append(membuf2, val, len);
+        
+        delete param;
+        //++it_val;
+    }
+    
+    int size = membuf2.size();
+    
+    char* buf = new char[size];
+    for(int32_t i = 0; i < size; ++i)
+        buf[i] = membuf2[i];
+    
+    return new pq_async::parameter(arr_ele_oid, buf, size, 1);
+}
+
+
 
 
 pq_async::parameter* new_parameter(bool value)
