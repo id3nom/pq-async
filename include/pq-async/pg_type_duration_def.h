@@ -48,6 +48,7 @@ public:
     
     std::string to_short_string() const;
     std::string to_long_string() const;
+    long double milliseconds() const { return _milliseconds;}
     
     operator interval() const 
     {
