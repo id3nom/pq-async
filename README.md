@@ -87,7 +87,7 @@ std::string name = db->query_value<std::string>(
     "select $1", std::string("my name")
     );
 // to see a list of the supported types goto 
-// "https://micheldenommee.github.io/libpq-async/index.html#autotoc_md24"
+// "https://micheldenommee.github.io/pq-async/index.html#autotoc_md24"
 
 // all of the previous function have async versions that support callback as
 // there last parameter e.g:
@@ -130,8 +130,7 @@ pq_async::connection_pool::destroy();
 ~~~
 
 for more usage example look at the documentation
-https://micheldenommee.github.io/libpq-async
-
+https://micheldenommee.github.io/pq-async
 
 ## Thanks and Credits
 
