@@ -93,7 +93,7 @@ if(_values[i]->is_null()) \
 else { \
     md::jagged_vector<DIM_TYPE> jv = _values[i]->as_array<DIM_TYPE>(); \
     pq_async::json rows_arr = pq_async::json::array(); \
-    for(size_t d = 0; d < jv.dim_size(); ++i){ \
+    for(size_t d = 0; d < jv.dim_size(); ++d){ \
         pq_async::json row_arr = pq_async::json::array(); \
         for(auto it = jv.cbegin(d); it != jv.cend(d); ++it){ \
             row_arr.push_back((__arr_cast)(*it)); \
